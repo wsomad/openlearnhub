@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # Ignore environmental variables (e.g. API Keys)
-.env
+process.env
