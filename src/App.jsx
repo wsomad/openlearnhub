@@ -1,7 +1,7 @@
 import {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {setUser, clearUser} from './store/slices/authSlice';
-import {Router, Routes, Route} from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import ProtectedRoute from './routes/ProtectedRoute/ProtectedRoute';
 import AuthPage from './pages/auth/AuthPage';
 import HomePage from './pages/home/HomePage';
@@ -26,7 +26,7 @@ function App() {
     }, [dispatch]);
 
     return (
-        <Router>
+        <>
             <HeaderComponent />
             <Routes>
                 <Route
@@ -35,7 +35,7 @@ function App() {
                 />
                 <Route path='/auth' element={<AuthPage />} />
             </Routes>
-        </Router>
+        </>
     );
 }
 
