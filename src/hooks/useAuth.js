@@ -2,6 +2,8 @@
 import {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {setUser, clearUser} from '../store/slices/authSlice';
+import {doc, setDoc, getDoc} from 'firebase/firestore';
+import {db} from '../services/FirebaseConfiguration';
 import {
     onAuthStateChanged,
     signInWithEmailAndPassword,
@@ -22,7 +24,26 @@ export const useAuth = () => {
                 email,
                 password,
             );
-            dispatch(setUser(userCredential.user));
+
+            const user = userCredential.user;
+            const userDocRef = doc(db, 'user', user.uid);
+            const userDoc = await getDoc(userDocRef);
+
+            if (userDoc.exists()) {
+                const userDetails = userDoc.data();
+
+                dispatch(
+                    setUser({
+                        uid: userDetails.uid,
+                        email: userDetails.email,
+                        firstName: userDetails.firstName,
+                        lastName: userDetails.lastName,
+                        username: userDetails.username,
+                    }),
+                );
+            } else {
+                console.log('No user details found in Firestore');
+            }
         } catch (error) {
             console.error('Sign In Error:', error.message);
         }
@@ -35,7 +56,26 @@ export const useAuth = () => {
                 email,
                 password,
             );
-            dispatch(setUser(userCredential.user));
+
+            const user = userCredential.user;
+            await setDoc(doc(db), 'user', user.uid),
+                {
+                    uid: user.uid,
+                    firstName: firstName,
+                    lastName: lastName,
+                    username: username,
+                    email: email,
+                    password: password,
+                };
+            dispatch(
+                setUser({
+                    uid: user.uid,
+                    firstName: firstName,
+                    lastName: lastName,
+                    username: username,
+                    email: email,
+                }),
+            );
         } catch (error) {
             console.error('Sign Up Error:', error.message);
         }

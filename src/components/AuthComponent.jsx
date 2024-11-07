@@ -11,8 +11,19 @@ const AuthComponent = () => {
     const [lastName, setLastName] = useState('');
     const [isSignIn, setSignIn] = useState(true);
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (isSignIn) {
+            signIn(email, password);
+            console.log('Email');
+        } else {
+            signUp(email, password, firstName, lastName, username);
+            console.log('Email', email);
+        }
+    };
+
     return (
-        <form>
+        <form onSubmit={handleSubmit}>
             {!isSignIn && (
                 <div>
                     <input
@@ -36,7 +47,7 @@ const AuthComponent = () => {
                 </div>
             )}
             <input
-                type='email'
+                type='text'
                 placeholder='Email'
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
