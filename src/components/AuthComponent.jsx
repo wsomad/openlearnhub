@@ -17,7 +17,7 @@ const AuthComponent = () => {
             signIn(email, password);
             console.log('Email');
         } else {
-            signUp(email, password, firstName, lastName, username);
+            signUp(username, firstName, lastName, email, password);
             console.log('Email', email);
         }
     };
