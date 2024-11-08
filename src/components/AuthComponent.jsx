@@ -1,4 +1,3 @@
-import React from 'react';
 import {useAuth} from '../hooks/useAuth';
 import {useState} from 'react';
 import authImage from '../images/authimage.png';
