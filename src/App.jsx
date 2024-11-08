@@ -38,7 +38,6 @@ function App() {
 
     return (
         <>
-            <HeaderComponent />
             <Routes>
                 <Route
                     path='/home'
