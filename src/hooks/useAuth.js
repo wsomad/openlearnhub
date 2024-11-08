@@ -1,11 +1,8 @@
 import {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {setUser, clearUser} from '../store/slices/authSlice';
-import {auth} from '../services/FirebaseConfiguration';
-import {
-    createUserDocument,
-    fetchUserDocument,
-} from '../services/FirestoreUserService';
+import {auth} from '../config/FirebaseConfiguration';
+import {addUser, getUserById} from '../services/FirestoreUserService';
 import {
     onAuthStateChanged,
     signInWithEmailAndPassword,
@@ -13,10 +10,12 @@ import {
     signOut,
 } from 'firebase/auth';
 import UserModel from '../models/UserModel';
+import {useNavigate} from 'react-router-dom';
 
 export const useAuth = () => {
     // To dispatch an action
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const user = useSelector((state) => state.auth.user);
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
@@ -25,6 +24,7 @@ export const useAuth = () => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             console.log('Successfully sign in.');
+            navigate('/home');
             // No need to fetch user profile here, since onAuthStateChanged will handle it
         } catch (error) {
             console.error('Sign In Error:', error);
@@ -46,11 +46,12 @@ export const useAuth = () => {
                 lastName,
                 username,
             );
-            await createUserDocument(userProfile.toJSON());
+            await addUser(userProfile.toJSON());
             console.log(
                 'Successfully sign up and create user data into firestore.',
             ); // Call toJSON to ensure it's in JSON format
             dispatch(setUser(userProfile.toJSON())); // Dispatch JSON format as well
+            navigate('/auth');
         } catch (error) {
             console.error('Sign Up Error:', error);
         }
@@ -61,23 +62,24 @@ export const useAuth = () => {
         try {
             await signOut(auth);
             dispatch(clearUser()); // Clear user data on sign out
+            navigate('/auth');
         } catch (error) {
             console.error('Sign Out Error:', error);
         }
     };
 
-    // Listen for auth state changes and fetch user data on login
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userProfile = await fetchUserDocument(user.uid); // Fetch full user profile
-                dispatch(setUser(userProfile));
-            } else {
-                dispatch(clearUser());
-            }
-        });
-        return unsubscribe;
-    }, [dispatch]);
+    // // Listen for auth state changes and fetch user data on login
+    // useEffect(() => {
+    //     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    //         if (user) {
+    //             const userProfile = await getUserById(user.uid); // Fetch full user profile
+    //             dispatch(setUser(userProfile));
+    //         } else {
+    //             dispatch(clearUser());
+    //         }
+    //     });
+    //     return unsubscribe;
+    // }, [dispatch]);
 
     return {user, isAuthenticated, signIn, signUp, signOut};
 };
