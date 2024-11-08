@@ -24,6 +24,7 @@ const AuthComponent = () => {
 
     return (
         <form onSubmit={handleSubmit}>
+            {String(isAuthenticated)}
             {!isSignIn && (
                 <div>
                     <input

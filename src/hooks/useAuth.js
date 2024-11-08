@@ -15,6 +15,7 @@ import {
 import UserModel from '../models/UserModel';
 
 export const useAuth = () => {
+    // To dispatch an action
     const dispatch = useDispatch();
     const user = useSelector((state) => state.auth.user);
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
@@ -56,7 +57,7 @@ export const useAuth = () => {
     };
 
     // SignOut function
-    const signOutUser = async () => {
+    const signOut = async () => {
         try {
             await signOut(auth);
             dispatch(clearUser()); // Clear user data on sign out
@@ -78,5 +79,5 @@ export const useAuth = () => {
         return unsubscribe;
     }, [dispatch]);
 
-    return {user, isAuthenticated, signIn, signUp, signOut: signOutUser};
+    return {user, isAuthenticated, signIn, signUp, signOut};
 };
