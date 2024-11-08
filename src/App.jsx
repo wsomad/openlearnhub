@@ -44,6 +44,8 @@ function App() {
                     path='/home'
                     element={<ProtectedRoute element={<HomePage />} />}
                 />
+                <Route path='/auth' element={<AuthPage />} />
+                <Route path='/test' element={<HeaderComponent />} />
             </Routes>
         </>
     );

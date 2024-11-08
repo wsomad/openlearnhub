@@ -11,7 +11,7 @@ export default {
             primary: '#31473A',
             secondary: '#7C8363',
             black: '#000000',
-            white: '#FFFFFFF',
+            white: '#FFFFFF',
             background: '#EDF4F2',
         },
     },
