@@ -12,6 +12,7 @@ export default {
             secondary: '#7C8363',
             black: '#000000',
             white: '#FFFFFF',
+            gray: '#D3D3D3',
             background: '#EDF4F2',
         },
     },

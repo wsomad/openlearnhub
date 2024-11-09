@@ -8,6 +8,7 @@ import HomePage from './pages/student/home/HomePage';
 import HeaderComponent from './components/HeaderComponent';
 import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from './config/FirebaseConfiguration';
+import TestComponent from './components/card/TestComponent';
 
 function App() {
     // `useDispatch()` is used to send actions to Redux store.
@@ -45,7 +46,7 @@ function App() {
                     element={<ProtectedRoute element={<HomePage />} />}
                 />
                 <Route path='/auth' element={<AuthPage />} />
-                <Route path='/test' element={<HeaderComponent />} />
+                <Route path='/test' element={<TestComponent />} />
             </Routes>
         </>
     );
