@@ -8,10 +8,31 @@ function CardCourseComponent({
     buttonText,
     onButtonClick,
     size,
+    hoursDuration,
+    numSections,
+    numLectures,
 }) {
-    const cardSizeClass =
-        size === 'big' ? 'w-[550px] h-[450px]' : 'w-[350px] h-[350px]';
-    const imageSizeClass = size === 'big' ? 'h-[400px]' : 'h-[200px]';
+    let cardSizeClass = '';
+    let imageSizeClass = '';
+
+    switch (size) {
+        case 'small':
+            cardSizeClass = 'w-[350px] h-[350px]';
+            imageSizeClass = 'h-[200px]';
+            break;
+        case 'medium':
+            cardSizeClass = 'w-[550px] h-[450px]';
+            imageSizeClass = 'h-[300px]';
+            break;
+        case 'big':
+            cardSizeClass = 'w-[750px] h-[550px]';
+            imageSizeClass = 'h-[400px]';
+            break;
+        default:
+            cardSizeClass = 'w-[350px] h-[350px]';
+            imageSizeClass = 'h-[200px]';
+            break;
+    }
 
     return (
         <div
@@ -30,7 +51,20 @@ function CardCourseComponent({
                     {instructor}
                 </p>
                 <div className='flex items-center justify-between w-full mt-4'>
-                    {pricing && (
+                    {size === 'big' && (
+                        <div className='flex flex-row flex gap-6 justify-between mt-2'>
+                            <p className='font-abhaya font-bold text-xl text-black'>
+                                {hoursDuration} hours
+                            </p>
+                            <p className='font-abhaya font-bold text-xl text-black'>
+                                {numSections} sections
+                            </p>
+                            <p className='font-abhaya font-bold text-xl text-black'>
+                                {numLectures} lectures
+                            </p>
+                        </div>
+                    )}
+                    {size !== 'big' && (
                         <p className='font-abhaya font-bold text-xl text-black'>
                             {pricing}
                         </p>

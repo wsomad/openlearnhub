@@ -1,6 +1,6 @@
 import React from 'react';
 import CardCourseComponent from './card/CardCourseComponent';
-import thumbnail from '../../assets/images/thumbnail.png';
+import thumbnail from '../assets/images/thumbnail.png';
 
 const TestComponent = () => (
     <div className='flex justify-center items-center min-h-screen bg-gray-100'>
@@ -15,19 +15,22 @@ const TestComponent = () => (
                     // Later, create a navigation route
                     console.log('Navigating to Course Details page')
                 }
-                size='small'
+                size='medium'
             />
             <CardCourseComponent
                 thumbnail={thumbnail}
                 title='Build Web App with React Redux'
                 instructor='Dr. John Doe'
                 pricing='FREE'
-                buttonText='Enroll Now'
+                buttonText='Incomplete'
                 onButtonClick={() =>
                     // Later, create a navigation route
                     console.log('Navigating to Course Selected page')
                 }
                 size='big'
+                hoursDuration='40'
+                numSections='23'
+                numLectures='120'
             />
         </div>
     </div>
