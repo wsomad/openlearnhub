@@ -1,5 +1,6 @@
 import {configureStore} from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
+import courseReducer from './slices/courseSlice';
 
 export const store = configureStore({
     reducer: {
@@ -8,5 +9,6 @@ export const store = configureStore({
         // `authReducer` is responsible for handling actions like `setUser` and `cleanUser`.
         // This means it responsibles in updating authentication state accordingly.
         auth: authReducer,
+        courses: courseReducer,
     },
 });

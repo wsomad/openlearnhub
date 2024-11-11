@@ -110,7 +110,7 @@ const HeaderComponent = () => {
                 </div>
 
                 <div className='flex space-x-4 mr-4'>
-                    {!isLoggedIn ? (
+                    {isLoggedIn ? (
                         <>
                             <button
                                 onClick={handleSignInAndSignUp}
@@ -180,7 +180,7 @@ const HeaderComponent = () => {
                 </div>
             </header>
 
-            <hr className='border-t border-gray-300 mt-1 opacity-25' />
+            <hr className='border-t gray mt-1 opacity-15' />
         </>
     );
 };

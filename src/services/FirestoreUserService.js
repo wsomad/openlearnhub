@@ -1,9 +1,7 @@
-// FirestoreUserService.js
 import {doc, setDoc, getDoc} from 'firebase/firestore';
-import {db} from './FirebaseConfiguration';
-import UserModel from '../models/UserModel';
+import {db} from '../config/FirebaseConfiguration';
 
-export const createUserDocument = async (userData) => {
+export const addUser = async (userData) => {
     try {
         const userDocRef = doc(db, 'users', userData.uid);
         await setDoc(userDocRef, userData);
@@ -12,7 +10,7 @@ export const createUserDocument = async (userData) => {
     }
 };
 
-export const fetchUserDocument = async (uid) => {
+export const getUserById = async (uid) => {
     const userDocRef = doc(db, 'user', uid);
     const userDoc = await getDoc(userDocRef);
     console.log('Get user data from firestore');
