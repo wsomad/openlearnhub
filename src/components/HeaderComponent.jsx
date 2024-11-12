@@ -4,7 +4,7 @@ import {useNavigate} from 'react-router-dom';
 const HeaderComponent = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isUserOpen, setIsUserOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
     const [userType, setUserType] = useState('student');
 
     const categories = [
