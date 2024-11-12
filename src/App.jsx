@@ -9,6 +9,8 @@ import HeaderComponent from './components/HeaderComponent';
 import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from './config/FirebaseConfiguration';
 import TestComponent from './components/TestComponent';
+import CourseContentList from './components/CourseContentList';
+import ProfileComponent from './components/ProfileComponent';
 
 function App() {
     // `useDispatch()` is used to send actions to Redux store.
@@ -37,6 +39,9 @@ function App() {
         });
     }, [dispatch]);
 
+    // Differentiate user type to render components with appropriate design and functionality.
+    const userType = 'instructor';
+
     return (
         <>
             <Routes>
@@ -47,6 +52,14 @@ function App() {
                 />
                 <Route path='/auth' element={<AuthPage />} />
                 <Route path='/test' element={<TestComponent />} />
+                <Route
+                    path='/content'
+                    element={<CourseContentList userType={userType} />}
+                />
+                <Route
+                    path='/profile'
+                    element={<ProfileComponent userType={userType} />}
+                />
             </Routes>
         </>
     );
