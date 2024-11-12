@@ -1,28 +1,27 @@
 import {useDispatch, useSelector} from 'react-redux';
 import {
     addCourse,
-    deleteCourseById,
     getAllCourses,
     getCourseById,
-    updateCourse,
-} from '../services/FirebaseCourseService';
-import FirebaseCourseService from '../services/FirebaseCourseService';
+    updateCourseById,
+    deleteCourseById,
+} from '../services/CourseService';
 import {
-    modifiedCourse,
-    newCourse,
+    setCourse,
     setCourses,
-    setSelectedCourse,
-    updateCourse,
+    modifyCourse,
+    clearCourse,
 } from '../store/slices/courseSlice';
 
 export const useCourses = () => {
     const dispatch = useDispatch();
-    const courses = useSelector((state) => state.courses.courses);
+    const selectedCourse = useSelector((state) => state.courses.selectedCourse);
+    const courses = useSelector((state) => state.courses.allCourses);
 
-    const addNewCourse = async (course) => {
+    const createCourse = async (course) => {
         try {
-            const addNewCourse = await addCourse(course);
-            dispatch(newCourse(addNewCourse));
+            const addedCourse = await addCourse(course);
+            dispatch(setCourse(addedCourse));
         } catch (error) {
             console.error('Failed to add new course: ', error);
         }
@@ -30,46 +29,54 @@ export const useCourses = () => {
 
     const fetchCourseById = async (course_id) => {
         try {
-            const fetchCourseById = await getCourseById(course_id);
-            dispatch(setSelectedCourse(fetchCourseById));
+            const course = await getCourseById(course_id);
+            dispatch(setCourse(course));
         } catch (error) {
-            console.error('Failed to get course: ', error);
+            console.error('Failed to fetch specific course: ', error);
         }
     };
 
     const fetchAllCourses = async () => {
         try {
-            const fetchAllCourses = await getAllCourses();
-            dispatch(setCourses(fetchAllCourses));
+            const courses = await getAllCourses();
+            dispatch(setCourses(courses));
+            // Optional: reset selectedCourse if needed
+            dispatch(setCourse(null));
         } catch (error) {
-            console.error('Failed to fetch all courses: ', error.message);
+            console.error('Failed to fetch all courses: ', error);
         }
     };
 
-    const modifyCourse = async (course_id, updatedCourse) => {
+    const updateCourse = async (course_id, updatedCourse) => {
         try {
-            await updateCourse(course_id, updatedCourse);
-            dispatch(modifiedCourse({course_id, updatedCourse}));
+            await updateCourseById(course_id, updatedCourse);
+            dispatch(
+                modifyCourse({
+                    id: course_id,
+                    updatedCourseObject: updatedCourse,
+                }),
+            );
         } catch (error) {
-            console.error('Failed to update course: ', error.message);
+            console.error('Failed to update course: ', error);
         }
     };
 
-    const removeCourse = async (course_id) => {
+    const deleteCourse = async (course_id) => {
         try {
             await deleteCourseById(course_id);
-            dispatch(modifiedCourse({course_id, updatedCourse: null}));
+            dispatch(clearCourse(course_id));
         } catch (error) {
-            console.error('Failed to delete course: ', error.message);
+            console.error('Failed to delete course: ', error);
         }
     };
 
     return {
+        selectedCourse,
         courses,
-        addNewCourse,
+        createCourse,
         fetchCourseById,
         fetchAllCourses,
-        modifyCourse,
-        removeCourse,
+        updateCourse,
+        deleteCourse,
     };
 };
