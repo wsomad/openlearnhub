@@ -10,7 +10,12 @@ import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from './config/firebaseConfiguration';
 import TestComponent from './components/TestComponent';
 import SearchComponent from './components/SearchComponent';
+<<<<<<< HEAD
 import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
+=======
+import CourseContentList from './components/CourseContentList';
+import ProfileComponent from './components/ProfileComponent';
+>>>>>>> 80ec0b13d73242adcb6aca5549c6b457ecafc267
 
 function App() {
     // `useDispatch()` is used to send actions to Redux store.
@@ -39,6 +44,9 @@ function App() {
         });
     }, [dispatch]);
 
+    // Differentiate user type to render components with appropriate design and functionality.
+    const userType = 'instructor';
+
     return (
         <>
             <Routes>
@@ -59,7 +67,19 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+<<<<<<< HEAD
                 <Route path='/test' element={<SelectedCoursePage />} />
+=======
+                <Route path='/test' element={<HomePage />} />
+                <Route
+                    path='/content'
+                    element={<CourseContentList userType={userType} />}
+                />
+                <Route
+                    path='/profile'
+                    element={<ProfileComponent userType={userType} />}
+                />
+>>>>>>> 80ec0b13d73242adcb6aca5549c6b457ecafc267
             </Routes>
         </>
     );
