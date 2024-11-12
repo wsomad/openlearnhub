@@ -71,7 +71,7 @@ const AuthComponent = () => {
                     {!isSignIn && (
                         <div className='space-y-4'>
                             <div>
-                                <label className='font-abhaya text-lg font-medium mb-1 block'>
+                                <label className='font-abhaya font-bold text-lg mb-1 block '>
                                     First Name
                                 </label>
                                 <input
@@ -157,7 +157,7 @@ const AuthComponent = () => {
                                     Don't have an account?{' '}
                                     <button
                                         type='button'
-                                        className='text-primary hover:underline'
+                                        className='text-primary font-bold hover:underline'
                                         onClick={() => setSignIn(false)}
                                     >
                                         Sign Up
@@ -168,7 +168,7 @@ const AuthComponent = () => {
                                     Already have an account?{' '}
                                     <button
                                         type='button'
-                                        className='text-primary hover:underline'
+                                        className='text-primary font-bold hover:underline'
                                         onClick={() => setSignIn(true)}
                                     >
                                         Sign In

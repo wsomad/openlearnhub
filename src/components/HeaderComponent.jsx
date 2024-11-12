@@ -57,7 +57,7 @@ const HeaderComponent = () => {
 
     return (
         <>
-            <header className='flex items-center justify-between p-4 bg-blue-600'>
+            <header className='flex items-center justify-between p-4 bg-blue-600 px-4'>
                 <div className='flex items-center space-x-4'>
                     <div className='text-2xl ml-4 font-bold'>
                         <span className='font-abhaya text-2xl text-primary'>
@@ -71,7 +71,7 @@ const HeaderComponent = () => {
                     <div className='relative'>
                         <button
                             onClick={toggleDropdown}
-                            className='font-abhaya mt-1 ml-14 text-lg bg-gray-800 hover:bg-gray-700 rounded-md'
+                            className='font-abhaya font-bold mt-1 ml-14 text-lg bg-gray-800 hover:bg-gray-700 rounded-md'
                         >
                             Categories
                         </button>
@@ -114,13 +114,13 @@ const HeaderComponent = () => {
                         <>
                             <button
                                 onClick={handleSignInAndSignUp}
-                                className='w-32 h-10 border border-primary text-primary rounded-3xl text-md font-abhaya'
+                                className='w-32 h-10 border border-primary text-primary rounded-3xl text-md font-abhaya font-bold'
                             >
                                 Sign In
                             </button>
                             <button
                                 onClick={handleSignInAndSignUp}
-                                className='w-32 h-10 bg-primary text-white rounded-3xl text-md font-abhaya'
+                                className='w-32 h-10 bg-primary text-white rounded-3xl text-md font-abhaya font-bold'
                             >
                                 Get Started
                             </button>
@@ -129,7 +129,7 @@ const HeaderComponent = () => {
                         <div className='relative mr-4'>
                             <button
                                 onClick={toggleUser}
-                                className='font-abhaya mt-1 ml-12 text-lg bg-gray-800 hover:bg-gray-700 rounded-md'
+                                className='font-abhaya font-bold mt-1 ml-12 text-lg bg-gray-800 hover:bg-gray-700 rounded-md'
                             >
                                 Ahmad Suffian
                             </button>

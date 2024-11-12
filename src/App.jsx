@@ -7,8 +7,9 @@ import AuthPage from './pages/auth/AuthPage';
 import HomePage from './pages/student/home/HomePage';
 import HeaderComponent from './components/HeaderComponent';
 import {onAuthStateChanged} from 'firebase/auth';
-import {auth} from './config/FirebaseConfiguration';
+import {auth} from './config/firebaseConfiguration';
 import TestComponent from './components/TestComponent';
+import SearchComponent from './components/SearchComponent';
 import CourseContentList from './components/CourseContentList';
 import ProfileComponent from './components/ProfileComponent';
 
@@ -45,13 +46,24 @@ function App() {
     return (
         <>
             <Routes>
+                <Route
+                    path='/'
+                    element={
+                        <ProtectedRoute>
+                            <HomePage />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route path='/auth' element={<AuthPage />} />
                 <Route
                     path='/home'
-                    element={<ProtectedRoute element={<HomePage />} />}
+                    element={
+                        <ProtectedRoute>
+                            <HomePage />
+                        </ProtectedRoute>
+                    }
                 />
-                <Route path='/auth' element={<AuthPage />} />
-                <Route path='/test' element={<TestComponent />} />
+                <Route path='/test' element={<HomePage />} />
                 <Route
                     path='/content'
                     element={<CourseContentList userType={userType} />}

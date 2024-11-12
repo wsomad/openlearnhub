@@ -1,5 +1,22 @@
-import {doc, setDoc, getDoc, updateDoc, deleteDoc} from 'firebase/firestore';
-import {db} from '../config/firebaseConfiguration';
+// In this service, it has:
+
+// addCourse
+// getCourseById
+// getSpecificCourse
+// getAllCourses
+// updateCourseById
+// deleteCourseById
+
+import {
+    doc,
+    setDoc,
+    getDoc,
+    getDocs,
+    updateDoc,
+    deleteDoc,
+    collection,
+} from 'firebase/firestore';
+import {db} from '../../config/firebaseConfiguration';
 
 export const addCourse = async (courseData) => {
     try {
@@ -28,6 +45,27 @@ export const getCourseById = async (course_id) => {
     }
 };
 
+export const getSpecificCourse = async (searchQuery) => {
+    try {
+        const coursesRef = collection(db, 'courses'); // Reference to the 'courses' collection
+        const querySnapshot = await getDocs(coursesRef); // Get all documents in the 'courses' collection
+
+        const courses = [];
+        querySnapshot.forEach((doc) => {
+            // Here, doc.id is the course title, so we can check if it matches the search query
+            if (doc.id.toLowerCase().includes(searchQuery.toLowerCase())) {
+                // Push matching course documents into the array
+                courses.push({...doc.data(), course_title: doc.id}); // Add doc.id as course_title
+            }
+        });
+
+        return courses; // Return all the matching courses
+    } catch (error) {
+        console.error('Error searching courses:', error);
+        throw new Error('Failed to search courses');
+    }
+};
+
 export const getAllCourses = async () => {
     try {
         const courseDocRef = doc(db, 'courses');
@@ -43,11 +81,11 @@ export const getAllCourses = async () => {
     }
 };
 
-export const updateCourse = async (course_id, updatedCourse) => {
+export const updateCourseById = async (course_id, updatedCourse) => {
     try {
         const courseDoc = doc(doc, 'courses', course_id);
         await updateDoc(courseDoc, updatedCourse);
-        return {id, ...updateCourse};
+        return {course_id, ...updatedCourse};
     } catch (error) {
         console.error('Error updating course: ', error.message);
     }
