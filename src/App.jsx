@@ -10,6 +10,7 @@ import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from './config/firebaseConfiguration';
 import TestComponent from './components/TestComponent';
 import SearchComponent from './components/SearchComponent';
+import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
 
 function App() {
     // `useDispatch()` is used to send actions to Redux store.
@@ -58,7 +59,7 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-                <Route path='/test' element={<HomePage />} />
+                <Route path='/test' element={<SelectedCoursePage />} />
             </Routes>
         </>
     );

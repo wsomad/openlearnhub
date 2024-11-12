@@ -5,7 +5,7 @@ import {
     getCourseById,
     updateCourseById,
     deleteCourseById,
-} from '../services/CourseService';
+} from '../services/firestore/CourseService';
 import {
     setCourse,
     setCourses,
