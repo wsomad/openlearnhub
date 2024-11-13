@@ -2,15 +2,15 @@ import {useDispatch, useSelector} from 'react-redux';
 import {
     addUser,
     getUserById,
-    adjustUser,
+    updateUserById,
     deleteUserById,
 } from '../services/firestore/UserService';
-import {setUser} from '../store/slices/userSlice';
+import {setUser, clearUser} from '../store/slices/userSlice';
 
 export const useUser = () => {
     const dispatch = useDispatch();
-    const currentUser = useSelector((state) => state.users.currentUser);
-    const allUsers = useSelector((state) => state.users.allUsers);
+    const currentUser = useSelector((state) => state.users?.currentUser);
+    //const allUsers = useSelector((state) => state.users?.allUsers);
 
     const createUser = async (userData) => {
         try {
@@ -22,6 +22,11 @@ export const useUser = () => {
     };
 
     const fetchUserById = async (uid) => {
+        if (currentUser?.uid === uid) {
+            console.log('User data already available in Redux for UID: ', uid);
+            // If the user is already in Redux, no need to fetch again.
+            return;
+        }
         try {
             const getUser = await getUserById(uid);
             dispatch(setUser(getUser));
@@ -32,7 +37,7 @@ export const useUser = () => {
 
     const updateUser = async (uid, updatedUser) => {
         try {
-            await adjustUser(uid, updatedUser);
+            await updateUserById(uid, updatedUser);
             dispatch(
                 modifyUser({
                     id: uid,
@@ -46,7 +51,7 @@ export const useUser = () => {
     const deleteUser = async (uid) => {
         try {
             await deleteUserById(uid);
-            dispatch(clearCourse(course_id));
+            dispatch(clearUser(course_id));
         } catch (error) {
             console.error('Failed to delete course: ', error);
         }
@@ -54,7 +59,7 @@ export const useUser = () => {
 
     return {
         currentUser,
-        allUsers,
+        //allUsers,
         createUser,
         fetchUserById,
         updateUser,

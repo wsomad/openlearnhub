@@ -18,10 +18,10 @@ function CardCourseComponent({
     switch (size) {
         case 'small':
             cardSizeClass = 'w-[330px] h-[350px]';
-            imageSizeClass = 'h-[200px]';
+            imageSizeClass = 'h-[300px]';
             break;
         case 'medium':
-            cardSizeClass = 'w-[650px] h-[550px]';
+            cardSizeClass = 'w-[750px] h-[550px]';
             imageSizeClass = 'h-[500px]';
             break;
         case 'big':

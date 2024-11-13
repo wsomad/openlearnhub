@@ -35,10 +35,10 @@ export const getCourseById = async (course_id) => {
 
         if (courseDoc.exists()) {
             console.log('Course data: ', courseDoc.data());
-            //return courseDoc.data();
+            return courseDoc.data();
         } else {
             console.log('No such course.');
-            //return null;
+            return null;
         }
     } catch (error) {
         console.error('Error getting course: ', error.message);
@@ -58,7 +58,6 @@ export const getSpecificCourse = async (searchQuery) => {
                 courses.push({...doc.data(), course_title: doc.id}); // Add doc.id as course_title
             }
         });
-
         return courses; // Return all the matching courses
     } catch (error) {
         console.error('Error searching courses:', error);

@@ -10,12 +10,10 @@ import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from './config/firebaseConfiguration';
 import TestComponent from './components/TestComponent';
 import SearchComponent from './components/SearchComponent';
-<<<<<<< HEAD
-import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
-=======
 import CourseContentList from './components/CourseContentList';
 import ProfileComponent from './components/ProfileComponent';
->>>>>>> 80ec0b13d73242adcb6aca5549c6b457ecafc267
+import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
+import EnrolledCoursePage from './pages/student/course/EnrolledCoursePage';
 
 function App() {
     // `useDispatch()` is used to send actions to Redux store.
@@ -40,8 +38,8 @@ function App() {
                 dispatch(clearUser());
             }
             // Stop listen to any changes in authentication state.
-            return () => subscribe();
         });
+        return () => subscribe();
     }, [dispatch]);
 
     // Differentiate user type to render components with appropriate design and functionality.
@@ -50,6 +48,7 @@ function App() {
     return (
         <>
             <Routes>
+                {/* Default path */}
                 <Route
                     path='/'
                     element={
@@ -58,7 +57,9 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+                {/* Authentication path */}
                 <Route path='/auth' element={<AuthPage />} />
+                {/* Home path */}
                 <Route
                     path='/home'
                     element={
@@ -67,10 +68,13 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-<<<<<<< HEAD
-                <Route path='/test' element={<SelectedCoursePage />} />
-=======
-                <Route path='/test' element={<HomePage />} />
+                {/* For testing only path */}
+                <Route
+                    path='/test'
+                    // <SelectedCoursePage></SelectedCoursePage>
+                    // <HomePage></HomePage>
+                    element={<EnrolledCoursePage></EnrolledCoursePage>}
+                />
                 <Route
                     path='/content'
                     element={<CourseContentList userType={userType} />}
@@ -79,7 +83,6 @@ function App() {
                     path='/profile'
                     element={<ProfileComponent userType={userType} />}
                 />
->>>>>>> 80ec0b13d73242adcb6aca5549c6b457ecafc267
             </Routes>
         </>
     );

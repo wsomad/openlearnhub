@@ -1,11 +1,39 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
+import {useAuth} from '../hooks/useAuth';
+import {useUser} from '../hooks/useUser';
 
 const HeaderComponent = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isUserOpen, setIsUserOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(true);
     const [userType, setUserType] = useState('student');
+    const {user} = useAuth();
+    const {currentUser, fetchUserById} = useUser();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        let isCancelled = false;
+
+        const fetchUser = async () => {
+            if (user && user.uid && !isCancelled) {
+                try {
+                    await fetchUserById(user.uid);
+                } catch (error) {
+                    console.error('Failed to fetch user:', error);
+                }
+            }
+        };
+
+        // Only fetch if we actually have a valid `user` and `user.uid`.
+        if (user && user.uid) {
+            fetchUser();
+        }
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [user?.uid, fetchUserById]);
 
     const categories = [
         {name: 'Development', path: '/development'},
@@ -33,8 +61,6 @@ const HeaderComponent = () => {
     const toggleUser = () => {
         setIsUserOpen((prev) => !prev);
     };
-
-    const navigate = useNavigate();
 
     const handleSignInAndSignUp = () => {
         navigate('/auth');
@@ -126,13 +152,19 @@ const HeaderComponent = () => {
                             </button>
                         </>
                     ) : (
-                        <div className='relative mr-4'>
-                            <button
-                                onClick={toggleUser}
-                                className='font-abhaya font-bold mt-1 ml-12 text-lg bg-gray-800 hover:bg-gray-700 rounded-md'
-                            >
-                                Ahmad Suffian
-                            </button>
+                        <div className='relative'>
+                            <div className='flex justify-end'>
+                                {' '}
+                                {/* Adjust to align the button to the right */}
+                                <button
+                                    onClick={toggleUser}
+                                    className='font-abhaya font-bold text-lg bg-gray-800 hover:bg-gray-700 rounded-md px-4 py-2 text-right' // Align text to the right
+                                >
+                                    {currentUser
+                                        ? currentUser.username
+                                        : 'User'}
+                                </button>
+                            </div>
 
                             {isUserOpen && (
                                 <>
@@ -141,7 +173,7 @@ const HeaderComponent = () => {
                                         onClick={toggleUser}
                                     ></div>
 
-                                    <div className='absolute bg-white text-center text-black mt-1 rounded-sm shadow-lg z-20 w-48'>
+                                    <div className='absolute right-0 bg-white text-center text-black mt-1 rounded-sm shadow-lg z-20 w-48'>
                                         <ul>
                                             {(userType === 'student'
                                                 ? studentMenu

@@ -18,10 +18,10 @@ export const addUser = async (userData) => {
 };
 
 export const getUserById = async (uid) => {
-    const userDocRef = doc(db, 'user', uid);
+    const userDocRef = doc(db, 'users', uid);
     const userDoc = await getDoc(userDocRef);
-    console.log('Get user data from firestore');
-    return userDoc.exists() ? fromJSON(userDoc) : null;
+    console.log('Get user data from firestore: ', userDoc.data());
+    return userDoc.data();
 };
 
 export const updateUserById = async (uid, updatedUser) => {

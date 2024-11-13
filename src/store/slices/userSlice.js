@@ -4,15 +4,15 @@ const userSlice = createSlice({
     name: 'users',
     initialState: {
         currentUser: null,
-        allUsers: [],
+        //allUsers: [],
     },
     reducers: {
         setUser(state, action) {
             state.currentUser = action.payload;
         },
-        setUsers(state, action) {
-            state.allUsers = action.payload;
-        },
+        // setUsers(state, action) {
+        //     state.allUsers = action.payload;
+        // },
         modifyUser(state, action) {
             const updatedUser = action.payload;
             if (

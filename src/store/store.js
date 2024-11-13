@@ -10,7 +10,7 @@ export const store = configureStore({
         // `authReducer` is responsible for handling actions like `setUser` and `cleanUser`.
         // This means it responsibles in updating authentication state accordingly.
         auth: authReducer,
-        user: userReducer,
+        users: userReducer,
         courses: courseReducer,
     },
 });
