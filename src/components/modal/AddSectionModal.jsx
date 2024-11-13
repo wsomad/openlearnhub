@@ -61,7 +61,7 @@ const AddSectionModal = ({isOpen, onClose, onSubmit}) => {
                             className='w-full py-3 rounded-3xl bg-primary text-white text-lg active:scale-[.98] font-abhaya'
                             type='submit'
                         >
-                            Create Section
+                            Create New Section
                         </button>
                     </div>
                 </form>

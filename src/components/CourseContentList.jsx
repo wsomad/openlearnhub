@@ -1,8 +1,8 @@
 import {useState} from 'react';
 import CourseContentView from './CourseContentView';
 import {FaPlus} from 'react-icons/fa';
-import AddSectionModal from './AddSectionModal';
-import ConfirmDeleteModal from './ConfirmDeleteModal';
+import AddSectionModal from './modal/AddSectionModal';
+import ConfirmDeleteModal from './modal/ConfirmDeleteModal';
 
 const CourseContentList = ({userType}) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,16 +94,27 @@ const CourseContentList = ({userType}) => {
         setSectionToDelete(null);
     };
 
+    const handleEditSectionTitle = (sectionId, newTitle) => {
+        setCourseSections((prevSections) => {
+            return prevSections.map((section) =>
+                section.id === sectionId
+                    ? {...section, title: newTitle}
+                    : section,
+            );
+        });
+    };
+
     return (
         <div className='font-abhaya mt-24 ml-12 w-[1160px] h-[850px] overflow-y-auto shadow-md p-4 bg-white'>
             <div className='mb-2 ml-4 font-bold text-xl flex justify-between items-center'>
                 <span>Course Content</span>
                 {userType === 'instructor' && (
                     <button
-                        className='bg-secondary text-white px-3 py-2 rounded-md flex items-center mr-6'
+                        className='bg-secondary text-white px-3 py-2 rounded-2xl flex items-center mr-6'
                         onClick={openAddContentModal}
                     >
-                        <FaPlus />
+                        <span className='text-lg mt-1'>New Section</span>{' '}
+                        <FaPlus className='ml-2 h-4 w-4' />{' '}
                     </button>
                 )}
             </div>
@@ -114,7 +125,8 @@ const CourseContentList = ({userType}) => {
                 userType={userType}
                 courseSections={courseSections}
                 setCourseSections={setCourseSections}
-                onDeleteSection={handleDeleteSection} // Pass delete function to child component
+                onDeleteSection={handleDeleteSection}
+                onEditSectionTitle={handleEditSectionTitle}
             />
 
             <AddSectionModal

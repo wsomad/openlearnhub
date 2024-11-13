@@ -125,8 +125,8 @@ const ModalComponent = ({modalType, lessonData, onClose, onSubmit}) => {
                             type='submit'
                         >
                             {modalType === 'edit'
-                                ? 'Edit Content'
-                                : 'Add Content'}
+                                ? 'Save Lesson Content'
+                                : 'Add New Lesson Content'}
                         </button>
                     </div>
                 </form>

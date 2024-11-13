@@ -2,8 +2,9 @@ import {useState} from 'react';
 import {FaAngleDown, FaAngleRight, FaEdit} from 'react-icons/fa';
 import {MdDeleteOutline, MdEditNote} from 'react-icons/md';
 import {FaPlus} from 'react-icons/fa6';
-import ModalComponent from './ModalComponent';
-import ConfirmDeleteModal from './ConfirmDeleteModal';
+import ModalComponent from './modal/ModalComponent';
+import ConfirmDeleteModal from './modal/ConfirmDeleteModal';
+import EditSectionModal from './modal/EditSectionModal';
 
 const CourseLesson = ({
     section,
@@ -19,10 +20,11 @@ const CourseLesson = ({
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // State for delete confirmation modal
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedLesson, setSelectedLesson] = useState(null);
     const [modalType, setModalType] = useState('add');
-    const [lessonToDelete, setLessonToDelete] = useState(null); // Track lesson to delete
+    const [lessonToDelete, setLessonToDelete] = useState(null);
+    const [isEditTitleModalOpen, setIsEditTitleModalOpen] = useState(false);
 
     const toggleSection = (e, isEditButton = false) => {
         if (userType === 'instructor' && !isEditButton) {
@@ -60,7 +62,7 @@ const CourseLesson = ({
 
     const openDeleteModal = (lessonTitle) => {
         setLessonToDelete(lessonTitle);
-        setIsDeleteModalOpen(true); // Open delete confirmation modal
+        setIsDeleteModalOpen(true);
     };
 
     const closeDeleteModal = () => {
@@ -72,7 +74,20 @@ const CourseLesson = ({
         if (lessonToDelete) {
             deleteLesson(section.id, lessonToDelete);
         }
-        closeDeleteModal(); // Close the delete confirmation modal
+        closeDeleteModal();
+    };
+
+    const openEditTitleModal = () => {
+        setIsEditTitleModalOpen(true);
+    };
+
+    const closeEditTitleModal = () => {
+        setIsEditTitleModalOpen(false);
+    };
+
+    const handleEditSectionTitle = (newTitle) => {
+        onEditSectionTitle(section.id, newTitle);
+        closeEditTitleModal();
     };
 
     return (
@@ -102,7 +117,7 @@ const CourseLesson = ({
 
                 {/* Instructor Buttons */}
                 {userType === 'instructor' && (
-                    <div className='ml-auto flex space-x-2 mr-4 mt-1'>
+                    <div className='ml-auto flex space-x-2 mr-4 mt-2'>
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -113,10 +128,13 @@ const CourseLesson = ({
                             <FaPlus />
                         </button>
                         <button
-                            onClick={(e) => toggleSection(e, true)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                openEditTitleModal();
+                            }}
                             className='bg-edit text-white w-8 h-8 rounded-full flex items-center justify-center'
                         >
-                            <MdEditNote />
+                            <MdEditNote className='ml-0.5' />
                         </button>
                         <button
                             onClick={() => onDeleteSection(section.id)}
@@ -124,6 +142,16 @@ const CourseLesson = ({
                             title='Delete Section'
                         >
                             <MdDeleteOutline />
+                        </button>
+                        <button
+                            onClick={(e) => toggleSection(e, true)}
+                            className='text-gray flex items-center justify-center'
+                        >
+                            {isOpen ? (
+                                <FaAngleDown className='text-xl' />
+                            ) : (
+                                <FaAngleRight className='text-xl' />
+                            )}
                         </button>
                     </div>
                 )}
@@ -165,7 +193,7 @@ const CourseLesson = ({
                                 </span>
                             </div>
                             {userType === 'instructor' && (
-                                <div className='ml-auto flex space-x-2 mr-5 mt-1'>
+                                <div className='ml-auto flex space-x-2 mr-12 mt-3'>
                                     {/* Edit Button */}
                                     <button
                                         onClick={() => openModal(lesson)}
@@ -207,6 +235,14 @@ const CourseLesson = ({
                 onConfirm={handleDelete}
                 lessonTitle={lessonToDelete}
             />
+
+            {isEditTitleModalOpen && (
+                <EditSectionModal
+                    section={section}
+                    onClose={closeEditTitleModal}
+                    onSubmit={handleEditSectionTitle}
+                />
+            )}
         </div>
     );
 };

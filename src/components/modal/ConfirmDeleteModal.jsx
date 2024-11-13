@@ -8,10 +8,10 @@ const ConfirmDeleteModal = ({
     if (!isOpen) return null;
 
     return (
-        <div className='fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50'>
-            <div className='bg-white p-5 rounded-md shadow-lg w-96'>
-                <h2 className='text-2xl font-bold mb-4'>Confirm Delete</h2>
-                <p className='mb-4'>
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+            <div className='w-full max-w-lg p-6 bg-white rounded-3xl'>
+                <h2 className='text-3xl font-bold'>Confirm Delete</h2>
+                <p className='mb-4 mt-4 text-lg'>
                     {`Are you sure you want to delete the ${
                         isSection ? 'section' : 'lesson'
                     }?`}
@@ -19,7 +19,7 @@ const ConfirmDeleteModal = ({
                 <p className='text-center'>
                     <strong>{itemTitle}</strong>
                 </p>
-                <div className='flex justify-end space-x-3 mt-6'>
+                <div className='flex justify-end space-x-3 mt-6 text-lg'>
                     <button
                         onClick={onClose}
                         className='bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md'

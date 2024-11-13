@@ -5,6 +5,7 @@ const CourseContentView = ({
     courseSections,
     setCourseSections,
     onDeleteSection,
+    onEditSectionTitle,
 }) => {
     const updateLesson = (sectionId, updatedLesson) => {
         setCourseSections((prevSections) => {
@@ -75,6 +76,7 @@ const CourseContentView = ({
                         addLesson={addLesson}
                         deleteLesson={deleteLesson}
                         onDeleteSection={onDeleteSection}
+                        onEditSectionTitle={onEditSectionTitle}
                     />
                 );
             })}
