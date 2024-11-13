@@ -117,7 +117,7 @@ const CourseLesson = ({
 
                 {/* Instructor Buttons */}
                 {userType === 'instructor' && (
-                    <div className='ml-auto flex space-x-2 mr-4 mt-2'>
+                    <div className='ml-auto flex space-x-2 mr-2.5 mt-2'>
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -158,11 +158,11 @@ const CourseLesson = ({
 
                 {/* Student Arrow Button */}
                 {userType === 'student' && (
-                    <div className='ml-auto'>
+                    <div className='ml-auto mt-2'>
                         {isOpen ? (
-                            <FaAngleDown className='text-2xl text-gray-500' />
+                            <FaAngleDown className='text-xl text-gray' />
                         ) : (
-                            <FaAngleRight className='text-2xl text-gray-500' />
+                            <FaAngleRight className='text-xl text-gray' />
                         )}
                     </div>
                 )}
@@ -193,7 +193,7 @@ const CourseLesson = ({
                                 </span>
                             </div>
                             {userType === 'instructor' && (
-                                <div className='ml-auto flex space-x-2 mr-12 mt-3'>
+                                <div className='ml-auto flex space-x-2 mr-2.5 mt-3'>
                                     {/* Edit Button */}
                                     <button
                                         onClick={() => openModal(lesson)}
@@ -233,7 +233,8 @@ const CourseLesson = ({
                 isOpen={isDeleteModalOpen}
                 onClose={closeDeleteModal}
                 onConfirm={handleDelete}
-                lessonTitle={lessonToDelete}
+                itemTitle={lessonToDelete}
+                isSection={false}
             />
 
             {isEditTitleModalOpen && (

@@ -42,7 +42,7 @@ function App() {
     }, [dispatch]);
 
     // Differentiate user type to render components with appropriate design and functionality.
-    const userType = 'instructor';
+    const userType = 'instructor'; //'student' or 'instructor'
 
     return (
         <>

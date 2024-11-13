@@ -16,7 +16,7 @@ const ConfirmDeleteModal = ({
                         isSection ? 'section' : 'lesson'
                     }?`}
                 </p>
-                <p className='text-center'>
+                <p className='text-center text-lg'>
                     <strong>{itemTitle}</strong>
                 </p>
                 <div className='flex justify-end space-x-3 mt-6 text-lg'>

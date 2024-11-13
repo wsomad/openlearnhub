@@ -76,8 +76,11 @@ const CourseContentList = ({userType}) => {
     };
 
     const handleDeleteSection = (sectionId) => {
+        const section = courseSections.find(
+            (section) => section.id === sectionId,
+        );
         setIsConfirmModalOpen(true);
-        setSectionToDelete(sectionId);
+        setSectionToDelete(section);
     };
 
     const confirmDeleteSection = () => {
@@ -105,15 +108,21 @@ const CourseContentList = ({userType}) => {
     };
 
     return (
-        <div className='font-abhaya mt-24 ml-12 w-[1160px] h-[850px] overflow-y-auto shadow-md p-4 bg-white'>
+        <div
+            className={`font-abhaya mt-24 ml-12 p-4 bg-white shadow-md overflow-y-auto ${
+                userType === 'student'
+                    ? 'w-[325px] h-[450px]'
+                    : 'w-[1175px] h-[450px]'
+            }`}
+        >
             <div className='mb-2 ml-4 font-bold text-xl flex justify-between items-center'>
                 <span>Course Content</span>
                 {userType === 'instructor' && (
                     <button
-                        className='bg-secondary text-white px-3 py-2 rounded-2xl flex items-center mr-6'
+                        className='bg-secondary text-white px-3 py-2 rounded-2xl flex items-center mr-4'
                         onClick={openAddContentModal}
                     >
-                        <span className='text-lg mt-1'>New Section</span>{' '}
+                        <span className='text-lg mt-0.5'>New Section</span>{' '}
                         <FaPlus className='ml-2 h-4 w-4' />{' '}
                     </button>
                 )}
@@ -147,6 +156,7 @@ const CourseContentList = ({userType}) => {
                         : ''
                 }
                 isSection={true}
+                itemTitle={sectionToDelete ? sectionToDelete.title : ''}
             />
         </div>
     );
