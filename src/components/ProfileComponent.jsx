@@ -17,10 +17,10 @@ const ProfileComponent = ({userType}) => {
     const [linkedin, setLinkedin] = useState('');
 
     return (
-        <div className='flex w-full h-screen'>
+        <div className='flex w-full min-h-screen'>
             {/* Main form container */}
             <div className='w-full flex items-center justify-center'>
-                <form className='w-full max-w-xl'>
+                <form className='w-full max-w-xl overflow-auto'>
                     <h1 className='font-abhaya text-5xl font-bold mb-6'>
                         Profile Settings
                     </h1>

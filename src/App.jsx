@@ -10,10 +10,16 @@ import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from './config/firebaseConfiguration';
 import TestComponent from './components/TestComponent';
 import SearchComponent from './components/SearchComponent';
+<<<<<<< HEAD
 import CourseContentList from './components/CourseContentList';
 import ProfileComponent from './components/ProfileComponent';
 import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
 import EnrolledCoursePage from './pages/student/course/EnrolledCoursePage';
+=======
+import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
+import CourseContentList from './components/CourseContentList';
+import ProfileComponent from './components/ProfileComponent';
+>>>>>>> 8ee3a2ea9bfb646c1ce32b8c02996b482e80a832
 
 function App() {
     // `useDispatch()` is used to send actions to Redux store.
@@ -43,7 +49,7 @@ function App() {
     }, [dispatch]);
 
     // Differentiate user type to render components with appropriate design and functionality.
-    const userType = 'instructor';
+    const userType = 'instructor'; //'student' or 'instructor'
 
     return (
         <>
@@ -68,6 +74,7 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+<<<<<<< HEAD
                 {/* For testing only path */}
                 <Route
                     path='/test'
@@ -75,6 +82,9 @@ function App() {
                     // <HomePage></HomePage>
                     element={<EnrolledCoursePage></EnrolledCoursePage>}
                 />
+=======
+                <Route path='/test' element={<HomePage />} />
+>>>>>>> 8ee3a2ea9bfb646c1ce32b8c02996b482e80a832
                 <Route
                     path='/content'
                     element={<CourseContentList userType={userType} />}
