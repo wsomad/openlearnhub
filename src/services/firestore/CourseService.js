@@ -22,7 +22,7 @@ export const addCourse = async (courseData) => {
     try {
         const courseDocRef = doc(db, 'courses');
         const courseDoc = await setDoc(courseDocRef, courseData);
-        return {course_id: courseDoc.id, ...courseData};
+        return {course_title: courseData.course_title, ...courseData};
     } catch (error) {
         console.error('Error creating course:', error.message);
     }
@@ -68,14 +68,14 @@ export const getSpecificCourse = async (searchQuery) => {
 
 export const getAllCourses = async () => {
     try {
-        const courseDocRef = doc(db, 'courses');
-        const courseDoc = await getDoc(courseDocRef);
+        const courseDocRef = collection(db, 'courses');
+        const courseDoc = await getDocs(courseDocRef);
         const courses = courseDoc.docs.map((doc) => ({
             course_id: doc.id,
             ...doc.data(),
         }));
         console.log('All courses data: ', courses);
-        // return courses;
+        return courses;
     } catch (error) {
         console.log('Error getting all courses: ', error.message);
     }

@@ -11,7 +11,7 @@ const courseSlice = createSlice({
             state.selectedCourse = action.payload;
         },
         setCourses(state, action) {
-            state.courses = action.payload;
+            state.allCourses = action.payload;
         },
         modifyCourse(state, action) {
             const {id, updatedCourseObject} = action.payload;

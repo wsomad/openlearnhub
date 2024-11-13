@@ -10,6 +10,7 @@ import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from './config/firebaseConfiguration';
 import TestComponent from './components/TestComponent';
 import SearchComponent from './components/SearchComponent';
+import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
 import CourseContentList from './components/CourseContentList';
 import ProfileComponent from './components/ProfileComponent';
 

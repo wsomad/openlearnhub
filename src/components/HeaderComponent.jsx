@@ -110,7 +110,7 @@ const HeaderComponent = () => {
                 </div>
 
                 <div className='flex space-x-4 mr-4'>
-                    {isLoggedIn ? (
+                    {!isLoggedIn ? (
                         <>
                             <button
                                 onClick={handleSignInAndSignUp}
