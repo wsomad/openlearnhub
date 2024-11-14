@@ -2,9 +2,9 @@ import {useState} from 'react';
 import {FaAngleDown, FaAngleRight, FaEdit} from 'react-icons/fa';
 import {MdDeleteOutline, MdEditNote} from 'react-icons/md';
 import {FaPlus} from 'react-icons/fa6';
-import ModalComponent from './modal/ModalComponent';
-import ConfirmDeleteModal from './modal/ConfirmDeleteModal';
-import EditSectionModal from './modal/EditSectionModal';
+import ModalComponent from '../../modal/ModalComponent';
+import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
+import EditSectionModal from '../../modal/EditSectionModal';
 
 const CourseLesson = ({
     section,
@@ -95,7 +95,7 @@ const CourseLesson = ({
             {/* Section Header */}
             <div
                 onClick={(e) => userType === 'student' && toggleSection(e)}
-                className='cursor-pointer py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded-md flex items-start justify-between'
+                className='cursor-pointer py-2 bg-gray-100 hover:bg-gray-200 rounded-md flex items-start justify-between'
             >
                 <div className='relative flex items-start'>
                     <div
@@ -103,11 +103,11 @@ const CourseLesson = ({
                             isOpen
                                 ? 'bg-secondary border-secondary text-white'
                                 : 'border-secondary text-secondary'
-                        } flex items-center justify-center mr-4 mt-1`}
+                        } flex items-center justify-center mt-1`}
                     >
                         {index}
                     </div>
-                    <div className='flex flex-col text-md pl-16 mr-2'>
+                    <div className='flex flex-col text-md pl-14'>
                         <span className='font-bold'>{section.title}</span>
                         <span className='text-gray-500'>
                             {lessonCount} lessons | {totalDuration} mins
@@ -178,13 +178,13 @@ const CourseLesson = ({
                 {section.lessons.map((lesson, lessonIndex) => (
                     <div
                         key={lessonIndex}
-                        className='cursor-pointer p-2 bg-gray-50 hover:bg-gray-100 rounded-md'
+                        className='cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-md'
                     >
-                        <div className='relative flex items-start'>
-                            <div className='border-secondary text-secondary absolute text-2xl w-10 h-10 rounded-full border-4 bg-white flex items-center justify-center mr-4 ml-8 mt-1'>
+                        <div className='relative flex items-start my-2'>
+                            <div className='border-secondary text-secondary absolute text-2xl w-10 h-10 rounded-full border-4 bg-white flex items-center justify-center ml-6 mt-1'>
                                 {lessonIndex + 1}
                             </div>
-                            <div className='flex flex-col text-md pl-16 ml-8'>
+                            <div className='flex flex-col text-md pl-14 ml-6'>
                                 <span className='font-bold'>
                                     {lesson.title}
                                 </span>

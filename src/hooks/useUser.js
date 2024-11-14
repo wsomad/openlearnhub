@@ -5,7 +5,7 @@ import {
     updateUserById,
     deleteUserById,
 } from '../services/firestore/UserService';
-import {setUser, clearUser} from '../store/slices/userSlice';
+import {setUser, modifyUser, clearUser} from '../store/slices/userSlice';
 
 export const useUser = () => {
     const dispatch = useDispatch();

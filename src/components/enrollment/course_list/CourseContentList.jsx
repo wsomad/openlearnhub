@@ -1,8 +1,8 @@
 import {useState} from 'react';
 import CourseContentView from './CourseContentView';
 import {FaPlus} from 'react-icons/fa';
-import AddSectionModal from './modal/AddSectionModal';
-import ConfirmDeleteModal from './modal/ConfirmDeleteModal';
+import AddSectionModal from '../../modal/AddSectionModal';
+import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 
 const CourseContentList = ({userType}) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,6 +45,69 @@ const CourseContentList = ({userType}) => {
         },
         {
             id: 5,
+            title: 'Databases and SQL',
+            lessons: [
+                {title: 'Database Design', duration: 4},
+                {title: 'SQL Queries', duration: 5},
+                {title: 'Normalization', duration: 6},
+            ],
+        },
+        {
+            id: 6,
+            title: 'Data Structures',
+            lessons: [
+                {title: 'Arrays and Lists', duration: 4},
+                {title: 'Stacks and Queues', duration: 5},
+                {title: 'Linked Lists', duration: 6},
+            ],
+        },
+        {
+            id: 7,
+            title: 'Algorithms',
+            lessons: [
+                {title: 'Sorting Algorithms', duration: 5},
+                {title: 'Searching Algorithms', duration: 6},
+                {title: 'Graph Algorithms', duration: 4},
+            ],
+        },
+        {
+            id: 8,
+            title: 'Databases and SQL',
+            lessons: [
+                {title: 'Database Design', duration: 4},
+                {title: 'SQL Queries', duration: 5},
+                {title: 'Normalization', duration: 6},
+            ],
+        },
+        {
+            id: 9,
+            title: 'Algorithms',
+            lessons: [
+                {title: 'Sorting Algorithms', duration: 5},
+                {title: 'Searching Algorithms', duration: 6},
+                {title: 'Graph Algorithms', duration: 4},
+            ],
+        },
+        {
+            id: 10,
+            title: 'Databases and SQL',
+            lessons: [
+                {title: 'Database Design', duration: 4},
+                {title: 'SQL Queries', duration: 5},
+                {title: 'Normalization', duration: 6},
+            ],
+        },
+        {
+            id: 11,
+            title: 'Algorithms',
+            lessons: [
+                {title: 'Sorting Algorithms', duration: 5},
+                {title: 'Searching Algorithms', duration: 6},
+                {title: 'Graph Algorithms', duration: 4},
+            ],
+        },
+        {
+            id: 12,
             title: 'Databases and SQL',
             lessons: [
                 {title: 'Database Design', duration: 4},
@@ -109,9 +172,9 @@ const CourseContentList = ({userType}) => {
 
     return (
         <div
-            className={`font-abhaya mt-24 ml-12 p-4 bg-white shadow-md overflow-y-auto ${
+            className={`font-abhaya p-4 bg-white border border-gray overflow-y-auto ${
                 userType === 'student'
-                    ? 'w-[325px] h-[450px]'
+                    ? 'w-[500px] max-h-[600px]'
                     : 'w-[1175px] h-[450px]'
             }`}
         >

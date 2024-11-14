@@ -10,16 +10,11 @@ import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from './config/firebaseConfiguration';
 import TestComponent from './components/TestComponent';
 import SearchComponent from './components/SearchComponent';
-<<<<<<< HEAD
-import CourseContentList from './components/CourseContentList';
+import CourseContentList from './components/enrollment/course_list/CourseContentList';
 import ProfileComponent from './components/ProfileComponent';
 import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
 import EnrolledCoursePage from './pages/student/course/EnrolledCoursePage';
-=======
-import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
-import CourseContentList from './components/CourseContentList';
-import ProfileComponent from './components/ProfileComponent';
->>>>>>> 8ee3a2ea9bfb646c1ce32b8c02996b482e80a832
+import ListEnrolledCoursePage from './pages/student/course/ListEnrolledCoursePage';
 
 function App() {
     // `useDispatch()` is used to send actions to Redux store.
@@ -74,21 +69,26 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-<<<<<<< HEAD
                 {/* For testing only path */}
                 <Route
                     path='/test'
+                    // <EnrolledCoursePage></EnrolledCoursePage>
                     // <SelectedCoursePage></SelectedCoursePage>
+                    // <ListEnrolledCoursePage></ListEnrolledCoursePage>
                     // <HomePage></HomePage>
                     element={<EnrolledCoursePage></EnrolledCoursePage>}
                 />
-=======
-                <Route path='/test' element={<HomePage />} />
->>>>>>> 8ee3a2ea9bfb646c1ce32b8c02996b482e80a832
+                {/* Course Enrolled path */}
+                <Route
+                    path='/course-enrolled'
+                    element={<ListEnrolledCoursePage></ListEnrolledCoursePage>}
+                />
+                {/* Content path */}
                 <Route
                     path='/content'
                     element={<CourseContentList userType={userType} />}
                 />
+                {/* Profile path */}
                 <Route
                     path='/profile'
                     element={<ProfileComponent userType={userType} />}

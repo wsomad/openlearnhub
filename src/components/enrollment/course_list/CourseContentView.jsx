@@ -56,7 +56,7 @@ const CourseContentView = ({
     };
 
     return (
-        <div className='font-abhaya w-full bg-white mt-4'>
+        <div className='font-abhaya w-full bg-white'>
             {courseSections.map((section, index) => {
                 const lessonCount = section.lessons.length;
                 const totalDuration = section.lessons.reduce(

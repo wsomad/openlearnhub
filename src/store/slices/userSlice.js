@@ -4,15 +4,14 @@ const userSlice = createSlice({
     name: 'users',
     initialState: {
         currentUser: null,
-        //allUsers: [],
+        userRole: null,
     },
     reducers: {
         setUser(state, action) {
-            state.currentUser = action.payload;
+            const user = action.payload;
+            state.currentUser = user;
+            state.userRole = user.role;
         },
-        // setUsers(state, action) {
-        //     state.allUsers = action.payload;
-        // },
         modifyUser(state, action) {
             const updatedUser = action.payload;
             if (
@@ -31,5 +30,5 @@ const userSlice = createSlice({
     },
 });
 
-export const {setUser, setUsers, modifyUser, clearUser} = userSlice.actions;
+export const {setUser, modifyUser, clearUser} = userSlice.actions;
 export default userSlice.reducer;

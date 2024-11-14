@@ -83,11 +83,11 @@ const HeaderComponent = () => {
 
     return (
         <>
-            <header className='flex items-center justify-between p-4 bg-blue-600 px-4'>
+            <header className='flex items-center justify-between p-4 px-10'>
                 <div className='flex items-center space-x-4'>
-                    <div className='text-2xl ml-4 font-bold'>
+                    <div className='text-2xl font-bold'>
                         <span className='font-abhaya text-2xl text-primary'>
-                            Learn
+                            OpenLearn
                         </span>
                         <span className='font-abhaya text-2xl text-tertiary'>
                             Hub.
@@ -97,7 +97,7 @@ const HeaderComponent = () => {
                     <div className='relative'>
                         <button
                             onClick={toggleDropdown}
-                            className='font-abhaya font-bold mt-1 ml-14 text-lg bg-gray-800 hover:bg-gray-700 rounded-md'
+                            className='font-abhaya font-semibold mt-1 ml-5 text-lg bg-gray-800 hover:bg-gray-700 rounded-md'
                         >
                             Categories
                         </button>
@@ -109,12 +109,12 @@ const HeaderComponent = () => {
                                     onClick={toggleDropdown}
                                 ></div>
 
-                                <div className='absolute bg-white text-black mt-1 rounded-sm shadow-lg z-20 w-48 ml-10'>
+                                <div className='absolute bg-white text-black mt-1 rounded-sm shadow-lg z-20 w-48 ml-2'>
                                     <ul>
                                         {categories.map((category) => (
                                             <li
                                                 key={category.name}
-                                                className='font-abhaya p-2 hover:bg-gray-200 mr-12'
+                                                className='font-abhaya font-semibold p-2 hover:bg-gray-200 mr-12'
                                             >
                                                 <button
                                                     onClick={() =>
@@ -135,7 +135,7 @@ const HeaderComponent = () => {
                     </div>
                 </div>
 
-                <div className='flex space-x-4 mr-4'>
+                <div className='flex space-x-4'>
                     {!isLoggedIn ? (
                         <>
                             <button
@@ -158,7 +158,7 @@ const HeaderComponent = () => {
                                 {/* Adjust to align the button to the right */}
                                 <button
                                     onClick={toggleUser}
-                                    className='font-abhaya font-bold text-lg bg-gray-800 hover:bg-gray-700 rounded-md px-4 py-2 text-right' // Align text to the right
+                                    className='font-abhaya font-semibold text-lg bg-gray-800 hover:bg-gray-700 rounded-md text-right' // Align text to the right
                                 >
                                     {currentUser
                                         ? currentUser.username
@@ -181,7 +181,7 @@ const HeaderComponent = () => {
                                             ).map((item) => (
                                                 <li
                                                     key={item.name}
-                                                    className='font-abhaya p-2 hover:bg-gray-200'
+                                                    className='font-abhaya font-semibold p-2 hover:bg-gray-200'
                                                 >
                                                     <button
                                                         onClick={() =>
@@ -195,7 +195,7 @@ const HeaderComponent = () => {
                                                     </button>
                                                 </li>
                                             ))}
-                                            <li className='font-abhaya p-2 hover:bg-gray-200'>
+                                            <li className='font-abhaya font-semibold p-2 hover:bg-gray-200'>
                                                 <button
                                                     onClick={handleLogout}
                                                     className='w-full text-left ml-2'
@@ -212,7 +212,7 @@ const HeaderComponent = () => {
                 </div>
             </header>
 
-            <hr className='border-t gray mt-1 opacity-15' />
+            <hr className='border-t gray opacity-15' />
         </>
     );
 };

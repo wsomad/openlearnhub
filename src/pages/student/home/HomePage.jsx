@@ -52,26 +52,28 @@ function HomePage() {
             </div>
             <SearchComponent />
             <hr className='border-t gray mt-12 opacity-15' />
-            <div className='sm:px-2 md:px-2 lg:px-10 xl:px-6'>
-                {/* Title Section */}
-                <div className='mt-10'>
-                    <h4 className='font-abhaya text-2xl font-bold'>
-                        Our Latest{' '}
-                        <span className='text-secondary'>Courses</span>
-                    </h4>
-                </div>
+            <div className='px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12'>
+                <div className='max-w-screen-xl w-full mx-auto'>
+                    <div className='mt-10'>
+                        <h4 className='font-abhaya text-2xl font-bold'>
+                            Our Latest{' '}
+                            <span className='text-secondary'>Courses</span>
+                        </h4>
+                    </div>
 
-                {/* Loading state */}
-                {loading ? (
-                    <div className='flex justify-center items-center mt-6'>
-                        <div className='animate-spin border-4 border-t-4 border-solid border-gray rounded-full h-16 w-16 border-t-primary'></div>
-                    </div>
-                ) : (
-                    <div className='mx-auto max-w-screen-2xl grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6 mt-6 mb-6'>
-                        {renderedCourses}{' '}
-                        {/* Assuming this is already a list of course components */}
-                    </div>
-                )}
+                    {/* Loading state */}
+                    {loading ? (
+                        <div className='flex justify-center items-center mt-6'>
+                            <div className='animate-spin border-4 border-t-4 border-solid border-gray rounded-full h-16 w-16 border-t-primary'></div>
+                        </div>
+                    ) : (
+                        // mx-auto max-w-screen-2xl grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6 mt-6 mb-6
+                        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 mt-6'>
+                            {renderedCourses}{' '}
+                            {/* Assuming this is already a list of course components */}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
