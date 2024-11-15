@@ -76,36 +76,33 @@ const HeaderComponent = () => {
                             Categories
                         </button>
 
-                        {isDropdownOpen && (
-                            <>
-                                <div
-                                    className='fixed inset-0 bg-black bg-opacity-40 z-10'
-                                    onClick={toggleDropdown}
-                                ></div>
-
-                                <div className='absolute bg-white text-black mt-1 rounded-sm shadow-lg z-20 w-48 ml-10'>
-                                    <ul>
-                                        {categories.map((category) => (
-                                            <li
-                                                key={category.name}
-                                                className='font-abhaya p-2 hover:bg-gray-200 mr-12'
-                                            >
-                                                <button
-                                                    onClick={() =>
-                                                        handleCategoryClick(
-                                                            category.path,
-                                                        )
-                                                    }
-                                                    className='w-full text-left ml-2'
-                                                >
-                                                    {category.name}
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            </>
-                        )}
+                        <div
+                            className={`transition-all duration-300 ease-in-out absolute bg-white text-black mt-1 rounded-sm shadow-lg z-20 w-48 ml-10 transform ${
+                                isDropdownOpen
+                                    ? 'opacity-100 h-auto'
+                                    : 'opacity-0 h-0'
+                            } overflow-hidden`}
+                        >
+                            <ul>
+                                {categories.map((category) => (
+                                    <li
+                                        key={category.name}
+                                        className='font-abhaya p-2 hover:bg-gray-200 mr-12'
+                                    >
+                                        <button
+                                            onClick={() =>
+                                                handleCategoryClick(
+                                                    category.path,
+                                                )
+                                            }
+                                            className='w-full text-left ml-2'
+                                        >
+                                            {category.name}
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
                 </div>
 
@@ -134,47 +131,40 @@ const HeaderComponent = () => {
                                 Ahmad Suffian
                             </button>
 
-                            {isUserOpen && (
-                                <>
-                                    <div
-                                        className='fixed inset-0 bg-black bg-opacity-40 z-10'
-                                        onClick={toggleUser}
-                                    ></div>
-
-                                    <div className='absolute bg-white text-center text-black mt-1 rounded-sm shadow-lg z-20 w-48'>
-                                        <ul>
-                                            {(userType === 'student'
-                                                ? studentMenu
-                                                : instructorMenu
-                                            ).map((item) => (
-                                                <li
-                                                    key={item.name}
-                                                    className='font-abhaya p-2 hover:bg-gray-200'
-                                                >
-                                                    <button
-                                                        onClick={() =>
-                                                            handleUserClick(
-                                                                item.path,
-                                                            )
-                                                        }
-                                                        className='w-full text-left ml-2'
-                                                    >
-                                                        {item.name}
-                                                    </button>
-                                                </li>
-                                            ))}
-                                            <li className='font-abhaya p-2 hover:bg-gray-200'>
-                                                <button
-                                                    onClick={handleLogout}
-                                                    className='w-full text-left ml-2'
-                                                >
-                                                    Sign Out
-                                                </button>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </>
-                            )}
+                            <div
+                                className={`transition-all duration-300 ease-in-out absolute bg-white text-center text-black mt-1 rounded-sm shadow-lg z-20 w-48 ${
+                                    isUserOpen ? 'opacity-100' : 'opacity-0'
+                                }`}
+                            >
+                                <ul>
+                                    {(userType === 'student'
+                                        ? studentMenu
+                                        : instructorMenu
+                                    ).map((item) => (
+                                        <li
+                                            key={item.name}
+                                            className='font-abhaya p-2 hover:bg-gray-200'
+                                        >
+                                            <button
+                                                onClick={() =>
+                                                    handleUserClick(item.path)
+                                                }
+                                                className='w-full text-left ml-2'
+                                            >
+                                                {item.name}
+                                            </button>
+                                        </li>
+                                    ))}
+                                    <li className='font-abhaya p-2 hover:bg-gray-200'>
+                                        <button
+                                            onClick={handleLogout}
+                                            className='w-full text-left ml-2'
+                                        >
+                                            Sign Out
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     )}
                 </div>

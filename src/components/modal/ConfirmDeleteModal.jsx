@@ -12,13 +12,22 @@ const ConfirmDeleteModal = ({
             <div className='w-full max-w-lg p-6 bg-white rounded-3xl'>
                 <h2 className='text-3xl font-bold'>Confirm Delete</h2>
                 <p className='mb-4 mt-4 text-lg'>
-                    {`Are you sure you want to delete the ${
-                        isSection ? 'section' : 'lesson'
+                    {`Are you sure you want to delete ${
+                        isSection
+                            ? 'this section'
+                            : `the following lesson${
+                                  itemTitle ? ' "' + itemTitle + '"' : ''
+                              }`
                     }?`}
                 </p>
                 <p className='text-center text-lg'>
-                    <strong>{itemTitle}</strong>
+                    {isSection ? (
+                        <strong>{itemTitle}</strong> // Display section title
+                    ) : (
+                        <strong>Lesson {parseInt(itemTitle, 10) + 1}</strong> // Display lesson number (adjust for lesson 1 index)
+                    )}
                 </p>
+
                 <div className='flex justify-end space-x-3 mt-6 text-lg'>
                     <button
                         onClick={onClose}

@@ -5,6 +5,20 @@ import {FaPlus} from 'react-icons/fa6';
 import ModalComponent from './modal/ModalComponent';
 import ConfirmDeleteModal from './modal/ConfirmDeleteModal';
 import EditSectionModal from './modal/EditSectionModal';
+import {
+    DndContext,
+    useSensor,
+    useSensors,
+    PointerSensor,
+    closestCenter,
+} from '@dnd-kit/core';
+import {
+    SortableContext,
+    verticalListSortingStrategy,
+    arrayMove,
+    useSortable,
+} from '@dnd-kit/sortable';
+import {CSS} from '@dnd-kit/utilities';
 
 const CourseLesson = ({
     section,
@@ -25,6 +39,11 @@ const CourseLesson = ({
     const [modalType, setModalType] = useState('add');
     const [lessonToDelete, setLessonToDelete] = useState(null);
     const [isEditTitleModalOpen, setIsEditTitleModalOpen] = useState(false);
+    const [lessons, setLessons] = useState(section.lessons);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {activationConstraint: {distance: 5}}),
+    );
 
     const toggleSection = (e, isEditButton = false) => {
         if (userType === 'instructor' && !isEditButton) {
@@ -52,16 +71,26 @@ const CourseLesson = ({
     };
 
     const handleModalSubmit = (newData) => {
-        if (modalType === 'edit') {
-            updateLesson(section.id, {oldTitle: selectedLesson.title, newData});
+        if (modalType === 'edit' && selectedLesson !== null) {
+            const lessonIndex = lessons.findIndex(
+                (lesson) => lesson.title === selectedLesson.title,
+            );
+            if (lessonIndex > -1) {
+                const updatedLessons = [...lessons];
+                updatedLessons[lessonIndex] = newData;
+                setLessons(updatedLessons);
+                updateLesson(section.id, lessonIndex, newData);
+            }
         } else if (modalType === 'add') {
+            const updatedLessons = [...lessons, newData];
+            setLessons(updatedLessons);
             addLesson(section.id, newData);
         }
         closeModal();
     };
 
-    const openDeleteModal = (lessonTitle) => {
-        setLessonToDelete(lessonTitle);
+    const openDeleteModal = (lessonIndex) => {
+        setLessonToDelete(lessonIndex);
         setIsDeleteModalOpen(true);
     };
 
@@ -71,7 +100,11 @@ const CourseLesson = ({
     };
 
     const handleDelete = () => {
-        if (lessonToDelete) {
+        if (lessonToDelete !== null) {
+            const updatedLessons = lessons.filter(
+                (_, index) => index !== lessonToDelete,
+            );
+            setLessons(updatedLessons);
             deleteLesson(section.id, lessonToDelete);
         }
         closeDeleteModal();
@@ -90,12 +123,100 @@ const CourseLesson = ({
         closeEditTitleModal();
     };
 
+    const handleDragEnd = (event) => {
+        const {active, over} = event;
+
+        // Ensure both active and over are valid
+        if (active.id !== over.id && over) {
+            // Find the indices of the active and over lessons
+            const oldIndex = lessons.findIndex(
+                (lesson) => lesson.title === active.id,
+            );
+            const newIndex = lessons.findIndex(
+                (lesson) => lesson.title === over.id,
+            );
+
+            // Log the current order and the changed indices
+            console.log('Before reorder:');
+            console.log(lessons);
+            console.log(
+                'Dragged lesson (active):',
+                active.id,
+                'Index:',
+                oldIndex,
+            );
+            console.log('Target lesson (over):', over.id, 'Index:', newIndex);
+
+            if (oldIndex !== -1 && newIndex !== -1) {
+                // Reorder the lessons array by moving the active lesson to the new position
+                const updatedLessons = arrayMove(lessons, oldIndex, newIndex);
+
+                // Log the updated lessons
+                console.log('After reorder:');
+                console.log(updatedLessons);
+
+                // Update the state with the new order
+                setLessons(updatedLessons);
+            }
+        }
+    };
+
+    const SortableLesson = ({lesson, index}) => {
+        const {attributes, listeners, setNodeRef, transform, transition} =
+            useSortable({
+                id: lesson.title,
+            });
+        const style = {
+            transform: CSS.Transform.toString(transform),
+            transition,
+        };
+
+        return (
+            <div
+                ref={setNodeRef}
+                style={style}
+                {...attributes}
+                {...listeners}
+                className='cursor-pointer p-2 bg-gray-50 hover:bg-gray-100 rounded-md'
+            >
+                <div className='relative flex items-start'>
+                    <div className='border-secondary text-secondary absolute text-2xl w-10 h-10 rounded-full border-4 bg-white flex items-center justify-center mr-4 ml-8 mt-1'>
+                        {index + 1}
+                    </div>
+                    <div className='flex flex-col text-md pl-16 ml-8'>
+                        <span className='font-bold'>{lesson.title}</span>
+                        <span className='text-gray-500'>
+                            {lesson.duration} mins
+                        </span>
+                    </div>
+                    {userType === 'instructor' && (
+                        <div className='ml-auto flex space-x-2 mr-2.5 mt-3'>
+                            <button
+                                onClick={() => openModal(lesson)}
+                                className='bg-edit text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-edit-dark transition-all duration-300'
+                            >
+                                <FaEdit className='text-sm' />
+                            </button>
+                            <button
+                                onClick={() => openDeleteModal(index)}
+                                className='bg-delete text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-delete-dark transition-all duration-300'
+                            >
+                                <MdDeleteOutline className='text-lg' />
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className='mb-1'>
-            {/* Section Header */}
             <div
                 onClick={(e) => userType === 'student' && toggleSection(e)}
-                className='cursor-pointer py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded-md flex items-start justify-between'
+                className={`cursor-pointer py-2 px-3 rounded-md flex items-start justify-between ${
+                    isOpen ? 'bg-primary text-white' : 'bg-white'
+                } hover:bg-gray-200`}
             >
                 <div className='relative flex items-start'>
                     <div
@@ -115,7 +236,6 @@ const CourseLesson = ({
                     </div>
                 </div>
 
-                {/* Instructor Buttons */}
                 {userType === 'instructor' && (
                     <div className='ml-auto flex space-x-2 mr-2.5 mt-2'>
                         <button
@@ -156,7 +276,6 @@ const CourseLesson = ({
                     </div>
                 )}
 
-                {/* Student Arrow Button */}
                 {userType === 'student' && (
                     <div className='ml-auto mt-2'>
                         {isOpen ? (
@@ -168,57 +287,32 @@ const CourseLesson = ({
                 )}
             </div>
 
-            {/* Section Lessons */}
             <div
                 id={`section-${section.id}`}
                 className={`space-y-2 overflow-hidden transition-all duration-300 ${
                     isOpen ? 'max-h-[1000px]' : 'max-h-0'
                 }`}
             >
-                {section.lessons.map((lesson, lessonIndex) => (
-                    <div
-                        key={lessonIndex}
-                        className='cursor-pointer p-2 bg-gray-50 hover:bg-gray-100 rounded-md'
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                >
+                    <SortableContext
+                        items={lessons.map((lesson) => lesson.title)}
+                        strategy={verticalListSortingStrategy}
                     >
-                        <div className='relative flex items-start'>
-                            <div className='border-secondary text-secondary absolute text-2xl w-10 h-10 rounded-full border-4 bg-white flex items-center justify-center mr-4 ml-8 mt-1'>
-                                {lessonIndex + 1}
-                            </div>
-                            <div className='flex flex-col text-md pl-16 ml-8'>
-                                <span className='font-bold'>
-                                    {lesson.title}
-                                </span>
-                                <span className='text-gray-500'>
-                                    {lesson.duration} mins
-                                </span>
-                            </div>
-                            {userType === 'instructor' && (
-                                <div className='ml-auto flex space-x-2 mr-2.5 mt-3'>
-                                    {/* Edit Button */}
-                                    <button
-                                        onClick={() => openModal(lesson)}
-                                        className='bg-edit text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-edit-dark transition-all duration-300'
-                                    >
-                                        <FaEdit className='text-sm' />
-                                    </button>
-
-                                    {/* Delete Button */}
-                                    <button
-                                        onClick={() =>
-                                            openDeleteModal(lesson.title)
-                                        }
-                                        className='bg-delete text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-delete-dark transition-all duration-300'
-                                    >
-                                        <MdDeleteOutline className='text-lg' />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                ))}
+                        {lessons.map((lesson, lessonIndex) => (
+                            <SortableLesson
+                                key={lesson.title}
+                                lesson={lesson}
+                                index={lessonIndex}
+                            />
+                        ))}
+                    </SortableContext>
+                </DndContext>
             </div>
 
-            {/* Modal Component */}
             {isModalOpen && (
                 <ModalComponent
                     modalType={modalType}
@@ -228,7 +322,6 @@ const CourseLesson = ({
                 />
             )}
 
-            {/* Confirm Delete Modal */}
             <ConfirmDeleteModal
                 isOpen={isDeleteModalOpen}
                 onClose={closeDeleteModal}

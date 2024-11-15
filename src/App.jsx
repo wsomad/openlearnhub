@@ -13,6 +13,9 @@ import SearchComponent from './components/SearchComponent';
 import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
 import CourseContentList from './components/CourseContentList';
 import ProfileComponent from './components/ProfileComponent';
+import ProfilePage from './pages/profile/ProfilePage';
+
+// Jangan lupa install npm install @dnd-kit/core @dnd-kit/sortable kat terminal for drag and drop
 
 function App() {
     // `useDispatch()` is used to send actions to Redux store.
@@ -42,7 +45,7 @@ function App() {
     }, [dispatch]);
 
     // Differentiate user type to render components with appropriate design and functionality.
-    const userType = 'instructor'; //'student' or 'instructor'
+    const userType = 'instructor'; //'student', 'instructor'
 
     return (
         <>
@@ -71,8 +74,13 @@ function App() {
                 />
                 <Route
                     path='/profile'
-                    element={<ProfileComponent userType={userType} />}
-                />
+                    element={<ProfilePage userType={userType} />}
+                >
+                    <Route
+                        path='edit/:viewMode'
+                        element={<ProfileComponent />}
+                    />
+                </Route>
             </Routes>
         </>
     );
