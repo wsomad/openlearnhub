@@ -65,7 +65,7 @@ export const useAuth = () => {
                 username: username,
                 role: role,
             };
-            await addUser(userProfile);
+            await addUser(userProfile.JSON());
             console.log(
                 'Successfully sign up as',
                 user.uid,
