@@ -83,7 +83,7 @@ function App() {
                     path='/course-enrolled'
                     element={<ListEnrolledCoursePage></ListEnrolledCoursePage>}
                 />
-                {/* Content path */}
+                {/* path */}
                 <Route
                     path='/content'
                     element={<CourseContentList userType={userType} />}
