@@ -4,10 +4,11 @@ import SearchComponent from '../../../components/SearchComponent';
 import CardCourseComponent from '../../../components/card/CardCourseComponent';
 import thumbnail from '../../../assets/images/thumbnail.png';
 import {useCourses} from '../../../hooks/useCourses';
+import {useUser} from '../../../hooks/useUser';
 
 function HomePage() {
     const {courses, fetchAllCourses} = useCourses();
-    const [loading, setLoading] = useState(true); // Track loading state
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadCourses = async () => {
@@ -68,9 +69,8 @@ function HomePage() {
                         </div>
                     ) : (
                         // mx-auto max-w-screen-2xl grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6 mt-6 mb-6
-                        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 mt-6'>
-                            {renderedCourses}{' '}
-                            {/* Assuming this is already a list of course components */}
+                        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6 my-6'>
+                            {renderedCourses}
                         </div>
                     )}
                 </div>

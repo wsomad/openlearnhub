@@ -7,7 +7,7 @@ import AuthPage from './pages/auth/AuthPage';
 import HomePage from './pages/student/home/HomePage';
 import HeaderComponent from './components/HeaderComponent';
 import {onAuthStateChanged} from 'firebase/auth';
-import {auth} from './config/firebaseConfiguration';
+import {auth} from './config/FirebaseConfiguration';
 import TestComponent from './components/TestComponent';
 import SearchComponent from './components/SearchComponent';
 import CourseContentList from './components/enrollment/course_list/CourseContentList';
@@ -79,14 +79,14 @@ function App() {
                     // <SelectedCoursePage></SelectedCoursePage>
                     // <ListEnrolledCoursePage></ListEnrolledCoursePage>
                     // <HomePage></HomePage>
-                    element={<EnrolledCoursePage></EnrolledCoursePage>}
+                    element={<TestComponent></TestComponent>}
                 />
                 {/* Course Enrolled path */}
                 <Route
                     path='/course-enrolled'
                     element={<ListEnrolledCoursePage></ListEnrolledCoursePage>}
                 />
-                {/* Content path */}
+                {/* path */}
                 <Route
                     path='/content'
                     element={<CourseContentList userType={userType} />}

@@ -1,7 +1,7 @@
 import {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {setUser, clearUser} from '../store/slices/authSlice';
-import {auth} from '../config/firebaseConfiguration';
+import {auth} from '../config/FirebaseConfiguration';
 import {addUser, getUserById} from '../services/firestore/UserService';
 import {
     onAuthStateChanged,
@@ -20,16 +20,21 @@ export const useAuth = () => {
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
     // SignIn function
-    const signIn = async (email, password) => {
+    const signIn = async (email, password, role) => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             if (user) {
                 const userProfile = await getUserById(user.uid); // Fetch full user profile
-                dispatch(setUser(userProfile));
+                dispatch(setUser({...userProfile, role}));
             } else {
                 dispatch(clearUser());
             }
-            console.log('Successfully sign in as ', user.uid);
+            console.log(
+                'Successfully sign in as',
+                user.uid,
+                'and user role is',
+                role,
+            );
             navigate('/home');
             // No need to fetch user profile here, since onAuthStateChanged will handle it
         } catch (error) {
@@ -38,25 +43,38 @@ export const useAuth = () => {
     };
 
     // SignUp function
-    const signUp = async (username, firstName, lastName, email, password) => {
+    const signUp = async (
+        username,
+        firstName,
+        lastName,
+        email,
+        password,
+        role,
+    ) => {
         try {
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
                 email,
                 password,
             );
-            const userProfile = new UserModel(
-                userCredential.user.uid,
-                email,
-                firstName,
-                lastName,
-                username,
-            );
-            await addUser(userProfile.toJSON());
+            const userProfile = {
+                uid: userCredential.user.uid, // Access the 'uid' from 'user' in 'userCredential'
+                email: email,
+                firstName: firstName,
+                lastName: lastName,
+                username: username,
+                role: role,
+            };
+
+            await addUser(userProfile); // Send object directly to addUser
             console.log(
-                'Successfully sign up and create user data into firestore.',
-            ); // Call toJSON to ensure it's in JSON format
-            dispatch(setUser(userProfile.toJSON())); // Dispatch JSON format as well
+                'Successfully signed up as',
+                userCredential.user.uid, // Use userCredential.user.uid here
+                'and user role is',
+                role,
+            );
+
+            dispatch(setUser(userProfile)); // Pass userProfile directly to setUser
             navigate('/auth');
         } catch (error) {
             console.error('Sign Up Error:', error);

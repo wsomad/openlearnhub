@@ -1,6 +1,7 @@
 import {useDispatch, useSelector} from 'react-redux';
 import {
-    addUser,
+    addUserAsInstructor,
+    addUserAsStudent,
     getUserById,
     updateUserById,
     deleteUserById,
@@ -9,15 +10,20 @@ import {setUser, modifyUser, clearUser} from '../store/slices/userSlice';
 
 export const useUser = () => {
     const dispatch = useDispatch();
-    const currentUser = useSelector((state) => state.users?.currentUser);
-    //const allUsers = useSelector((state) => state.users?.allUsers);
+    const currentUser = useSelector((state) => state.users.currentUser);
+    const userRole = useSelector((state) => state.users.userRole);
 
-    const createUser = async (userData) => {
+    const createUser = async (userRole, userData) => {
         try {
-            const newUser = await addUser(userData);
-            dispatch(setUser(newUser));
+            if (userRole === 'instructor') {
+                const instructorUser = await addUserAsInstructor(userData);
+                dispatch(setUser({...instructorUser, userRole}));
+            } else if (userRole === 'student') {
+                const studentUser = await addUserAsStudent(userData);
+                dispatch(setUser({...studentUser, userRole}));
+            }
         } catch (error) {
-            console.error('Failed to create new user: ', error);
+            console.error(`Failed to create ${userRole} as user: `, error);
         }
     };
 
@@ -59,7 +65,7 @@ export const useUser = () => {
 
     return {
         currentUser,
-        //allUsers,
+        userRole,
         createUser,
         fetchUserById,
         updateUser,
