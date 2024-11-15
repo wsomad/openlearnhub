@@ -65,14 +65,16 @@ export const useAuth = () => {
                 username: username,
                 role: role,
             };
-            await addUser(userProfile.JSON());
+
+            await addUser(userProfile); // Send object directly to addUser
             console.log(
-                'Successfully sign up as',
-                user.uid,
+                'Successfully signed up as',
+                userCredential.user.uid, // Use userCredential.user.uid here
                 'and user role is',
                 role,
             );
-            dispatch(setUser(...userProfile.JSON())); // Dispatch JSON format as well
+
+            dispatch(setUser(userProfile)); // Pass userProfile directly to setUser
             navigate('/auth');
         } catch (error) {
             console.error('Sign Up Error:', error);
