@@ -16,7 +16,7 @@ import {
     deleteDoc,
     collection,
 } from 'firebase/firestore';
-import {db} from '../../config/firebaseConfiguration';
+import {db} from '../../config/FirebaseConfiguration';
 
 export const addCourse = async (courseData) => {
     try {

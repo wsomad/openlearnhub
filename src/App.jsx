@@ -7,7 +7,7 @@ import AuthPage from './pages/auth/AuthPage';
 import HomePage from './pages/student/home/HomePage';
 import HeaderComponent from './components/HeaderComponent';
 import {onAuthStateChanged} from 'firebase/auth';
-import {auth} from './config/firebaseConfiguration';
+import {auth} from './config/FirebaseConfiguration';
 import TestComponent from './components/TestComponent';
 import SearchComponent from './components/SearchComponent';
 import CourseContentList from './components/enrollment/course_list/CourseContentList';

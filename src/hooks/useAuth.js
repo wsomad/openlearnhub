@@ -1,7 +1,7 @@
 import {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {setUser, clearUser} from '../store/slices/authSlice';
-import {auth} from '../config/firebaseConfiguration';
+import {auth} from '../config/FirebaseConfiguration';
 import {addUser, getUserById} from '../services/firestore/UserService';
 import {
     onAuthStateChanged,
