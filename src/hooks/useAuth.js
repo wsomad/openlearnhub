@@ -30,9 +30,9 @@ export const useAuth = () => {
                 dispatch(clearUser());
             }
             console.log(
-                'Successfully sign in as ',
+                'Successfully sign in as',
                 user.uid,
-                'and role is ',
+                'and user role is',
                 role,
             );
             navigate('/home');
@@ -63,12 +63,13 @@ export const useAuth = () => {
                 firstName,
                 lastName,
                 username,
+                role,
             );
             await addUser(userProfile.toJSON());
             console.log(
-                'Successfully sign up as ',
+                'Successfully sign up as',
                 user.uid,
-                'and role is ',
+                'and user role is',
                 role,
             );
             dispatch(setUser({...userProfile.toJSON(), role})); // Dispatch JSON format as well
