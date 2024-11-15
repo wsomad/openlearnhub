@@ -17,9 +17,9 @@ const AuthComponent = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isSignIn) {
-            signIn(email, password, 'student');
+            signIn(email, password, userRole);
         } else {
-            signUp(username, firstName, lastName, email, password, 'student');
+            signUp(username, firstName, lastName, email, password, userRole);
         }
     };
 
