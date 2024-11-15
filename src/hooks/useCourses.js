@@ -17,8 +17,15 @@ export const useCourses = () => {
     const dispatch = useDispatch();
     const selectedCourse = useSelector((state) => state.courses.selectedCourse);
     const courses = useSelector((state) => state.courses.allCourses);
+    const userRole = useSelector((state) => state.users.userRole);
+
+    const isInstructor = userRole === 'instructor';
 
     const createCourse = async (course) => {
+        if (!isInstructor) {
+            console.log('Only instructor can create course');
+            return;
+        }
         try {
             const addedCourse = await addCourse(course);
             dispatch(setCourse(addedCourse));
@@ -48,6 +55,10 @@ export const useCourses = () => {
     };
 
     const updateCourse = async (course_id, updatedCourse) => {
+        if (!isInstructor) {
+            console.log('Only instructor can update course');
+            return;
+        }
         try {
             await updateCourseById(course_id, updatedCourse);
             dispatch(
@@ -62,6 +73,10 @@ export const useCourses = () => {
     };
 
     const deleteCourse = async (course_id) => {
+        if (!isInstructor) {
+            console.log('Only instructor can delete course');
+            return;
+        }
         try {
             await deleteCourseById(course_id);
             dispatch(clearCourse(course_id));
@@ -73,6 +88,7 @@ export const useCourses = () => {
     return {
         selectedCourse,
         courses,
+        userRole,
         createCourse,
         fetchCourseById,
         fetchAllCourses,

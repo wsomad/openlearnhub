@@ -16,7 +16,7 @@ const AuthComponent = () => {
         e.preventDefault();
         if (isSignIn) {
             signIn(email, password);
-            console.log('Email');
+            console.log('Email', email);
         } else {
             signUp(username, firstName, lastName, email, password);
             console.log('Email', email);

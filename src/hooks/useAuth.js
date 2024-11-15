@@ -23,7 +23,13 @@ export const useAuth = () => {
     const signIn = async (email, password) => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            console.log('Successfully sign in.');
+            if (user) {
+                const userProfile = await getUserById(user.uid); // Fetch full user profile
+                dispatch(setUser(userProfile));
+            } else {
+                dispatch(clearUser());
+            }
+            console.log('Successfully sign in as ', user.uid);
             navigate('/home');
             // No need to fetch user profile here, since onAuthStateChanged will handle it
         } catch (error) {
@@ -58,7 +64,7 @@ export const useAuth = () => {
     };
 
     // SignOut function
-    const signOut = async () => {
+    const signUserOut = async () => {
         try {
             await signOut(auth);
             dispatch(clearUser()); // Clear user data on sign out

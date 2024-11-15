@@ -10,9 +10,11 @@ import {onAuthStateChanged} from 'firebase/auth';
 import {auth} from './config/firebaseConfiguration';
 import TestComponent from './components/TestComponent';
 import SearchComponent from './components/SearchComponent';
-import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
-import CourseContentList from './components/CourseContentList';
+import CourseContentList from './components/enrollment/course_list/CourseContentList';
 import ProfileComponent from './components/ProfileComponent';
+import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
+import EnrolledCoursePage from './pages/student/course/EnrolledCoursePage';
+import ListEnrolledCoursePage from './pages/student/course/ListEnrolledCoursePage';
 import ProfilePage from './pages/profile/ProfilePage';
 
 // Jangan lupa install npm install @dnd-kit/core @dnd-kit/sortable kat terminal for drag and drop
@@ -40,8 +42,8 @@ function App() {
                 dispatch(clearUser());
             }
             // Stop listen to any changes in authentication state.
-            return () => subscribe();
         });
+        return () => subscribe();
     }, [dispatch]);
 
     // Differentiate user type to render components with appropriate design and functionality.
@@ -50,6 +52,7 @@ function App() {
     return (
         <>
             <Routes>
+                {/* Default path */}
                 <Route
                     path='/'
                     element={
@@ -58,7 +61,9 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+                {/* Authentication path */}
                 <Route path='/auth' element={<AuthPage />} />
+                {/* Home path */}
                 <Route
                     path='/home'
                     element={
@@ -67,11 +72,26 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
-                <Route path='/test' element={<HomePage />} />
+                {/* For testing only path */}
+                <Route
+                    path='/test'
+                    // <EnrolledCoursePage></EnrolledCoursePage>
+                    // <SelectedCoursePage></SelectedCoursePage>
+                    // <ListEnrolledCoursePage></ListEnrolledCoursePage>
+                    // <HomePage></HomePage>
+                    element={<EnrolledCoursePage></EnrolledCoursePage>}
+                />
+                {/* Course Enrolled path */}
+                <Route
+                    path='/course-enrolled'
+                    element={<ListEnrolledCoursePage></ListEnrolledCoursePage>}
+                />
+                {/* Content path */}
                 <Route
                     path='/content'
                     element={<CourseContentList userType={userType} />}
                 />
+                {/* Profile path */}
                 <Route
                     path='/profile'
                     element={<ProfilePage userType={userType} />}

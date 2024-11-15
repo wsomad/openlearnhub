@@ -1,11 +1,39 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
+import {useAuth} from '../hooks/useAuth';
+import {useUser} from '../hooks/useUser';
 
 const HeaderComponent = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isUserOpen, setIsUserOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(true);
     const [userType, setUserType] = useState('student');
+    const {user} = useAuth();
+    const {currentUser, fetchUserById} = useUser();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        let isCancelled = false;
+
+        const fetchUser = async () => {
+            if (user && user.uid && !isCancelled) {
+                try {
+                    await fetchUserById(user.uid);
+                } catch (error) {
+                    console.error('Failed to fetch user:', error);
+                }
+            }
+        };
+
+        // Only fetch if we actually have a valid `user` and `user.uid`.
+        if (user && user.uid) {
+            fetchUser();
+        }
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [user?.uid, fetchUserById]);
 
     const categories = [
         {name: 'Development', path: '/development'},
@@ -34,8 +62,6 @@ const HeaderComponent = () => {
         setIsUserOpen((prev) => !prev);
     };
 
-    const navigate = useNavigate();
-
     const handleSignInAndSignUp = () => {
         navigate('/auth');
     };
@@ -57,11 +83,11 @@ const HeaderComponent = () => {
 
     return (
         <>
-            <header className='flex items-center justify-between p-4 bg-blue-600 px-4'>
+            <header className='flex items-center justify-between p-4 px-10'>
                 <div className='flex items-center space-x-4'>
-                    <div className='text-2xl ml-4 font-bold'>
+                    <div className='text-2xl font-bold'>
                         <span className='font-abhaya text-2xl text-primary'>
-                            Learn
+                            OpenLearn
                         </span>
                         <span className='font-abhaya text-2xl text-tertiary'>
                             Hub.
@@ -71,7 +97,7 @@ const HeaderComponent = () => {
                     <div className='relative'>
                         <button
                             onClick={toggleDropdown}
-                            className='font-abhaya font-bold mt-1 ml-14 text-lg bg-gray-800 hover:bg-gray-700 rounded-md'
+                            className='font-abhaya font-semibold mt-1 ml-5 text-lg bg-gray-800 hover:bg-gray-700 rounded-md'
                         >
                             Categories
                         </button>
@@ -106,7 +132,7 @@ const HeaderComponent = () => {
                     </div>
                 </div>
 
-                <div className='flex space-x-4 mr-4'>
+                <div className='flex space-x-4'>
                     {!isLoggedIn ? (
                         <>
                             <button
@@ -123,13 +149,19 @@ const HeaderComponent = () => {
                             </button>
                         </>
                     ) : (
-                        <div className='relative mr-4'>
-                            <button
-                                onClick={toggleUser}
-                                className='font-abhaya font-bold mt-1 ml-12 text-lg bg-gray-800 hover:bg-gray-700 rounded-md'
-                            >
-                                Ahmad Suffian
-                            </button>
+                        <div className='relative'>
+                            <div className='flex justify-end'>
+                                {' '}
+                                {/* Adjust to align the button to the right */}
+                                <button
+                                    onClick={toggleUser}
+                                    className='font-abhaya font-semibold text-lg bg-gray-800 hover:bg-gray-700 rounded-md text-right' // Align text to the right
+                                >
+                                    {currentUser
+                                        ? currentUser.username
+                                        : 'User'}
+                                </button>
+                            </div>
 
                             <div
                                 className={`transition-all duration-300 ease-in-out absolute bg-white text-center text-black mt-1 rounded-sm shadow-lg z-20 w-48 ${
@@ -170,7 +202,7 @@ const HeaderComponent = () => {
                 </div>
             </header>
 
-            <hr className='border-t gray mt-1 opacity-15' />
+            <hr className='border-t gray opacity-15' />
         </>
     );
 };

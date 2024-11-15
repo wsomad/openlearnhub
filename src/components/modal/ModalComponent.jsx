@@ -1,20 +1,20 @@
 import {useState, useEffect} from 'react';
 import {IoCloseOutline} from 'react-icons/io5';
 
-const ModalComponent = ({modalType, lessonData, onClose, onSubmit}) => {
+const ModalComponent = ({isOpen, onClose, onSubmit, initialData}) => {
     const [titleLesson, setTitleLesson] = useState('');
     const [duration, setDuration] = useState('');
     const [linkContent, setLinkContent] = useState('');
     const [uploadContent, setUploadContent] = useState(null);
 
     useEffect(() => {
-        if (modalType === 'edit' && lessonData) {
-            setTitleLesson(lessonData.title);
-            setDuration(lessonData.duration || '');
-            setLinkContent(lessonData.link || '');
-            setUploadContent(lessonData.uploadContent || null);
+        if (initialData) {
+            setTitleLesson(initialData.title || '');
+            setDuration(initialData.duration?.toString() || '');
+            setLinkContent(initialData.link || '');
+            setUploadContent(initialData.uploadContent || null);
         }
-    }, [modalType, lessonData]);
+    }, [initialData]);
 
     const handleClose = () => {
         if (onClose) onClose();
@@ -27,7 +27,6 @@ const ModalComponent = ({modalType, lessonData, onClose, onSubmit}) => {
             return;
         }
 
-        // Create the new lesson data object
         const newLessonData = {
             title: titleLesson,
             duration: parseInt(duration, 10),
@@ -35,13 +34,11 @@ const ModalComponent = ({modalType, lessonData, onClose, onSubmit}) => {
             uploadContent,
         };
 
-        // Pass the new data to the parent component via the onSubmit prop
-        if (onSubmit) {
-            onSubmit(newLessonData);
-        }
-
+        onSubmit(newLessonData);
         handleClose();
     };
+
+    if (!isOpen) return null;
 
     return (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
@@ -49,7 +46,7 @@ const ModalComponent = ({modalType, lessonData, onClose, onSubmit}) => {
                 <form className='w-full' onSubmit={handleSubmit}>
                     <div className='flex items-center justify-between'>
                         <h1 className='font-abhaya text-3xl font-bold'>
-                            {modalType === 'edit'
+                            {initialData
                                 ? 'Edit Lesson Content'
                                 : 'Add Lesson Content'}
                         </h1>
@@ -83,7 +80,7 @@ const ModalComponent = ({modalType, lessonData, onClose, onSubmit}) => {
                             </label>
                             <input
                                 className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
-                                type='number'
+                                type='text'
                                 placeholder='Duration in minutes'
                                 value={duration}
                                 onChange={(e) => setDuration(e.target.value)}
@@ -124,7 +121,7 @@ const ModalComponent = ({modalType, lessonData, onClose, onSubmit}) => {
                             className='w-full py-3 rounded-3xl bg-primary text-white text-lg active:scale-[.98] font-abhaya'
                             type='submit'
                         >
-                            {modalType === 'edit'
+                            {initialData
                                 ? 'Save Lesson Content'
                                 : 'Add New Lesson Content'}
                         </button>
