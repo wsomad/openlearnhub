@@ -1,6 +1,7 @@
-import React, {useState} from 'react';
-import SearchBar from '../components/elements/SearchBar'; // Assuming you have a SearchBar component
-import {getSpecificCourse} from '../services/firestore/CourseService'; // Correct import
+import React, { useState } from 'react';
+
+import { getSpecificCourse } from '../services/firestore/CourseService'; // Correct import
+import SearchBar from './elements/SearchBar'; // Assuming you have a SearchBar component
 
 function SearchComponent() {
     const [queryText, setQueryText] = useState(''); // State for input
