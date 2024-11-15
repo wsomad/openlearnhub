@@ -11,6 +11,7 @@ const HeaderComponent = () => {
     const {user} = useAuth();
     const {currentUser, fetchUserById} = useUser();
     const navigate = useNavigate();
+    const {userRole} = useUser();
 
     useEffect(() => {
         let isCancelled = false;
@@ -20,16 +21,13 @@ const HeaderComponent = () => {
                 try {
                     await fetchUserById(user.uid);
                 } catch (error) {
-                    console.error('Failed to fetch user:', error);
+                    console.error('Failed to fetch user: ', error);
                 }
             }
         };
-
-        // Only fetch if we actually have a valid `user` and `user.uid`.
         if (user && user.uid) {
             fetchUser();
         }
-
         return () => {
             isCancelled = true;
         };
@@ -51,7 +49,7 @@ const HeaderComponent = () => {
     const instructorMenu = [
         {name: 'Profile', path: '/profile'},
         {name: 'Course Dashboard', path: '/course-dashboard'},
-        {name: 'Go to Student Site', path: '/student'},
+        {name: 'Go to Student Site', path: '/home'},
     ];
 
     const toggleDropdown = () => {

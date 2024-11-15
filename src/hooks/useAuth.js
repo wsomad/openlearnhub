@@ -20,16 +20,21 @@ export const useAuth = () => {
     const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
     // SignIn function
-    const signIn = async (email, password) => {
+    const signIn = async (email, password, role) => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             if (user) {
                 const userProfile = await getUserById(user.uid); // Fetch full user profile
-                dispatch(setUser(userProfile));
+                dispatch(setUser({...userProfile, role}));
             } else {
                 dispatch(clearUser());
             }
-            console.log('Successfully sign in as ', user.uid);
+            console.log(
+                'Successfully sign in as ',
+                user.uid,
+                'and role is ',
+                role,
+            );
             navigate('/home');
             // No need to fetch user profile here, since onAuthStateChanged will handle it
         } catch (error) {
@@ -38,7 +43,14 @@ export const useAuth = () => {
     };
 
     // SignUp function
-    const signUp = async (username, firstName, lastName, email, password) => {
+    const signUp = async (
+        username,
+        firstName,
+        lastName,
+        email,
+        password,
+        role,
+    ) => {
         try {
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
@@ -54,9 +66,12 @@ export const useAuth = () => {
             );
             await addUser(userProfile.toJSON());
             console.log(
-                'Successfully sign up and create user data into firestore.',
-            ); // Call toJSON to ensure it's in JSON format
-            dispatch(setUser(userProfile.toJSON())); // Dispatch JSON format as well
+                'Successfully sign up as ',
+                user.uid,
+                'and role is ',
+                role,
+            );
+            dispatch(setUser({...userProfile.toJSON(), role})); // Dispatch JSON format as well
             navigate('/auth');
         } catch (error) {
             console.error('Sign Up Error:', error);

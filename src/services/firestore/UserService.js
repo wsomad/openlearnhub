@@ -5,23 +5,56 @@
 // updateUserById
 // deleteUserById
 
-import {doc, setDoc, getDoc, updateDoc, deleteDoc} from 'firebase/firestore';
+import {
+    collection,
+    doc,
+    setDoc,
+    getDoc,
+    updateDoc,
+    deleteDoc,
+} from 'firebase/firestore';
 import {db} from '../../config/firebaseConfiguration';
+
+const userCollection = collection(db, 'users');
 
 export const addUser = async (userData) => {
     try {
-        const userDocRef = doc(db, 'users', userData.uid);
+        const userDocRef = doc(userCollection, userData.uid);
         await setDoc(userDocRef, userData);
     } catch (error) {
-        console.error('Error creating user document:', error.message);
+        console.error('Failed to create user: ', error);
+    }
+};
+
+export const addUserAsInstructor = async (userData) => {
+    try {
+        const userDocRef = doc(userCollection, userData.uid);
+        const instructorCollection = collection(userDocRef, 'instructor');
+        await setDoc(instructorCollection, userData);
+    } catch (error) {
+        console.error('Failed to create instructor: ', error);
+    }
+};
+
+export const addUserAsStudent = async (userData) => {
+    try {
+        const userDocRef = doc(userCollection, userData.uid);
+        const studentCollection = collection(userDocRef, 'student');
+        await setDoc(studentCollection, userData);
+    } catch (error) {
+        console.error('Failed to create student: ', error);
     }
 };
 
 export const getUserById = async (uid) => {
-    const userDocRef = doc(db, 'users', uid);
-    const userDoc = await getDoc(userDocRef);
-    console.log('Get user data from firestore: ', userDoc.data());
-    return userDoc.data();
+    try {
+        const userDocRef = doc(userCollection, uid);
+        const userDoc = await getDoc(userDocRef);
+        console.log('Get user data from firestore: ', userDoc.data());
+        return userDoc.data();
+    } catch (error) {
+        console.error('Failed to get user: ', error);
+    }
 };
 
 export const updateUserById = async (uid, updatedUser) => {

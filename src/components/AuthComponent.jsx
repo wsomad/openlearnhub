@@ -2,6 +2,7 @@ import {useAuth} from '../hooks/useAuth';
 import {useState} from 'react';
 import authImage from '../assets/images/authimage.png';
 import {FaGoogle} from 'react-icons/fa';
+import {useUser} from '../hooks/useUser';
 
 const AuthComponent = () => {
     const {signIn, signUp, isAuthenticated} = useAuth();
@@ -11,15 +12,14 @@ const AuthComponent = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [isSignIn, setSignIn] = useState(true);
+    const {userRole} = useUser();
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isSignIn) {
-            signIn(email, password);
-            console.log('Email', email);
+            signIn(email, password, 'student');
         } else {
-            signUp(username, firstName, lastName, email, password);
-            console.log('Email', email);
+            signUp(username, firstName, lastName, email, password, 'student');
         }
     };
 

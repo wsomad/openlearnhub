@@ -76,7 +76,7 @@ function App() {
                     // <SelectedCoursePage></SelectedCoursePage>
                     // <ListEnrolledCoursePage></ListEnrolledCoursePage>
                     // <HomePage></HomePage>
-                    element={<EnrolledCoursePage></EnrolledCoursePage>}
+                    element={<TestComponent></TestComponent>}
                 />
                 {/* Course Enrolled path */}
                 <Route

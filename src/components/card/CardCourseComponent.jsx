@@ -45,9 +45,10 @@ function CardCourseComponent({
                 src={thumbnail}
                 alt={title}
                 className={`w-full ${imageSizeClass} object-cover ${
-                    size === 'big' ? 'rounded-tl-md' : 'rounded-md'
+                    size === 'big' ? 'rounded-tl-md' : 'rounded-t-md'
                 }`}
             />
+
             <CardCourseDetails
                 title={title}
                 instructor={instructor}
@@ -58,7 +59,7 @@ function CardCourseComponent({
                 numLectures={numLectures}
                 buttonText={buttonText}
                 onButtonClick={onButtonClick}
-            ></CardCourseDetails>
+            />
         </div>
     );
 }

@@ -17,12 +17,13 @@ function CardCourseDetails({
     return (
         <div
             className={`p-3 border border-gray ${
-                size === 'big' ? 'rounded-bl-md' : 'rounded-md'
+                size === 'big' ? 'rounded-bl-md' : 'rounded-b-md'
             } w-full flex flex-col justify-between flex-grow`}
         >
-            <h3 className='font-abhaya font-bold text-lg text-black'>
+            <h3 className='font-abhaya font-bold text-lg text-black truncate w-full'>
                 {title}
             </h3>
+
             <p className='font-abhaya font-semibold text-md text-secondary'>
                 {instructor}
             </p>
