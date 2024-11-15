@@ -72,7 +72,7 @@ export const useAuth = () => {
                 'and user role is',
                 role,
             );
-            dispatch(setUser({...userProfile, role})); // Dispatch JSON format as well
+            dispatch(setUser({...userProfile.JSON(), role})); // Dispatch JSON format as well
             navigate('/auth');
         } catch (error) {
             console.error('Sign Up Error:', error);
