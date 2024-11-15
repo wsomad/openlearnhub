@@ -57,22 +57,22 @@ export const useAuth = () => {
                 email,
                 password,
             );
-            const userProfile = new UserModel(
-                userCredential.user.uid,
-                email,
-                firstName,
-                lastName,
-                username,
-                role,
-            );
-            await addUser(userProfile.toJSON());
+            const userProfile = {
+                uid: userCredential.user.uid, // Access the 'uid' from 'user' in 'userCredential'
+                email: email,
+                firstName: firstName,
+                lastName: lastName,
+                username: username,
+                role: role,
+            };
+            await addUser(userProfile);
             console.log(
                 'Successfully sign up as',
                 user.uid,
                 'and user role is',
                 role,
             );
-            dispatch(setUser({...userProfile.toJSON(), role})); // Dispatch JSON format as well
+            dispatch(setUser({...userProfile, role})); // Dispatch JSON format as well
             navigate('/auth');
         } catch (error) {
             console.error('Sign Up Error:', error);
