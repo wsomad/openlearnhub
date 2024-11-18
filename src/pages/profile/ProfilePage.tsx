@@ -1,36 +1,94 @@
-import React, {useState} from 'react';
-import ProfileView from '../../components/ProfileView';
-import ProfileComponent from '../../components/ProfileComponent';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import SearchBar from '../../components/elements/SearchBar';
 import HeaderComponent from '../../components/HeaderComponent';
+import ProfileComponent from '../../components/profile/ProfileComponent';
+import ProfileView from '../../components/profile/ProfileView';
+import { Course } from '../../types/Course';
+import { UserProfile } from '../../types/Profile';
+import { ProfileStatistics } from '../../types/ProfileStatistics';
+import { ViewMode } from '../../types/Shared';
 
-const ProfilePage = ({userType}) => {
-    const isInstructor = userType.includes('instructor');
+interface ProfilePageProps {
+    userId: string;
+}
 
+const ProfilePage: React.FC<ProfilePageProps> = ({userId}) => {
     // Set initial view mode based on the user type (if only student, default to student)
-    const [viewMode, setViewMode] = useState(
-        isInstructor ? 'instructor' : 'student',
-    );
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<ViewMode>('student');
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
     // Define initial user profile data
-    const [userProfile, setUserProfile] = useState({
-        username: 'johndoe',
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        studentTypes: 'Undergraduate',
-        coursesEnrolled: 3,
-        profileSummary: 'Experienced web developer and instructor',
-        specialization: 'Web Development',
-        experience: '5 years in full-stack development',
-        github: 'https://github.com/johndoe',
-        linkedin: 'https://linkedin.com/in/johndoe',
-        coursesCreated: 12,
-    });
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [statistics, setStatistics] = useState<ProfileStatistics | null>(
+        null,
+    );
+    const [userCourses, setUserCourses] = useState<{
+        enrolled: Course[];
+        created: Course[];
+    }>({enrolled: [], created: []});
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch('/dummyData.json');
+                const data = await response.json();
+
+                // Find user profile
+                const profile = data.users.find(
+                    (u: UserProfile) => u.uid === userId,
+                );
+                if (!profile) {
+                    throw new Error('User not found');
+                }
+
+                // Get enrolled and created courses
+                const enrolledCourseIds =
+                    profile.studentProfile?.enrolled_courses || [];
+                const createdCourseIds =
+                    profile.instructorProfile?.created_courses || [];
+
+                const enrolledCourses = data.courses.filter((course: Course) =>
+                    enrolledCourseIds.includes(course.course_id),
+                );
+
+                const createdCourses = data.courses.filter((course: Course) =>
+                    createdCourseIds.includes(course.course_id),
+                );
+
+                setUserProfile(profile);
+                setStatistics(data.profile_statistics);
+                setUserCourses({
+                    enrolled: enrolledCourses,
+                    created: createdCourses,
+                });
+
+                // Set initial view mode based on role
+                setViewMode(profile.role === 'both' ? 'instructor' : 'student');
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : 'Failed to load profile',
+                );
+                navigate('/error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchProfileData();
+    }, [userId, navigate]);
 
     // Toggle between student and instructor profile view modes (only allow switching if user is both)
     const toggleProfileMode = () => {
-        if (isInstructor) {
+        if (userProfile?.role === 'both') {
             setViewMode(viewMode === 'student' ? 'instructor' : 'student');
         }
     };
@@ -40,32 +98,53 @@ const ProfilePage = ({userType}) => {
         setIsModalOpen(!isModalOpen);
     };
 
-    // Handle profile update from modal form submission
-    const handleProfileUpdate = (updatedProfile) => {
-        setUserProfile(updatedProfile);
-        setIsModalOpen(false);
+    const handleProfileUpdate = async (updatedProfile: UserProfile) => {
+        try {
+            // In a real app, you would make an API call here
+            setUserProfile(updatedProfile);
+            setIsModalOpen(false);
+        } catch (err) {
+            setError('Failed to update profile');
+        }
     };
+
+    if (isLoading) {
+        return (
+            <div className='flex justify-center items-center h-screen'>
+                Loading...
+            </div>
+        );
+    }
+
+    if (error || !userProfile || !statistics) {
+        return (
+            <div className='text-red-500 text-center'>
+                Error: {error || 'Failed to load profile'}
+            </div>
+        );
+    }
 
     return (
         <div className='font-abhaya profile-page p-6'>
-            <HeaderComponent userType={userType} />
-
+            <HeaderComponent userType={viewMode} currentRole='student' />
             <ProfileView
                 viewMode={viewMode}
                 userProfile={userProfile}
                 toggleProfileMode={toggleProfileMode}
                 toggleModal={toggleModal}
-                isInstructor={isInstructor} // Pass isInstructor prop to ProfileView
+                isInstructor={userProfile.role === 'both'}
+                courses={userCourses}
             />
 
             {isModalOpen && (
-                <div className='modal-overlay'>
+                <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
                     <div className='bg-white p-6 rounded-lg max-w-lg w-full relative'>
                         <ProfileComponent
                             userProfile={userProfile}
                             viewMode={viewMode}
                             onClose={toggleModal}
                             onProfileUpdate={handleProfileUpdate}
+                            statistics={statistics}
                         />
                     </div>
                 </div>

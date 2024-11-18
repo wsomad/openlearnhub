@@ -1,19 +1,35 @@
+import {onAuthStateChanged} from 'firebase/auth';
 import {useEffect} from 'react';
-import {useAuth} from './hooks/useAuth'; // Import the custom hook for authentication
-import {Routes, Route} from 'react-router-dom';
-import ProtectedRoute from './routes/ProtectedRoute/ProtectedRoute';
-import AuthPage from './pages/auth/AuthPage';
-import HomePage from './pages/student/home/HomePage';
-import HeaderComponent from './components/HeaderComponent';
-import ListEnrolledCoursePage from './pages/student/course/ListEnrolledCoursePage';
+import {useDispatch, useSelector} from 'react-redux';
+import {BrowserRouter as Router, Route, Routes} from 'react-router-dom';
+import {useAuth} from './hooks/useAuth';
 import CourseContentList from './components/enrollment/course_list/CourseContentList';
+import HeaderComponent from './components/HeaderComponent';
+import ProfileComponent from './components/profile/ProfileComponent';
+import SearchComponent from './components/SearchComponent';
+//import TestComponent from './components/TestComponent';
+import {auth} from './config/FirebaseConfiguration';
+import AuthPage from './pages/auth/AuthPage';
 import ProfilePage from './pages/profile/ProfilePage';
-import ProfileComponent from './components/ProfileComponent';
+import EnrolledCoursePage from './pages/student/course/EnrolledCoursePage';
+import ListEnrolledCoursePage from './pages/student/course/ListEnrolledCoursePage';
+import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
+import HomePage from './pages/student/home/HomePage';
+import ProtectedRoute from './routes/ProtectedRoute/ProtectedRoute';
+import {clearUser, setUser} from './store/slices/authSlice';
+import {ViewMode} from './types/Shared';
 
-function App() {
-    const {user, isAuthenticated, signUserOut} = useAuth(); // Use the useAuth hook
+// (Optional to Use) React.FC - Ensures type safety for the component's props.
+// Example : const MyComponent: FC<MyComponentProps> = ({ title, children })
+// If not used, can code -> const MyComponent = ({ title }: MyComponentProps): [Not using all props]
 
-    const userType: 'student' | 'instructor' = user?.role || 'student'; // Set dynamically based on user data
+// Jangan lupa install npm install @dnd-kit/core @dnd-kit/sortable kat terminal for drag and drop
+
+const App: React.FC = () => {
+    const {user, isAuthenticated, signUserOut} = useAuth();
+
+    // Differentiate user type to render components with appropriate design and functionality.
+    const userType: 'student' | 'instructor' = user?.role || 'student';
 
     return (
         <>
@@ -38,6 +54,15 @@ function App() {
                         </ProtectedRoute>
                     }
                 />
+                {/* For testing only path */}
+                <Route
+                    path='/test'
+                    // <EnrolledCoursePage></EnrolledCoursePage>
+                    // <SelectedCoursePage></SelectedCoursePage>
+                    // <ListEnrolledCoursePage></ListEnrolledCoursePage>
+                    // <HomePage></HomePage>
+                    // element={<TestComponent></TestComponent>}
+                />
                 {/* Course Enrolled path */}
                 <Route
                     path='/course-enrolled'
@@ -46,13 +71,16 @@ function App() {
                 {/* Content path */}
                 <Route
                     path='/content'
-                    element={<CourseContentList userType={userType} />}
+                    element={
+                        <CourseContentList
+                            courseId='2'
+                            userType='instructor'
+                            userId='u3'
+                        />
+                    }
                 />
-                {/* Profile path */}
-                <Route
-                    path='/profile'
-                    element={<ProfilePage userType={userType} />}
-                >
+                {/* Profile path
+                <Route path='/profile' element={<ProfilePage userId='u3' />}>
                     <Route
                         path='edit/:viewMode'
                         element={
@@ -64,10 +92,10 @@ function App() {
                             />
                         }
                     />
-                </Route>
+                </Route> */}
             </Routes>
         </>
     );
-}
+};
 
 export default App;

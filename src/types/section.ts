@@ -1,11 +1,11 @@
-import {Lesson} from './lesson';
-import {Quiz} from './quiz';
+import { Lesson } from './Lesson';
+import { Quiz } from './quiz';
 
 export interface Section {
     section_id: string;
     section_title: string;
-    section_order: number; // Unique number for ordering (e.g., 1, 2, 3)
+    section_order: number;
     course_id: string;
-    lessons: Lesson[]; // One or more lessons
-    quizzes?: Quiz[]; // Optional quizzes per section
+    lessons: Lesson[];
+    quizzes?: Quiz[];
 }

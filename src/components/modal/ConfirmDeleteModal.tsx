@@ -1,4 +1,14 @@
-const ConfirmDeleteModal = ({
+import { IoCloseOutline } from 'react-icons/io5';
+
+interface ConfirmDeleteModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+    itemTitle: string;
+    isSection: boolean;
+}
+
+const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
     isOpen,
     onClose,
     onConfirm,
@@ -10,28 +20,49 @@ const ConfirmDeleteModal = ({
     return (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
             <div className='w-full max-w-lg p-6 bg-white rounded-3xl'>
-                <h2 className='text-3xl font-bold'>Confirm Delete</h2>
-                <p className='mb-4 mt-4 text-lg'>
-                    Are you sure you want to delete{' '}
-                    {isSection ? 'this section?' : 'the following lesson?'}
-                </p>
-                <p className='text-center text-lg'>
-                    <strong>{isSection ? itemTitle : itemTitle}</strong>
-                </p>
+                <div className='w-full'>
+                    <div className='flex items-center justify-between'>
+                        <h1 className='font-abhaya text-3xl font-bold'>
+                            Confirm Delete
+                        </h1>
+                        <button
+                            type='button'
+                            className='text-3xl w-16 h-16 flex items-center justify-center'
+                            onClick={onClose}
+                            aria-label='Close modal'
+                        >
+                            <IoCloseOutline />
+                        </button>
+                    </div>
 
-                <div className='flex justify-end space-x-3 mt-6 text-lg'>
-                    <button
-                        onClick={onClose}
-                        className='bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded-md'
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={onConfirm}
-                        className='bg-primary text-white px-4 py-2 rounded-md'
-                    >
-                        Delete
-                    </button>
+                    <div className='mt-4'>
+                        <p className='font-abhaya text-lg'>
+                            Are you sure you want to delete this{' '}
+                            {isSection ? 'section' : 'lesson'}
+                            {itemTitle ? `: "${itemTitle}"` : ''}?
+                        </p>
+                        <p className='font-abhaya text-gray-500 mt-2'>
+                            This action cannot be undone.
+                        </p>
+                    </div>
+
+                    <div className='mt-8 flex space-x-4'>
+                        <button
+                            className='flex-1 py-3 rounded-3xl bg-gray-200 text-gray-700 text-lg active:scale-[.98] font-abhaya'
+                            onClick={onClose}
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className='flex-1 py-3 rounded-3xl bg-delete text-white text-lg active:scale-[.98] font-abhaya'
+                            onClick={onConfirm}
+                            aria-label={`Confirm delete ${
+                                isSection ? 'section' : 'lesson'
+                            }`}
+                        >
+                            Delete
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

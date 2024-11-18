@@ -1,9 +1,13 @@
-import {Question} from './question';
-
 export interface Quiz {
     quiz_id: string;
     quiz_title: string;
-    questions: Question[]; // Array of questions for this quiz
-    quiz_passingScore: number; // Minimum percentage score to pass (e.g., 70)
-    quiz_timeLimit?: number; // Optional time limit in minutes for the quiz
+    questions: QuizQuestion[];
+}
+
+export interface QuizQuestion {
+    question_id: string;
+    question_text: string;
+    question_type: 'multiple-choice' | 'true-false' | 'open-ended';
+    options?: string[];
+    correct_answer: string;
 }

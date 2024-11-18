@@ -1,124 +1,191 @@
-import {useState} from 'react';
-import CourseContentView from './CourseContentView';
-import {FaPlus} from 'react-icons/fa';
+import { useEffect, useState } from 'react';
+import { FaPlus } from 'react-icons/fa';
+
+import { Course } from '../../../types/Course';
+import { Lesson } from '../../../types/Lesson';
+import { UserProfile } from '../../../types/Profile';
+import { Section } from '../../../types/Section';
 import AddSectionModal from '../../modal/AddSectionModal';
 import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
+import CourseContentView from './CourseContentView';
 
-const CourseContentList = ({userType}) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [courseSections, setCourseSections] = useState([
-        {
-            id: 1,
-            title: 'Introduction to Programming',
-            lessons: [
-                {title: 'Welcome Message', duration: 2},
-                {title: 'What is Programming?', duration: 3},
-                {title: 'Setting Up Your Environment', duration: 5},
-            ],
-        },
-        {
-            id: 2,
-            title: 'Web Development Basics',
-            lessons: [
-                {title: 'HTML Fundamentals', duration: 4},
-                {title: 'CSS Styling', duration: 6},
-                {title: 'Responsive Design', duration: 5},
-            ],
-        },
-        {
-            id: 3,
-            title: 'Data Structures',
-            lessons: [
-                {title: 'Arrays and Lists', duration: 4},
-                {title: 'Stacks and Queues', duration: 5},
-                {title: 'Linked Lists', duration: 6},
-            ],
-        },
-        {
-            id: 4,
-            title: 'Algorithms',
-            lessons: [
-                {title: 'Sorting Algorithms', duration: 5},
-                {title: 'Searching Algorithms', duration: 6},
-                {title: 'Graph Algorithms', duration: 4},
-            ],
-        },
-        {
-            id: 5,
-            title: 'Databases and SQL',
-            lessons: [
-                {title: 'Database Design', duration: 4},
-                {title: 'SQL Queries', duration: 5},
-                {title: 'Normalization', duration: 6},
-            ],
-        },
-    ]);
+interface CourseContentListProps {
+    userType: 'student' | 'instructor';
+    courseId: string;
+    userId: string;
+}
 
-    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [sectionToDelete, setSectionToDelete] = useState(null);
+const CourseContentList: React.FC<CourseContentListProps> = ({
+    userType,
+    courseId,
+    userId,
+}) => {
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [courseSections, setCourseSections] = useState<Section[]>([]);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] =
+        useState<boolean>(false);
+    const [sectionToDelete, setSectionToDelete] = useState<Section | null>(
+        null,
+    );
+    const [courseData, setCourseData] = useState<Course | null>(null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const openAddContentModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
-    const closeConfirmModal = () => {
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch('/dummyData.json');
+                const data = await response.json();
+
+                const course = data.courses.find(
+                    (c: Course) => c.course_id === courseId,
+                );
+                if (!course) throw new Error('Course not found');
+
+                const profile = data.users.find(
+                    (u: UserProfile) => u.uid === userId,
+                );
+                if (!profile) throw new Error('User not found');
+
+                setCourseData(course);
+                setCourseSections(course.sections);
+                setUserProfile(profile);
+            } catch (error) {
+                setError(
+                    error instanceof Error
+                        ? error.message
+                        : 'Failed to load course data',
+                );
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [courseId, userId]);
+
+    const canEditCourse = (): boolean => {
+        if (!courseData || !userProfile) return false;
+        console.log('User Type:', userType);
+        console.log('Instructor ID:', courseData.instructor_id);
+        console.log('User Profile ID:', userProfile.uid);
+
+        return (
+            userType === 'instructor' &&
+            courseData.instructor_id === userProfile.uid
+        );
+    };
+
+    const openAddContentModal = (): void => {
+        if (canEditCourse()) {
+            setIsModalOpen(true);
+        }
+    };
+
+    const closeModal = (): void => setIsModalOpen(false);
+    const closeConfirmModal = (): void => {
         setIsConfirmModalOpen(false);
         setSectionToDelete(null);
     };
 
-    const handleAddSection = (newSection) => {
-        const sectionWithId = {
+    const handleAddSection = async (
+        newSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
+    ): Promise<void> => {
+        if (!canEditCourse()) return;
+
+        const sectionWithId: Section = {
+            section_id: `s${courseSections.length + 1}`,
             ...newSection,
-            id: courseSections.length + 1,
+            course_id: courseId,
+            section_order: courseSections.length + 1,
             lessons: [],
+            quizzes: [],
         };
+
         setCourseSections([...courseSections, sectionWithId]);
         closeModal();
     };
 
-    const handleDeleteSection = (sectionId) => {
+    const handleDeleteSection = (sectionId: string): void => {
+        if (!canEditCourse()) return;
+
         const section = courseSections.find(
-            (section) => section.id === sectionId,
+            (section) => section.section_id === sectionId,
         );
-        setIsConfirmModalOpen(true);
-        setSectionToDelete(section);
+        if (section) {
+            setIsConfirmModalOpen(true);
+            setSectionToDelete(section);
+        }
     };
 
-    const confirmDeleteSection = () => {
-        const filteredSections = courseSections.filter(
-            (section) => section.id !== sectionToDelete.id,
-        );
-        setCourseSections(filteredSections);
-        setIsConfirmModalOpen(false);
-        setSectionToDelete(null);
+    const confirmDeleteSection = (): void => {
+        if (sectionToDelete && canEditCourse()) {
+            const filteredSections = courseSections.filter(
+                (section) => section.section_id !== sectionToDelete.section_id,
+            );
+            setCourseSections(filteredSections);
+            closeConfirmModal();
+        }
     };
 
-    const handleEditSectionTitle = (sectionId, newTitle) => {
+    const handleEditSectionTitle = (
+        sectionId: string,
+        newTitle: string,
+    ): void => {
+        if (!canEditCourse()) return;
+
         setCourseSections((prevSections) =>
             prevSections.map((section) =>
-                section.id === sectionId
-                    ? {...section, title: newTitle}
+                section.section_id === sectionId
+                    ? {...section, section_title: newTitle}
                     : section,
             ),
         );
     };
 
-    const handleAddLesson = (sectionId, newLesson) => {
-        setCourseSections((prevSections) =>
-            prevSections.map((section) =>
-                section.id === sectionId
-                    ? {...section, lessons: [...section.lessons, newLesson]}
-                    : section,
-            ),
-        );
-    };
+    const handleAddLesson = (
+        sectionId: string,
+        newLesson: Omit<Lesson, 'lesson_id'>,
+    ): void => {
+        if (!canEditCourse()) return;
 
-    const handleEditLesson = (sectionId, lessonIndex, updatedLesson) => {
         setCourseSections((prevSections) =>
             prevSections.map((section) =>
-                section.id === sectionId
+                section.section_id === sectionId
                     ? {
                           ...section,
-                          lessons: section.lessons.map((lesson, index) =>
-                              index === lessonIndex ? updatedLesson : lesson,
+                          lessons: [
+                              ...section.lessons,
+                              {
+                                  ...newLesson,
+                                  lesson_id: `l${section.lessons.length + 1}`,
+                                  section_id: sectionId,
+                              },
+                          ],
+                      }
+                    : section,
+            ),
+        );
+    };
+
+    const handleEditLesson = (
+        sectionId: string,
+        lessonId: string,
+        updatedLesson: Partial<Lesson>,
+    ): void => {
+        if (!canEditCourse()) return;
+
+        setCourseSections((prevSections) =>
+            prevSections.map((section) =>
+                section.section_id === sectionId
+                    ? {
+                          ...section,
+                          lessons: section.lessons.map((lesson) =>
+                              lesson.lesson_id === lessonId
+                                  ? {...lesson, ...updatedLesson}
+                                  : lesson,
                           ),
                       }
                     : section,
@@ -126,20 +193,26 @@ const CourseContentList = ({userType}) => {
         );
     };
 
-    const handleDeleteLesson = (sectionId, lessonIndex) => {
+    const handleDeleteLesson = (sectionId: string, lessonId: string): void => {
+        if (!canEditCourse()) return;
+
         setCourseSections((prevSections) =>
             prevSections.map((section) =>
-                section.id === sectionId
+                section.section_id === sectionId
                     ? {
                           ...section,
                           lessons: section.lessons.filter(
-                              (_, index) => index !== lessonIndex,
+                              (lesson) => lesson.lesson_id !== lessonId,
                           ),
                       }
                     : section,
             ),
         );
     };
+
+    if (isLoading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+    if (!courseData || !userProfile) return <div>No course data available</div>;
 
     return (
         <div
@@ -151,7 +224,7 @@ const CourseContentList = ({userType}) => {
         >
             <div className='mb-2 font-bold text-xl flex justify-between items-center'>
                 <span>Course Content</span>
-                {userType === 'instructor' && (
+                {canEditCourse() && (
                     <button
                         className='bg-secondary text-white px-3 py-2 rounded-2xl flex items-center mr-4'
                         onClick={openAddContentModal}
@@ -171,24 +244,29 @@ const CourseContentList = ({userType}) => {
                 setCourseSections={setCourseSections}
                 onDeleteSection={handleDeleteSection}
                 onEditSectionTitle={handleEditSectionTitle}
+                canEdit={canEditCourse()}
                 onAddLesson={handleAddLesson}
                 onEditLesson={handleEditLesson}
                 onDeleteLesson={handleDeleteLesson}
             />
 
-            <AddSectionModal
-                isOpen={isModalOpen}
-                onClose={closeModal}
-                onSubmit={handleAddSection}
-            />
-            <ConfirmDeleteModal
-                isOpen={isConfirmModalOpen}
-                onClose={closeConfirmModal}
-                onConfirm={confirmDeleteSection}
-                lessonTitle={sectionToDelete ? sectionToDelete.title : ''}
-                isSection={true}
-                itemTitle={sectionToDelete ? sectionToDelete.title : ''}
-            />
+            {isModalOpen && (
+                <AddSectionModal
+                    isOpen={isModalOpen}
+                    onClose={closeModal}
+                    onSubmit={handleAddSection}
+                />
+            )}
+
+            {isConfirmModalOpen && sectionToDelete && (
+                <ConfirmDeleteModal
+                    isOpen={isConfirmModalOpen}
+                    onClose={closeConfirmModal}
+                    onConfirm={confirmDeleteSection}
+                    itemTitle={sectionToDelete.section_title}
+                    isSection={true}
+                />
+            )}
         </div>
     );
 };

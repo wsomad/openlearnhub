@@ -1,10 +1,14 @@
-import {User} from './user';
+import { SpecializationArea, User } from './User';
 
-export interface Instructor extends User {
-    social_account_link: [];
-    specializaiton_Area: [];
-    summary: string;
-    total_course_created: number;
+export interface Instructor extends Omit<User, 'role'> {
+    profileSummary: string;
+    specializationArea: SpecializationArea[];
     years_of_experience: number;
+    total_courses_created: number;
+    created_courses: string[]; // Array of course_ids
     rating: 1 | 2 | 3 | 4 | 5;
+    socialLinks: {
+        github?: string;
+        linkedin?: string;
+    };
 }

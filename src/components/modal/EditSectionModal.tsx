@@ -1,22 +1,39 @@
-import {useState, useEffect} from 'react';
-import {IoCloseOutline} from 'react-icons/io5';
+import { useEffect, useState } from 'react';
+import { IoCloseOutline } from 'react-icons/io5';
 
-const EditSectionModal = ({isOpen, onClose, onSubmit, initialTitle}) => {
-    const [title, setTitle] = useState('');
+interface EditSectionModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (title: string) => void;
+    initialTitle: string;
+}
+
+const EditSectionModal: React.FC<EditSectionModalProps> = ({
+    isOpen,
+    onClose,
+    onSubmit,
+    initialTitle,
+}) => {
+    const [title, setTitle] = useState<string>('');
 
     useEffect(() => {
+        // Set initial title when modal opens
         setTitle(initialTitle || '');
     }, [initialTitle]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
+
         if (!title.trim()) {
             alert('Title is required.');
             return;
         }
+
         onSubmit(title);
+        setTitle('');
     };
 
+    // Don't render if modal is not open
     if (!isOpen) return null;
 
     return (
@@ -31,6 +48,7 @@ const EditSectionModal = ({isOpen, onClose, onSubmit, initialTitle}) => {
                             type='button'
                             className='text-3xl w-16 h-16 flex items-center justify-center'
                             onClick={onClose}
+                            aria-label='Close modal'
                         >
                             <IoCloseOutline />
                         </button>
@@ -38,16 +56,21 @@ const EditSectionModal = ({isOpen, onClose, onSubmit, initialTitle}) => {
 
                     <div className='space-y-4'>
                         <div>
-                            <label className='font-abhaya text-lg font-medium mb-1 block'>
-                                Section Title
+                            <label
+                                htmlFor='sectionTitle'
+                                className='font-abhaya text-lg font-medium mb-1 block'
+                            >
+                                Section Title*
                             </label>
                             <input
+                                id='sectionTitle'
                                 className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                 type='text'
-                                placeholder='Section Title'
+                                placeholder='Enter section title'
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 required
+                                aria-required='true'
                             />
                         </div>
                     </div>
@@ -57,7 +80,7 @@ const EditSectionModal = ({isOpen, onClose, onSubmit, initialTitle}) => {
                             className='w-full py-3 rounded-3xl bg-primary text-white text-lg active:scale-[.98] font-abhaya'
                             type='submit'
                         >
-                            Save Section Title
+                            Save Changes
                         </button>
                     </div>
                 </form>

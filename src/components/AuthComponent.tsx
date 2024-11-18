@@ -3,6 +3,9 @@ import {useAuth} from '../hooks/useAuth';
 import authImage from '../assets/images/thumbnail.png';
 import {FaGoogle} from 'react-icons/fa';
 import {useUser} from '../hooks/useUser';
+import {User} from '../types/user';
+
+type UserRole = 'student' | 'instructor';
 
 const AuthComponent: React.FC = () => {
     const {signIn, signUp} = useAuth();
@@ -20,7 +23,7 @@ const AuthComponent: React.FC = () => {
         if (isSignIn) {
             await signIn(email, password, userRole);
         } else {
-            const userProfile = {
+            const userProfile: Omit<User, 'uid'> & {password: string} = {
                 email,
                 password,
                 username,
@@ -85,6 +88,7 @@ const AuthComponent: React.FC = () => {
                                     First Name
                                 </label>
                                 <input
+                                    id='firstName'
                                     className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                     type='text'
                                     placeholder='First Name'
@@ -92,13 +96,18 @@ const AuthComponent: React.FC = () => {
                                     onChange={(e) =>
                                         setFirstName(e.target.value)
                                     }
+                                    required
                                 />
                             </div>
                             <div>
-                                <label className='font-abhaya text-lg font-medium mb-1 block'>
+                                <label
+                                    htmlFor='lastName'
+                                    className='font-abhaya text-lg font-medium mb-1 block'
+                                >
                                     Last Name
                                 </label>
                                 <input
+                                    id='lastName'
                                     className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                     type='text'
                                     placeholder='Last Name'
@@ -106,13 +115,18 @@ const AuthComponent: React.FC = () => {
                                     onChange={(e) =>
                                         setLastName(e.target.value)
                                     }
+                                    required
                                 />
                             </div>
                             <div>
-                                <label className='font-abhaya text-lg font-medium mb-1 block'>
+                                <label
+                                    htmlFor='username'
+                                    className='font-abhaya text-lg font-medium mb-1 block'
+                                >
                                     Username
                                 </label>
                                 <input
+                                    id='username'
                                     className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                     type='text'
                                     placeholder='Username'
@@ -120,6 +134,7 @@ const AuthComponent: React.FC = () => {
                                     onChange={(e) =>
                                         setUsername(e.target.value)
                                     }
+                                    required
                                 />
                             </div>
                         </div>
@@ -127,27 +142,37 @@ const AuthComponent: React.FC = () => {
 
                     <div className='space-y-4 mt-4'>
                         <div>
-                            <label className='font-abhaya text-lg font-medium mb-1 block'>
+                            <label
+                                htmlFor='email'
+                                className='font-abhaya text-lg font-medium mb-1 block'
+                            >
                                 Email
                             </label>
                             <input
+                                id='email'
                                 className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                 type='email'
                                 placeholder='Email@example.com'
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                required
                             />
                         </div>
                         <div>
-                            <label className='font-abhaya text-lg font-medium mb-1 block'>
+                            <label
+                                htmlFor='password'
+                                className='font-abhaya text-lg font-medium mb-1 block'
+                            >
                                 Password
                             </label>
                             <input
+                                id='password'
                                 className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                 type='password'
                                 placeholder='Password'
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                required
                             />
                         </div>
                     </div>
@@ -165,7 +190,7 @@ const AuthComponent: React.FC = () => {
                                     Don't have an account?{' '}
                                     <button
                                         type='button'
-                                        className='text-primary font-bold hover:underline'
+                                        className='text-primary font-bold hover:underline ml-1'
                                         onClick={() => setSignIn(false)}
                                     >
                                         Sign Up
@@ -176,7 +201,7 @@ const AuthComponent: React.FC = () => {
                                     Already have an account?{' '}
                                     <button
                                         type='button'
-                                        className='text-primary font-bold hover:underline'
+                                        className='text-primary font-bold hover:underline ml-1'
                                         onClick={() => setSignIn(true)}
                                     >
                                         Sign In
@@ -197,8 +222,11 @@ const AuthComponent: React.FC = () => {
                     <button
                         type='button'
                         className='w-full flex items-center justify-center py-3 border-2 border-gray-300 rounded-3xl hover:bg-gray-100'
+                        onClick={() => {
+                            /* Handle Google sign-in */
+                        }}
                     >
-                        <FaGoogle className='text-xl mr-3' />{' '}
+                        <FaGoogle className='text-xl mr-3' />
                         <span className='text-lg font-abhaya'>
                             Continue with Google
                         </span>

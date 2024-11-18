@@ -1,0 +1,278 @@
+{
+    "users": [
+      {
+        "uid": "u1",
+        "username": "janesmith",
+        "firstname": "Jane",
+        "lastname": "Smith",
+        "email": "jane.smith@example.com",
+        "role": "student",
+        "created_at": "2024-01-01T00:00:00Z",
+        "updated_at": "2024-01-01T00:00:00Z",
+        "profileImage": "/images/profile/janesmith.jpg",
+        "studentProfile": {
+          "studentType": "Undergraduate",
+          "coursesEnrolled": 2,
+          "enrollment_date": "2024-01-01T00:00:00Z",
+          "completed_courses": 0,
+          "completion_status": false,
+          "enrolled_courses": ["1", "2"]
+        }
+      },
+      {
+        "uid": "u2",
+        "username": "johndoe",
+        "firstname": "John",
+        "lastname": "Doe",
+        "email": "john.doe@example.com",
+        "role": "both",
+        "created_at": "2023-12-01T00:00:00Z",
+        "updated_at": "2024-01-15T00:00:00Z",
+        "profileImage": "/images/profile/johndoe.jpg",
+        "studentProfile": {
+          "studentType": "Postgraduate",
+          "coursesEnrolled": 1,
+          "enrollment_date": "2023-12-01T00:00:00Z",
+          "completed_courses": 0,
+          "completion_status": false,
+          "enrolled_courses": ["2"]
+        },
+        "instructorProfile": {
+          "profileSummary": "Experienced web developer with a passion for teaching. Specialized in modern web technologies and best practices.",
+          "specializationArea": ["Web Development"],
+          "yearsOfExperience": 5,
+          "coursesCreated": 1,
+          "rating": 4,
+          "total_courses_created": 1,
+          "created_courses": ["1"],
+          "socialLinks": {
+            "github": "https://github.com/johndoe",
+            "linkedin": "https://linkedin.com/in/johndoe"
+          }
+        }
+      },
+      {
+        "uid": "u3",
+        "username": "sarahwilson",
+        "firstname": "Sarah",
+        "lastname": "Wilson",
+        "email": "sarah.wilson@example.com",
+        "role": "both",
+        "created_at": "2023-11-15T00:00:00Z",
+        "updated_at": "2024-01-20T00:00:00Z",
+        "profileImage": "/assets/images/authimage.png",
+        "studentProfile": {
+          "studentType": "Professional Certification",
+          "coursesEnrolled": 1,
+          "enrollment_date": "2023-11-15T00:00:00Z",
+          "completed_courses": 0,
+          "completion_status": false,
+          "enrolled_courses": ["1"]
+        },
+        "instructorProfile": {
+          "profileSummary": "Data science professional with expertise in machine learning and statistical analysis. Committed to making complex topics accessible to all learners.",
+          "specializationArea": ["Data Science"],
+          "yearsOfExperience": 7,
+          "coursesCreated": 1,
+          "rating": 5,
+          "total_courses_created": 1,
+          "created_courses": ["2"],
+          "socialLinks": {
+            "github": "https://github.com/sarahwilson",
+            "linkedin": "https://linkedin.com/in/sarahwilson"
+          }
+        }
+      }
+    ],
+    "courses": [
+      {
+        "course_id": "1",
+        "instructor_id": "u2",
+        "course_description": "This is an introductory course on programming.",
+        "course_enrollment_number": 150,
+        "course_number_of_section": 5,
+        "course_pricing": 49.99,
+        "course_rating": 4,
+        "course_requirements": ["Basic computer knowledge"],
+        "course_type": "Online",
+        "course_created_at": "2024-11-01T00:00:00Z",
+        "course_updated_at": "2024-11-10T00:00:00Z",
+        "course_title": "Introduction to Programming",
+        "course_thumbnail_url": "https://example.com/intro-programming-thumbnail.jpg",
+        "enrolled_students": ["u1", "u3"],
+        "sections": [
+          {
+            "section_id": "s1",
+            "section_title": "Introduction to Programming",
+            "section_order": 1,
+            "course_id": "1",
+            "lessons": [
+              {
+                "lesson_id": "l1",
+                "lesson_title": "Welcome Message",
+                "lesson_content": "In this lesson, we introduce the course.",
+                "lesson_duration": 2,
+                "section_id": "s1",
+                "lesson_videoUrl": "https://example.com/video1.mp4"
+              },
+              {
+                "lesson_id": "l2",
+                "lesson_title": "What is Programming?",
+                "lesson_content": "This lesson covers the basics of programming.",
+                "lesson_duration": 3,
+                "section_id": "s1",
+                "lesson_videoUrl": "https://example.com/video2.mp4"
+              },
+              {
+                "lesson_id": "l3",
+                "lesson_title": "Setting Up Your Environment",
+                "lesson_content": "Learn how to set up your programming environment.",
+                "lesson_duration": 5,
+                "section_id": "s1",
+                "lesson_videoUrl": "https://example.com/video3.mp4"
+              }
+            ],
+            "quizzes": [
+              {
+                "quiz_id": "q1",
+                "quiz_title": "Programming Basics Quiz",
+                "questions": [
+                  {
+                    "question_id": "q1_1",
+                    "question_text": "What is a variable?",
+                    "question_type": "multiple-choice",
+                    "options": [
+                      "A container for storing data",
+                      "A type of function",
+                      "A class"
+                    ],
+                    "correct_answer": "A container for storing data"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "section_id": "s2",
+            "section_title": "Web Development Basics",
+            "section_order": 2,
+            "course_id": "1",
+            "lessons": [
+              {
+                "lesson_id": "l4",
+                "lesson_title": "HTML Fundamentals",
+                "lesson_content": "Learn the basics of HTML.",
+                "lesson_duration": 4,
+                "section_id": "s2",
+                "lesson_videoUrl": "https://example.com/video4.mp4"
+              },
+              {
+                "lesson_id": "l5",
+                "lesson_title": "CSS Styling",
+                "lesson_content": "Introduction to styling your web pages with CSS.",
+                "lesson_duration": 6,
+                "section_id": "s2",
+                "lesson_videoUrl": "https://example.com/video5.mp4"
+              },
+              {
+                "lesson_id": "l6",
+                "lesson_title": "Responsive Design",
+                "lesson_content": "Learn how to make web pages responsive.",
+                "lesson_duration": 5,
+                "section_id": "s2",
+                "lesson_videoUrl": "https://example.com/video6.mp4"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "course_id": "2",
+        "instructor_id": "u3",
+        "course_description": "Master the basics of web development with HTML, CSS, and JavaScript.",
+        "course_enrollment_number": 200,
+        "course_number_of_section": 4,
+        "course_pricing": 79.99,
+        "course_rating": 5,
+        "course_requirements": ["Basic knowledge of HTML", "Computer with internet access"],
+        "course_type": "Online",
+        "course_created_at": "2024-11-05T00:00:00Z",
+        "course_updated_at": "2024-11-15T00:00:00Z",
+        "course_title": "Web Development Basics",
+        "course_thumbnail_url": "https://example.com/web-development-thumbnail.jpg",
+        "enrolled_students": ["u1", "u2"],
+        "sections": [
+          {
+            "section_id": "s3",
+            "section_title": "HTML Fundamentals",
+            "section_order": 1,
+            "course_id": "2",
+            "lessons": [
+              {
+                "lesson_id": "l7",
+                "lesson_title": "Introduction to HTML",
+                "lesson_content": "Learn the basics of HTML structure.",
+                "lesson_duration": 5,
+                "section_id": "s3",
+                "lesson_videoUrl": "https://example.com/video7.mp4"
+              },
+              {
+                "lesson_id": "l8",
+                "lesson_title": "HTML Elements and Tags",
+                "lesson_content": "Understanding different HTML elements.",
+                "lesson_duration": 4,
+                "section_id": "s3",
+                "lesson_videoUrl": "https://example.com/video8.mp4"
+              }
+            ]
+          },
+          {
+            "section_id": "s4",
+            "section_title": "CSS Styling",
+            "section_order": 2,
+            "course_id": "2",
+            "lessons": [
+              {
+                "lesson_id": "l9",
+                "lesson_title": "Introduction to CSS",
+                "lesson_content": "Learn how to apply styles using CSS.",
+                "lesson_duration": 6,
+                "section_id": "s4",
+                "lesson_videoUrl": "https://example.com/video9.mp4"
+              },
+              {
+                "lesson_id": "l10",
+                "lesson_title": "CSS Layouts and Positioning",
+                "lesson_content": "Learn about different layout techniques in CSS.",
+                "lesson_duration": 7,
+                "section_id": "s4",
+                "lesson_videoUrl": "https://example.com/video10.mp4"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "profile_statistics": {
+      "student_types": [
+        "Secondary",
+        "High School",
+        "Undergraduate",
+        "Postgraduate",
+        "Doctorate",
+        "Professional Certification"
+      ],
+      "specialization_areas": [
+        "Web Development",
+        "Data Science",
+        "Machine Learning",
+        "Mobile Development",
+        "Cloud Computing",
+        "DevOps",
+        "Cybersecurity",
+        "UI/UX Design",
+        "Business Analytics",
+        "Digital Marketing"
+      ]
+    }
+  }

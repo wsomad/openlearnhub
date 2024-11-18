@@ -40,6 +40,7 @@ const CardCourseDetails: React.FC<CardCourseDetailsProps> = ({
             <p className='font-abhaya font-semibold text-md text-secondary'>
                 {instructor}
             </p>
+
             <div className='flex items-center justify-between w-full mt-4'>
                 {size === 'big' && (
                     <div className='flex flex-row gap-6 justify-between mt-2'>

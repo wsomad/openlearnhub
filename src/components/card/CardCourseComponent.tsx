@@ -1,4 +1,6 @@
 import React from 'react';
+
+import {Course} from '../../types/course'; // Import the Course interface
 import CardCourseDetails from './CardCourseDetails';
 
 interface CardCourseComponentProps {
@@ -56,16 +58,15 @@ const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
             }`}
         >
             <img
-                src={thumbnail}
+                src={thumbnail} // Use properties from the course object
                 alt={title}
                 className={`w-full ${imageSizeClass} object-cover ${
                     size === 'big' ? 'rounded-tl-md' : 'rounded-t-md'
                 }`}
             />
-
             <CardCourseDetails
                 title={title}
-                instructor={instructor}
+                instructor={thumbnail} // Use course properties here
                 size={size}
                 pricing={pricing}
                 hoursDuration={hoursDuration}
