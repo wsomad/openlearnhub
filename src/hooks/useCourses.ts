@@ -24,7 +24,6 @@ export const useCourses = () => {
     );
     const courses = useSelector((state: RootState) => state.courses.allCourses);
     const userRole = useSelector((state: RootState) => state.users.userRole);
-
     const isInstructor = userRole === 'instructor';
 
     /**
@@ -64,12 +63,15 @@ export const useCourses = () => {
      * Fetch all courses
      */
     const fetchAllCourses = async (): Promise<void> => {
+        if (courses.length > 0) {
+            console.log('Courses already in Redux, skipping fetch.');
+            return;
+        }
+
         try {
             const allCourses = await getAllCourses();
             if (allCourses) {
                 dispatch(setCourses(allCourses));
-                // Optionally reset selectedCourse
-                dispatch(setCourses([]));
                 console.log('All courses fetched successfully:', allCourses);
             }
         } catch (error) {

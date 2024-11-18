@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import {useEffect, useState} from 'react';
+import {Link, useNavigate} from 'react-router-dom';
 
-import { useAuth } from '../hooks/useAuth';
-import { useUser } from '../hooks/useUser';
-import { UserProfile } from '../types/Profile';
-import { ViewMode } from '../types/Shared';
-import { UserRole } from '../types/User';
+import {useAuth} from '../hooks/useAuth';
+import {useUser} from '../hooks/useUser';
+import {UserProfile} from '../types/Profile';
+import {ViewMode} from '../types/Shared';
+import {UserRole} from '../types/user';
 
 interface Category {
     name: string;
@@ -31,7 +31,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
     const [isUserOpen, setIsUserOpen] = useState<boolean>(false);
     // const [isLoggedIn, setIsLoggedIn] = useState(true);
-    const {user, signOut} = useAuth();
+    const {user, signUserOut} = useAuth();
     const {currentUser, fetchUserById} = useUser();
     const navigate = useNavigate();
 
@@ -65,7 +65,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
     const studentMenu: MenuItem[] = [
         {name: 'Profile', path: '/profile'},
         {name: 'Enrolled Courses', path: '/courses/enrolled'},
-        ...(currentRole === 'both'
+        ...(currentRole === 'instructor'
             ? [{name: 'Switch to Instructor', path: '/instructor/dashboard'}]
             : []),
     ];
@@ -73,7 +73,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
     const instructorMenu: MenuItem[] = [
         {name: 'Profile', path: '/profile'},
         {name: 'Course Dashboard', path: '/instructor/courses'},
-        ...(currentRole === 'both'
+        ...(currentRole === 'student'
             ? [{name: 'Switch to Student', path: '/courses/enrolled'}]
             : []),
     ];
@@ -90,7 +90,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
 
     const handleLogout = async () => {
         try {
-            await signOut();
+            await signUserOut();
             navigate('/auth');
         } catch (error) {
             console.error('Logout failed:', error);
@@ -171,7 +171,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                     ) : (
                         <div className='relative'>
                             <div className='flex items-center space-x-4'>
-                                {currentRole === 'both' && (
+                                {currentRole === 'instructor' && (
                                     <button
                                         onClick={onToggleView}
                                         className='px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary-dark transition-colors'

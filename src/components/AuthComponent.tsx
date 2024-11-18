@@ -1,6 +1,6 @@
 import React, {useState, FormEvent} from 'react';
 import {useAuth} from '../hooks/useAuth';
-import authImage from '../assets/images/thumbnail.png';
+import authImage from '../assets/images/authimage.png';
 import {FaGoogle} from 'react-icons/fa';
 import {useUser} from '../hooks/useUser';
 import {User} from '../types/user';

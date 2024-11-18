@@ -18,10 +18,6 @@ const HomePage: React.FC = () => {
         loadCourses();
     }, [fetchAllCourses]);
 
-    useEffect(() => {
-        console.log('List of courses:', courses);
-    }, [courses]);
-
     const renderedCourses = courses.map((course: Course) => (
         <CardCourseComponent
             key={course.course_title} // Use a unique key for each item
@@ -39,7 +35,13 @@ const HomePage: React.FC = () => {
 
     return (
         <div>
-            <HeaderComponent />
+            <HeaderComponent
+                userType={'student'}
+                currentRole={'student'}
+                onToggleView={function (): void {
+                    throw new Error('Function not implemented.');
+                }}
+            />
             <div className='flex flex-col justify-center items-center mt-12'>
                 <h1 className='font-abhaya font-bold text-6xl'>
                     Find All <span className='text-primary'>Free Courses</span>{' '}

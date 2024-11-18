@@ -75,6 +75,7 @@ export const useUser = () => {
             console.log('User data already available in Redux for UID: ', uid);
             return;
         }
+
         try {
             const getUser = await getUserById(uid);
             if (getUser) {
