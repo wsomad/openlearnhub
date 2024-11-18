@@ -19,13 +19,9 @@ import ProtectedRoute from './routes/ProtectedRoute/ProtectedRoute';
 import {clearUser, setUser} from './store/slices/authSlice';
 import {ViewMode} from './types/Shared';
 
-// (Optional to Use) React.FC - Ensures type safety for the component's props.
-// Example : const MyComponent: FC<MyComponentProps> = ({ title, children })
-// If not used, can code -> const MyComponent = ({ title }: MyComponentProps): [Not using all props]
-
-// Jangan lupa install npm install @dnd-kit/core @dnd-kit/sortable kat terminal for drag and drop
-
+// React.FC stands for React Functional Component.
 const App: React.FC = () => {
+    // Destucturing properties from `useAuth`.
     const {user, isAuthenticated, signUserOut} = useAuth();
 
     // Differentiate user type to render components with appropriate design and functionality.
@@ -33,6 +29,7 @@ const App: React.FC = () => {
 
     return (
         <>
+            {/* Later, update each path to have authentication condition */}
             <Routes>
                 {/* Default path */}
                 <Route
@@ -53,15 +50,6 @@ const App: React.FC = () => {
                             <HomePage />
                         </ProtectedRoute>
                     }
-                />
-                {/* For testing only path */}
-                <Route
-                    path='/test'
-                    // <EnrolledCoursePage></EnrolledCoursePage>
-                    // <SelectedCoursePage></SelectedCoursePage>
-                    // <ListEnrolledCoursePage></ListEnrolledCoursePage>
-                    // <HomePage></HomePage>
-                    // element={<TestComponent></TestComponent>}
                 />
                 {/* Course Enrolled path */}
                 <Route
@@ -93,6 +81,16 @@ const App: React.FC = () => {
                         }
                     />
                 </Route> */}
+
+                {/* For testing only path */}
+                <Route
+                    path='/test'
+                    // <EnrolledCoursePage></EnrolledCoursePage>
+                    // <SelectedCoursePage></SelectedCoursePage>
+                    // <ListEnrolledCoursePage></ListEnrolledCoursePage>
+                    // <HomePage></HomePage>
+                    // element={<TestComponent></TestComponent>}
+                />
             </Routes>
         </>
     );
