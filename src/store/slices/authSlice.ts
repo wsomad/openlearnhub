@@ -1,17 +1,20 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {User} from '../../types/user'; // Import the User type from the types folder
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-// Define the AuthState type using the imported User type
+import { User } from '../../types/user';
+
+// Define the AuthState type.
 interface AuthState {
     user: User | null;
     isAuthenticated: boolean;
 }
 
+// Define the initial state of AuthState.
 const initialState: AuthState = {
     user: null,
     isAuthenticated: false,
 };
 
+// Create a slice named `auth`.
 const authSlice = createSlice({
     name: 'auth',
     initialState,
