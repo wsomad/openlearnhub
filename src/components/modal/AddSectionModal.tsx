@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { IoCloseOutline } from 'react-icons/io5';
 
-import { Section } from '../../types/Section';
+import { Section } from '../../types/section';
 
 interface AddSectionModalProps {
     isOpen: boolean;

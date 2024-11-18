@@ -1,4 +1,4 @@
-import { SpecializationArea, User } from './User';
+import { SpecializationArea, User } from './user';
 
 export interface Instructor extends Omit<User, 'role'> {
     profileSummary: string;

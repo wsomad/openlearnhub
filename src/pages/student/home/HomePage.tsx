@@ -1,10 +1,12 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
+
+import thumbnail from '../../../assets/images/thumbnail.png';
+import CardCourseComponent from '../../../components/card/CardCourseComponent';
 import HeaderComponent from '../../../components/HeaderComponent';
 import SearchComponent from '../../../components/SearchComponent';
-import CardCourseComponent from '../../../components/card/CardCourseComponent';
-import thumbnail from '../../../assets/images/thumbnail.png'; // Adjust the path if needed
-import {useCourses} from '../../../hooks/useCourses';
-import {Course} from '../../../types/course'; // Import the correct Course type
+import { useCourses } from '../../../hooks/useCourses';
+import { useUser } from '../../../hooks/useUser';
+import { Course } from '../../../types/course'; // Import the correct Course type
 
 const HomePage: React.FC = () => {
     const {courses, fetchAllCourses} = useCourses();

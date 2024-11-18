@@ -4,7 +4,7 @@ import { FaPlus } from 'react-icons/fa6';
 import { MdDeleteOutline, MdEditNote } from 'react-icons/md';
 
 import { Lesson } from '../../../types/Lesson';
-import { Section } from '../../../types/Section';
+import { Section } from '../../../types/section';
 import {
 	BaseLessonHandlers,
 	BaseSectionHandlers,

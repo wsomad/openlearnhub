@@ -1,11 +1,11 @@
-import {useEffect, useState} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-import {useAuth} from '../hooks/useAuth';
-import {useUser} from '../hooks/useUser';
-import {UserProfile} from '../types/Profile';
-import {ViewMode} from '../types/Shared';
-import {UserRole} from '../types/user';
+import { useAuth } from '../hooks/useAuth';
+import { useUser } from '../hooks/useUser';
+import { UserProfile } from '../types/Profile';
+import { ViewMode } from '../types/Shared';
+import { UserRole } from '../types/user';
 
 interface Category {
     name: string;
@@ -21,39 +21,62 @@ interface HeaderComponentProps {
     userType: ViewMode;
     currentRole: UserRole;
     onToggleView: () => void;
+    userId: string;
 }
 
 const HeaderComponent: React.FC<HeaderComponentProps> = ({
     userType,
     currentRole,
     onToggleView,
+    userId,
 }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
     const [isUserOpen, setIsUserOpen] = useState<boolean>(false);
     // const [isLoggedIn, setIsLoggedIn] = useState(true);
     const {user, signUserOut} = useAuth();
-    const {currentUser, fetchUserById} = useUser();
+    // const {currentUser, fetchUserById} = useUser();
+    const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        let isMounted = true;
+    // useEffect(() => {
+    //     let isMounted = true;
 
+    //     const fetchUserData = async () => {
+    //         if (user?.uid && isMounted) {
+    //             try {
+    //                 await fetchUserById(user.uid);
+    //             } catch (error) {
+    //                 console.error('Failed to fetch user:', error);
+    //             }
+    //         }
+    //     };
+
+    //     fetchUserData();
+
+    //     return () => {
+    //         isMounted = false;
+    //     };
+    // }, [user?.uid, fetchUserById]);
+
+    // Fetch user data from dummyData.json
+    useEffect(() => {
         const fetchUserData = async () => {
-            if (user?.uid && isMounted) {
-                try {
-                    await fetchUserById(user.uid);
-                } catch (error) {
-                    console.error('Failed to fetch user:', error);
+            try {
+                const response = await fetch('/dummyData.json');
+                const data = await response.json();
+                const user = data.users.find(
+                    (u: UserProfile) => u.uid === userId,
+                );
+                if (user) {
+                    setCurrentUser(user);
                 }
+            } catch (error) {
+                console.error('Failed to fetch user:', error);
             }
         };
 
         fetchUserData();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [user?.uid, fetchUserById]);
+    }, [userId]);
 
     const categories: Category[] = [
         {name: 'Development', path: '/categories/development'},
@@ -104,6 +127,9 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
         navigate(path);
         closeDropdowns();
     };
+
+    const menuItems =
+        currentRole === 'instructor' ? instructorMenu : studentMenu;
 
     return (
         <>
@@ -199,10 +225,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                                     onClick={closeDropdowns}
                                 >
                                     <ul className='py-1'>
-                                        {(userType === 'student'
-                                            ? studentMenu
-                                            : instructorMenu
-                                        ).map((item) => (
+                                        {menuItems.map((item) => (
                                             <li key={item.name}>
                                                 <button
                                                     onClick={() =>

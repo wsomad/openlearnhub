@@ -25,7 +25,7 @@
         "firstname": "John",
         "lastname": "Doe",
         "email": "john.doe@example.com",
-        "role": "both",
+        "role": "instructor",
         "created_at": "2023-12-01T00:00:00Z",
         "updated_at": "2024-01-15T00:00:00Z",
         "profileImage": "/images/profile/johndoe.jpg",
@@ -57,17 +57,17 @@
         "firstname": "Sarah",
         "lastname": "Wilson",
         "email": "sarah.wilson@example.com",
-        "role": "both",
+        "role": "instructor",
         "created_at": "2023-11-15T00:00:00Z",
         "updated_at": "2024-01-20T00:00:00Z",
         "profileImage": "/assets/images/authimage.png",
         "studentProfile": {
           "studentType": "Professional Certification",
-          "coursesEnrolled": 1,
+          "coursesEnrolled": 2,
           "enrollment_date": "2023-11-15T00:00:00Z",
           "completed_courses": 0,
           "completion_status": false,
-          "enrolled_courses": ["1"]
+          "enrolled_courses": ["1", "2"]
         },
         "instructorProfile": {
           "profileSummary": "Data science professional with expertise in machine learning and statistical analysis. Committed to making complex topics accessible to all learners.",
@@ -76,7 +76,7 @@
           "coursesCreated": 1,
           "rating": 5,
           "total_courses_created": 1,
-          "created_courses": ["2"],
+          "created_courses": ["2", "3", "4"],
           "socialLinks": {
             "github": "https://github.com/sarahwilson",
             "linkedin": "https://linkedin.com/in/sarahwilson"
@@ -90,7 +90,7 @@
         "instructor_id": "u2",
         "course_description": "This is an introductory course on programming.",
         "course_enrollment_number": 150,
-        "course_number_of_section": 5,
+        "course_number_of_section": 2,
         "course_pricing": 49.99,
         "course_rating": 4,
         "course_requirements": ["Basic computer knowledge"],
@@ -191,7 +191,7 @@
         "instructor_id": "u3",
         "course_description": "Master the basics of web development with HTML, CSS, and JavaScript.",
         "course_enrollment_number": 200,
-        "course_number_of_section": 4,
+        "course_number_of_section": 2,
         "course_pricing": 79.99,
         "course_rating": 5,
         "course_requirements": ["Basic knowledge of HTML", "Computer with internet access"],
@@ -200,7 +200,7 @@
         "course_updated_at": "2024-11-15T00:00:00Z",
         "course_title": "Web Development Basics",
         "course_thumbnail_url": "https://example.com/web-development-thumbnail.jpg",
-        "enrolled_students": ["u1", "u2"],
+        "enrolled_students": ["u1", "u2", "u3"],
         "sections": [
           {
             "section_id": "s3",
@@ -247,6 +247,154 @@
                 "lesson_duration": 7,
                 "section_id": "s4",
                 "lesson_videoUrl": "https://example.com/video10.mp4"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "course_id": "3",
+        "instructor_id": "u3",
+        "course_description": "Learn the fundamentals of JavaScript programming to build dynamic web applications.",
+        "course_enrollment_number": 350,
+        "course_number_of_section": 3,
+        "course_pricing": 99.99,
+        "course_rating": 4.7,
+        "course_requirements": ["Basic knowledge of HTML and CSS", "Computer with internet access"],
+        "course_type": "Online",
+        "course_created_at": "2024-10-20T00:00:00Z",
+        "course_updated_at": "2024-11-12T00:00:00Z",
+        "course_title": "JavaScript for Beginners",
+        "course_thumbnail_url": "https://example.com/javascript-basics-thumbnail.jpg",
+        "enrolled_students": [],
+        "sections": [
+          {
+            "section_id": "s5",
+            "section_title": "JavaScript Basics",
+            "section_order": 1,
+            "course_id": "3",
+            "lessons": [
+              {
+                "lesson_id": "l11",
+                "lesson_title": "Introduction to JavaScript",
+                "lesson_content": "Understand the basics of JavaScript syntax and concepts.",
+                "lesson_duration": 8,
+                "section_id": "s5",
+                "lesson_videoUrl": "https://example.com/video11.mp4"
+              },
+              {
+                "lesson_id": "l12",
+                "lesson_title": "JavaScript Variables and Data Types",
+                "lesson_content": "Learn about variables, data types, and simple operations.",
+                "lesson_duration": 9,
+                "section_id": "s5",
+                "lesson_videoUrl": "https://example.com/video12.mp4"
+              }
+            ]
+          },
+          {
+            "section_id": "s6",
+            "section_title": "Functions and Control Structures",
+            "section_order": 2,
+            "course_id": "3",
+            "lessons": [
+              {
+                "lesson_id": "l13",
+                "lesson_title": "JavaScript Functions",
+                "lesson_content": "Explore function declarations and expressions.",
+                "lesson_duration": 7,
+                "section_id": "s6",
+                "lesson_videoUrl": "https://example.com/video13.mp4"
+              },
+              {
+                "lesson_id": "l14",
+                "lesson_title": "Conditional Statements",
+                "lesson_content": "Learn how to use if-else and switch statements.",
+                "lesson_duration": 6,
+                "section_id": "s6",
+                "lesson_videoUrl": "https://example.com/video14.mp4"
+              }
+            ]
+          },
+          {
+            "section_id": "s7",
+            "section_title": "Loops and Iterations",
+            "section_order": 3,
+            "course_id": "3",
+            "lessons": [
+              {
+                "lesson_id": "l15",
+                "lesson_title": "For Loops and While Loops",
+                "lesson_content": "Implement different types of loops to repeat tasks.",
+                "lesson_duration": 10,
+                "section_id": "s7",
+                "lesson_videoUrl": "https://example.com/video15.mp4"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "course_id": "4",
+        "instructor_id": "u3",
+        "course_description": "Master responsive design techniques to create websites that look great on any device.",
+        "course_enrollment_number": 150,
+        "course_number_of_section": 2,
+        "course_pricing": 59.99,
+        "course_rating": 4.8,
+        "course_requirements": ["Basic knowledge of HTML and CSS", "Computer with internet access"],
+        "course_type": "Online",
+        "course_created_at": "2024-09-30T00:00:00Z",
+        "course_updated_at": "2024-11-10T00:00:00Z",
+        "course_title": "Responsive Web Design",
+        "course_thumbnail_url": "https://example.com/responsive-design-thumbnail.jpg",
+        "enrolled_students": [],
+        "sections": [
+          {
+            "section_id": "s8",
+            "section_title": "Introduction to Responsive Design",
+            "section_order": 1,
+            "course_id": "4",
+            "lessons": [
+              {
+                "lesson_id": "l16",
+                "lesson_title": "What is Responsive Design?",
+                "lesson_content": "Understand the concept and importance of responsive design.",
+                "lesson_duration": 5,
+                "section_id": "s8",
+                "lesson_videoUrl": "https://example.com/video16.mp4"
+              },
+              {
+                "lesson_id": "l17",
+                "lesson_title": "Media Queries",
+                "lesson_content": "Learn how to use media queries for adaptive layouts.",
+                "lesson_duration": 6,
+                "section_id": "s8",
+                "lesson_videoUrl": "https://example.com/video17.mp4"
+              }
+            ]
+          },
+          {
+            "section_id": "s9",
+            "section_title": "Flexbox and Grid for Responsive Design",
+            "section_order": 2,
+            "course_id": "4",
+            "lessons": [
+              {
+                "lesson_id": "l18",
+                "lesson_title": "Building Layouts with Flexbox",
+                "lesson_content": "Create responsive layouts using flexbox properties.",
+                "lesson_duration": 8,
+                "section_id": "s9",
+                "lesson_videoUrl": "https://example.com/video18.mp4"
+              },
+              {
+                "lesson_id": "l19",
+                "lesson_title": "Grid Layout Techniques",
+                "lesson_content": "Explore grid layout features for building complex responsive layouts.",
+                "lesson_duration": 9,
+                "section_id": "s9",
+                "lesson_videoUrl": "https://example.com/video19.mp4"
               }
             ]
           }

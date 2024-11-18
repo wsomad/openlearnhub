@@ -2,14 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import userProfileImg from '../../assets/images/userProfile.png';
-import { Course } from '../../types/Course';
+import { Course } from '../../types/course';
 import { UserProfile } from '../../types/Profile';
 import { ViewMode } from '../../types/Shared';
 
 interface ProfileViewProps {
     viewMode: ViewMode;
     userProfile: UserProfile;
-    toggleProfileMode: () => void;
     toggleModal: () => void;
     isInstructor: boolean;
     courses: {
@@ -21,7 +20,6 @@ interface ProfileViewProps {
 const ProfileView: React.FC<ProfileViewProps> = ({
     viewMode,
     userProfile,
-    toggleProfileMode,
     toggleModal,
     isInstructor,
     courses,
@@ -114,16 +112,6 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     >
                         Edit {isStudent ? 'Student' : 'Instructor'} Profile
                     </button>
-
-                    {isInstructor && (
-                        <button
-                            onClick={toggleProfileMode}
-                            className='bg-primary text-white py-2 px-4 rounded hover:bg-primary-dark transition-colors'
-                        >
-                            Switch to {isStudent ? 'Instructor' : 'Student'}{' '}
-                            Mode
-                        </button>
-                    )}
                 </div>
             </div>
 

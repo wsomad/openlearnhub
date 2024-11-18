@@ -1,4 +1,4 @@
-import {Section} from './section';
+import { Section } from './section';
 
 export interface Course {
     course_id: string;

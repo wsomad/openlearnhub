@@ -1,14 +1,12 @@
-import React, {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import SearchBar from '../../components/elements/SearchBar';
-import HeaderComponent from '../../components/HeaderComponent';
 import ProfileComponent from '../../components/profile/ProfileComponent';
 import ProfileView from '../../components/profile/ProfileView';
-import {Course} from '../../types/course';
-import {UserProfile} from '../../types/Profile';
-import {ProfileStatistics} from '../../types/ProfileStatistics';
-import {ViewMode} from '../../types/Shared';
+import { Course } from '../../types/course';
+import { UserProfile } from '../../types/Profile';
+import { ProfileStatistics } from '../../types/ProfileStatistics';
+import { ViewMode } from '../../types/Shared';
 
 interface ProfilePageProps {
     userId: string;
@@ -128,17 +126,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({userId}) => {
 
     return (
         <div className='font-abhaya profile-page p-6'>
-            <HeaderComponent
+            {/* <HeaderComponent
                 userType={viewMode}
                 currentRole='student'
                 onToggleView={function (): void {
                     throw new Error('Function not implemented.');
                 }}
-            />
+            /> */}
             <ProfileView
                 viewMode={viewMode}
                 userProfile={userProfile}
-                toggleProfileMode={toggleProfileMode}
                 toggleModal={toggleModal}
                 isInstructor={userProfile.role === 'instructor'}
                 courses={userCourses}
