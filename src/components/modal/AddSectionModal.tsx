@@ -1,10 +1,25 @@
-import {useState} from 'react';
-import {IoCloseOutline} from 'react-icons/io5';
+// AddSectionModal.tsx
+import React, { useState } from 'react';
+import { IoCloseOutline } from 'react-icons/io5';
 
-const AddSectionModal = ({isOpen, onClose, onSubmit}) => {
-    const [sectionTitle, setSectionTitle] = useState('');
+import { Section } from '../../types/Section';
 
-    const handleSubmit = (e) => {
+interface AddSectionModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (
+        newSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
+    ) => void;
+}
+
+const AddSectionModal: React.FC<AddSectionModalProps> = ({
+    isOpen,
+    onClose,
+    onSubmit,
+}) => {
+    const [sectionTitle, setSectionTitle] = useState<string>('');
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
         if (!sectionTitle.trim()) {
             alert('Section title is required.');
@@ -12,7 +27,9 @@ const AddSectionModal = ({isOpen, onClose, onSubmit}) => {
         }
 
         const newSection = {
-            title: sectionTitle,
+            section_title: sectionTitle,
+            section_order: 0, // This will be set by the parent component
+            course_id: '', // This will be set by the parent component
         };
 
         onSubmit(newSection);

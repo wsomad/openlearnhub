@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 
 import { getSpecificCourse } from '../services/firestore/CourseService'; // Correct import
+import { Course } from '../types/Course';
 import SearchBar from './elements/SearchBar'; // Assuming you have a SearchBar component
 
 function SearchComponent() {
-    const [queryText, setQueryText] = useState(''); // State for input
-    const [results, setResults] = useState([]); // State for storing search results
-    const [loading, setLoading] = useState(false); // Loading state
+    const [queryText, setQueryText] = useState<string>(''); // State for input
+    const [results, setResults] = useState<Course[]>([]); // State for storing search results
+    const [loading, setLoading] = useState<boolean>(false); // Loading state
 
-    const handleInputChange = (event) => {
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setQueryText(value); // Update input text
         if (value) {
@@ -19,7 +20,7 @@ function SearchComponent() {
     };
 
     // Function to search courses
-    const searchCoursesHandler = async (searchQuery) => {
+    const searchCoursesHandler = async (searchQuery: string) => {
         setLoading(true); // Start loading spinner
         try {
             const courses = await getSpecificCourse(searchQuery); // Call search function
@@ -31,7 +32,7 @@ function SearchComponent() {
         }
     };
 
-    const handleSelect = (course) => {
+    const handleSelect = (course: Course) => {
         console.log('Selected course:', course); // Log selected course
         setQueryText(''); // Clear input field
         setResults([]); // Clear search results
@@ -51,7 +52,7 @@ function SearchComponent() {
                         <ul>
                             {results.map((course) => (
                                 <li
-                                    key={course.id}
+                                    key={course.course_id}
                                     className='px-4 py-2 cursor-pointer hover:bg-gray-100 font-abhaya text-lg'
                                     onClick={() => handleSelect(course)}
                                 >

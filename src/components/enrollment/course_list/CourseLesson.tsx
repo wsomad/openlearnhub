@@ -1,103 +1,142 @@
-import {useState} from 'react';
-import {FaAngleDown, FaAngleRight, FaEdit} from 'react-icons/fa';
-import {MdDeleteOutline, MdEditNote} from 'react-icons/md';
-import {FaPlus} from 'react-icons/fa6';
-import ModalComponent from '../../modal/ModalComponent';
+import { useState } from 'react';
+import { FaAngleDown, FaAngleRight } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa6';
+import { MdDeleteOutline, MdEditNote } from 'react-icons/md';
+
+import { Lesson } from '../../../types/Lesson';
+import { Section } from '../../../types/Section';
+import {
+	BaseLessonHandlers,
+	BaseSectionHandlers,
+	EditableProps,
+} from '../../../types/Shared';
 import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 import EditSectionModal from '../../modal/EditSectionModal';
+import ModalComponent from '../../modal/ModalComponent';
 
-const CourseLesson = ({
+interface CourseLessonProps
+    extends EditableProps,
+        BaseLessonHandlers,
+        BaseSectionHandlers {
+    section: Section;
+    index: number;
+    lessonCount: number;
+    totalDuration: number;
+}
+
+const CourseLesson: React.FC<CourseLessonProps> = ({
     section,
     index,
     lessonCount,
     totalDuration,
     userType,
-    updateLesson,
-    addLesson,
-    deleteLesson,
+    canEdit,
     onDeleteSection,
     onEditSectionTitle,
+    onAddLesson,
+    onEditLesson,
+    onDeleteLesson,
 }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [selectedLesson, setSelectedLesson] = useState(null);
-    const [modalType, setModalType] = useState('add');
-    const [lessonToDelete, setLessonToDelete] = useState(null);
-    const [isEditTitleModalOpen, setIsEditTitleModalOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+    const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+    const [modalType, setModalType] = useState<'add' | 'edit'>('add');
+    const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
+    const [isEditTitleModalOpen, setIsEditTitleModalOpen] =
+        useState<boolean>(false);
 
-    // Remove the local lessons state and use section.lessons directly
+    const toggleSection = (
+        e: React.MouseEvent<HTMLDivElement | HTMLButtonElement>,
+        isEditButton: boolean = false,
+    ): void => {
+        if (!isEditButton && userType === 'instructor' && !canEdit) return;
 
-    const toggleSection = (e, isEditButton = false) => {
-        if (userType === 'instructor' && !isEditButton) {
-            return;
-        }
         e.stopPropagation();
         setIsOpen(!isOpen);
     };
 
-    const openModal = (lesson) => {
+    const openModal = (lesson: Lesson): void => {
+        if (!canEdit) return;
         setSelectedLesson(lesson);
         setModalType('edit');
         setIsModalOpen(true);
     };
 
-    const openAddModal = () => {
+    const openAddModal = (e: React.MouseEvent): void => {
+        if (!canEdit) return;
+        e.stopPropagation();
         setSelectedLesson(null);
         setModalType('add');
         setIsModalOpen(true);
     };
 
-    const closeModal = () => {
+    const closeModal = (): void => {
         setIsModalOpen(false);
         setSelectedLesson(null);
     };
 
-    const handleModalSubmit = (newData) => {
-        if (modalType === 'edit' && selectedLesson !== null) {
-            const lessonIndex = section.lessons.findIndex(
-                (lesson) => lesson.title === selectedLesson.title,
+    const handleModalSubmit = (lessonData: Partial<Lesson>): void => {
+        if (!canEdit) return;
+
+        if (modalType === 'edit' && selectedLesson) {
+            onEditLesson(
+                section.section_id,
+                selectedLesson.lesson_id,
+                lessonData,
             );
-            if (lessonIndex > -1) {
-                updateLesson(section.id, {
-                    oldTitle: selectedLesson.title,
-                    newData,
-                });
-            }
         } else if (modalType === 'add') {
-            addLesson(section.id, newData);
+            const newLesson: Omit<Lesson, 'lesson_id'> = {
+                lesson_title: lessonData.lesson_title || '',
+                lesson_content: lessonData.lesson_content || '',
+                lesson_duration: lessonData.lesson_duration || 0,
+                section_id: section.section_id,
+                lesson_videoUrl: lessonData.lesson_videoUrl,
+                lesson_documentUrl: lessonData.lesson_documentUrl,
+            };
+            onAddLesson(section.section_id, newLesson);
         }
         closeModal();
     };
 
-    const openDeleteModal = (lessonTitle) => {
-        setLessonToDelete(lessonTitle);
+    const openDeleteModal = (lessonId: string, e: React.MouseEvent): void => {
+        if (!canEdit) return;
+        e.stopPropagation();
+        setLessonToDelete(lessonId);
         setIsDeleteModalOpen(true);
     };
 
-    const closeDeleteModal = () => {
+    const closeDeleteModal = (): void => {
         setIsDeleteModalOpen(false);
         setLessonToDelete(null);
     };
 
-    const handleDelete = () => {
-        if (lessonToDelete !== null) {
-            deleteLesson(section.id, lessonToDelete);
-        }
+    const handleDelete = (): void => {
+        if (!canEdit || !lessonToDelete) return;
+        onDeleteLesson(section.section_id, lessonToDelete);
         closeDeleteModal();
     };
 
-    const openEditTitleModal = () => {
+    const openEditTitleModal = (e: React.MouseEvent): void => {
+        if (!canEdit) return;
+        e.stopPropagation();
         setIsEditTitleModalOpen(true);
     };
 
-    const closeEditTitleModal = () => {
+    const closeEditTitleModal = (): void => {
         setIsEditTitleModalOpen(false);
     };
 
-    const handleEditSectionTitle = (newTitle) => {
-        onEditSectionTitle(section.id, newTitle);
+    const handleEditSectionTitle = (newTitle: string): void => {
+        if (!canEdit) return;
+        onEditSectionTitle(section.section_id, newTitle);
         closeEditTitleModal();
+    };
+
+    const handleDeleteSection = (e: React.MouseEvent): void => {
+        if (!canEdit) return;
+        e.stopPropagation();
+        onDeleteSection(section.section_id);
     };
 
     return (
@@ -105,6 +144,8 @@ const CourseLesson = ({
             <div
                 onClick={(e) => userType === 'student' && toggleSection(e)}
                 className='cursor-pointer py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded-md flex items-start justify-between'
+                role='button'
+                aria-expanded={isOpen}
             >
                 <div className='relative flex items-start'>
                     <div
@@ -117,48 +158,45 @@ const CourseLesson = ({
                         {index}
                     </div>
                     <div className='flex flex-col text-md pl-16 mr-2'>
-                        <span className='font-bold'>{section.title}</span>
+                        <span className='font-bold'>
+                            {section.section_title}
+                        </span>
                         <span className='text-gray-500'>
-                            {section.lessons.length} lessons |{' '}
-                            {section.lessons.reduce(
-                                (acc, lesson) => acc + lesson.duration,
-                                0,
-                            )}{' '}
-                            mins
+                            {lessonCount} lessons | {totalDuration} mins
                         </span>
                     </div>
                 </div>
 
-                {userType === 'instructor' && (
+                {canEdit && userType === 'instructor' && (
                     <div className='ml-auto flex space-x-2 mr-2.5 mt-2'>
                         <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                openAddModal();
-                            }}
+                            onClick={openAddModal}
                             className='bg-secondary text-white w-8 h-8 rounded-full flex items-center justify-center'
+                            aria-label='Add new lesson'
                         >
                             <FaPlus />
                         </button>
                         <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                openEditTitleModal();
-                            }}
+                            onClick={openEditTitleModal}
                             className='bg-edit text-white w-8 h-8 rounded-full flex items-center justify-center'
+                            aria-label='Edit section title'
                         >
                             <MdEditNote />
                         </button>
                         <button
-                            onClick={() => onDeleteSection(section.id)}
+                            onClick={handleDeleteSection}
                             className='bg-delete text-white w-8 h-8 rounded-full flex items-center justify-center'
                             title='Delete Section'
+                            aria-label='Delete section'
                         >
                             <MdDeleteOutline />
                         </button>
                         <button
                             onClick={(e) => toggleSection(e, true)}
                             className='text-gray flex items-center justify-center'
+                            aria-label={
+                                isOpen ? 'Collapse section' : 'Expand section'
+                            }
                         >
                             {isOpen ? (
                                 <FaAngleDown className='text-xl' />
@@ -181,10 +219,14 @@ const CourseLesson = ({
             </div>
 
             {isOpen && (
-                <div className='mt-2 space-y-2'>
+                <div
+                    className='mt-2 space-y-2'
+                    role='region'
+                    aria-label='Lesson list'
+                >
                     {section.lessons.map((lesson, lessonIndex) => (
                         <div
-                            key={lessonIndex}
+                            key={lesson.lesson_id}
                             className='cursor-pointer p-2 bg-gray-50 hover:bg-gray-100 rounded-md'
                         >
                             <div className='relative flex items-start'>
@@ -193,25 +235,30 @@ const CourseLesson = ({
                                 </div>
                                 <div className='flex flex-col text-md pl-16 ml-8'>
                                     <span className='font-bold'>
-                                        {lesson.title}
+                                        {lesson.lesson_title}
                                     </span>
                                     <span className='text-gray-500'>
-                                        {lesson.duration} mins
+                                        {lesson.lesson_duration} mins
                                     </span>
                                 </div>
-                                {userType === 'instructor' && (
+                                {canEdit && userType === 'instructor' && (
                                     <div className='ml-auto flex space-x-2 mr-2.5 mt-3'>
                                         <button
                                             onClick={() => openModal(lesson)}
                                             className='bg-edit text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-edit-dark transition-all duration-300'
+                                            aria-label={`Edit lesson: ${lesson.lesson_title}`}
                                         >
-                                            <FaEdit className='text-sm' />
+                                            <MdEditNote className='text-lg' />
                                         </button>
                                         <button
-                                            onClick={() =>
-                                                openDeleteModal(lesson.title)
+                                            onClick={(e) =>
+                                                openDeleteModal(
+                                                    lesson.lesson_id,
+                                                    e,
+                                                )
                                             }
                                             className='bg-delete text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-delete-dark transition-all duration-300'
+                                            aria-label={`Delete lesson: ${lesson.lesson_title}`}
                                         >
                                             <MdDeleteOutline className='text-lg' />
                                         </button>
@@ -223,6 +270,7 @@ const CourseLesson = ({
                 </div>
             )}
 
+            {/* Modals */}
             {isModalOpen && (
                 <ModalComponent
                     isOpen={isModalOpen}
@@ -237,7 +285,13 @@ const CourseLesson = ({
                     isOpen={isDeleteModalOpen}
                     onClose={closeDeleteModal}
                     onConfirm={handleDelete}
-                    itemTitle={lessonToDelete}
+                    itemTitle={
+                        lessonToDelete
+                            ? section.lessons.find(
+                                  (l) => l.lesson_id === lessonToDelete,
+                              )?.lesson_title || ''
+                            : ''
+                    }
                     isSection={false}
                 />
             )}
@@ -246,7 +300,7 @@ const CourseLesson = ({
                 <EditSectionModal
                     isOpen={isEditTitleModalOpen}
                     onClose={closeEditTitleModal}
-                    initialTitle={section.title}
+                    initialTitle={section.section_title}
                     onSubmit={handleEditSectionTitle}
                 />
             )}

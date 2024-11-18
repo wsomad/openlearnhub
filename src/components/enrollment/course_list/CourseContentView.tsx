@@ -1,35 +1,70 @@
+import { GripVertical } from 'lucide-react';
 import React from 'react';
+
 import {
-    DndContext,
-    closestCenter,
-    KeyboardSensor,
-    PointerSensor,
-    useSensor,
-    useSensors,
+	closestCenter,
+	DndContext,
+	DragEndEvent,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
 } from '@dnd-kit/core';
 import {
-    arrayMove,
-    SortableContext,
-    sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
-    useSortable,
+	arrayMove,
+	SortableContext,
+	sortableKeyboardCoordinates,
+	useSortable,
+	verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import {CSS} from '@dnd-kit/utilities';
-import CourseLesson from './CourseLesson';
-import {GripVertical} from 'lucide-react';
+import { CSS } from '@dnd-kit/utilities';
 
-// Sortable Course Section Component
-const SortableCourseSection = ({
+import { Lesson } from '../../../types/Lesson';
+import { Section } from '../../../types/Section';
+import CourseLesson from './CourseLesson';
+
+interface SortableCourseSectionProps {
+    section: Section;
+    index: number;
+    userType: 'student' | 'instructor';
+    canEdit: boolean;
+    onDeleteSection: (sectionId: string) => void;
+    onEditSectionTitle: (sectionId: string, newTitle: string) => void;
+    onAddLesson: (sectionId: string, lesson: Omit<Lesson, 'lesson_id'>) => void;
+    onEditLesson: (
+        sectionId: string,
+        lessonId: string,
+        updatedLesson: Partial<Lesson>,
+    ) => void;
+    onDeleteLesson: (sectionId: string, lessonId: string) => void;
+}
+
+interface CourseContentViewProps {
+    userType: 'student' | 'instructor';
+    courseSections: Section[];
+    setCourseSections: React.Dispatch<React.SetStateAction<Section[]>>;
+    canEdit: boolean;
+    onDeleteSection: (sectionId: string) => void;
+    onEditSectionTitle: (sectionId: string, newTitle: string) => void;
+    onAddLesson: (sectionId: string, lesson: Omit<Lesson, 'lesson_id'>) => void;
+    onEditLesson: (
+        sectionId: string,
+        lessonId: string,
+        updatedLesson: Partial<Lesson>,
+    ) => void;
+    onDeleteLesson: (sectionId: string, lessonId: string) => void;
+}
+
+const SortableCourseSection: React.FC<SortableCourseSectionProps> = ({
     section,
     index,
-    lessonCount,
-    totalDuration,
     userType,
-    updateLesson,
-    addLesson,
-    deleteLesson,
+    canEdit,
     onDeleteSection,
     onEditSectionTitle,
+    onAddLesson,
+    onEditLesson,
+    onDeleteLesson,
 }) => {
     const {
         attributes,
@@ -38,7 +73,7 @@ const SortableCourseSection = ({
         transform,
         transition,
         isDragging,
-    } = useSortable({id: section.id});
+    } = useSortable({id: section.section_id});
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -47,46 +82,54 @@ const SortableCourseSection = ({
         opacity: isDragging ? 0.5 : 1,
     };
 
-    // Add the drag handle before the section number
+    const totalDuration = section.lessons.reduce(
+        (acc, lesson) => acc + lesson.lesson_duration,
+        0,
+    );
+
     const DragHandle = () => (
         <div
             {...attributes}
             {...listeners}
             className='absolute cursor-move flex items-center justify-center h-full px-2 text-gray-400 hover:text-gray-600'
-            style={{left: '-20px'}} // Adjust the left property to move the icon
+            style={{left: '-20px'}}
         >
             <GripVertical size={20} />
         </div>
     );
 
-    // Modify the CourseLesson component to include the drag handle
     return (
         <div ref={setNodeRef} style={style}>
             <div className='relative'>
-                {userType === 'instructor' && <DragHandle />}
+                {canEdit && userType === 'instructor' && <DragHandle />}
                 <CourseLesson
                     section={section}
                     index={index}
-                    lessonCount={lessonCount}
+                    lessonCount={section.lessons.length}
                     totalDuration={totalDuration}
                     userType={userType}
-                    updateLesson={updateLesson}
-                    addLesson={addLesson}
-                    deleteLesson={deleteLesson}
+                    canEdit={canEdit}
                     onDeleteSection={onDeleteSection}
                     onEditSectionTitle={onEditSectionTitle}
+                    onAddLesson={onAddLesson}
+                    onEditLesson={onEditLesson}
+                    onDeleteLesson={onDeleteLesson}
                 />
             </div>
         </div>
     );
 };
 
-const CourseContentView = ({
+const CourseContentView: React.FC<CourseContentViewProps> = ({
     userType,
     courseSections,
     setCourseSections,
+    canEdit,
     onDeleteSection,
     onEditSectionTitle,
+    onAddLesson,
+    onEditLesson,
+    onDeleteLesson,
 }) => {
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -99,69 +142,23 @@ const CourseContentView = ({
         }),
     );
 
-    const handleDragEnd = (event) => {
+    const handleDragEnd = (event: DragEndEvent): void => {
+        if (!canEdit) return;
+
         const {active, over} = event;
 
-        if (active.id !== over.id) {
+        if (over && active.id !== over.id) {
             setCourseSections((sections) => {
                 const oldIndex = sections.findIndex(
-                    (section) => section.id === active.id,
+                    (section) => section.section_id === active.id,
                 );
                 const newIndex = sections.findIndex(
-                    (section) => section.id === over.id,
+                    (section) => section.section_id === over.id,
                 );
 
-                const newSections = arrayMove(sections, oldIndex, newIndex);
-
-                // Log the new order of course sections
-                console.log('Sections rearranged:', newSections);
-
-                return newSections;
+                return arrayMove(sections, oldIndex, newIndex);
             });
         }
-    };
-
-    const updateLesson = (sectionId, updatedLesson) => {
-        setCourseSections((prevSections) =>
-            prevSections.map((section) => {
-                if (section.id === sectionId) {
-                    return {
-                        ...section,
-                        lessons: section.lessons.map((lesson) =>
-                            lesson.title === updatedLesson.oldTitle
-                                ? {...lesson, ...updatedLesson.newData}
-                                : lesson,
-                        ),
-                    };
-                }
-                return section;
-            }),
-        );
-    };
-
-    const addLesson = (sectionId, newLesson) => {
-        setCourseSections((prevSections) =>
-            prevSections.map((section) =>
-                section.id === sectionId
-                    ? {...section, lessons: [...section.lessons, newLesson]}
-                    : section,
-            ),
-        );
-    };
-
-    const deleteLesson = (sectionId, lessonTitle) => {
-        setCourseSections((prevSections) =>
-            prevSections.map((section) =>
-                section.id === sectionId
-                    ? {
-                          ...section,
-                          lessons: section.lessons.filter(
-                              (lesson) => lesson.title !== lessonTitle,
-                          ),
-                      }
-                    : section,
-            ),
-        );
     };
 
     return (
@@ -172,32 +169,23 @@ const CourseContentView = ({
                 onDragEnd={handleDragEnd}
             >
                 <SortableContext
-                    items={courseSections.map((section) => section.id)}
+                    items={courseSections.map((section) => section.section_id)}
                     strategy={verticalListSortingStrategy}
                 >
-                    {courseSections.map((section, index) => {
-                        const lessonCount = section.lessons.length;
-                        const totalDuration = section.lessons.reduce(
-                            (acc, lesson) => acc + lesson.duration,
-                            0,
-                        );
-
-                        return (
-                            <SortableCourseSection
-                                key={section.id}
-                                section={section}
-                                index={index + 1}
-                                lessonCount={lessonCount}
-                                totalDuration={totalDuration}
-                                userType={userType}
-                                updateLesson={updateLesson}
-                                addLesson={addLesson}
-                                deleteLesson={deleteLesson}
-                                onDeleteSection={onDeleteSection}
-                                onEditSectionTitle={onEditSectionTitle}
-                            />
-                        );
-                    })}
+                    {courseSections.map((section, index) => (
+                        <SortableCourseSection
+                            key={section.section_id}
+                            section={section}
+                            index={index + 1}
+                            userType={userType}
+                            canEdit={canEdit}
+                            onDeleteSection={onDeleteSection}
+                            onEditSectionTitle={onEditSectionTitle}
+                            onAddLesson={onAddLesson}
+                            onEditLesson={onEditLesson}
+                            onDeleteLesson={onDeleteLesson}
+                        />
+                    ))}
                 </SortableContext>
             </DndContext>
         </div>

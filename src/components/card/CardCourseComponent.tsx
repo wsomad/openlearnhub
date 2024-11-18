@@ -1,18 +1,21 @@
 import React from 'react';
+
+import { Course } from '../../types/Course'; // Import the Course interface
 import CardCourseDetails from './CardCourseDetails';
 
-function CardCourseComponent({
-    thumbnail,
-    title,
-    instructor,
-    pricing,
+interface CardCourseComponentProps {
+    course: Course;
+    buttonText: string;
+    onButtonClick: () => void;
+    size: 'small' | 'medium' | 'big' | 'default';
+}
+
+const CardCourseComponent = ({
+    course,
     buttonText,
     onButtonClick,
     size,
-    hoursDuration,
-    numSections,
-    numLectures,
-}) {
+}: CardCourseComponentProps) => {
     let cardSizeClass = '';
     let imageSizeClass = '';
 
@@ -42,26 +45,25 @@ function CardCourseComponent({
             }`}
         >
             <img
-                src={thumbnail}
-                alt={title}
+                src={course.course_thumbnail_url} // Use properties from the course object
+                alt={course.course_title}
                 className={`w-full ${imageSizeClass} object-cover ${
                     size === 'big' ? 'rounded-tl-md' : 'rounded-t-md'
                 }`}
             />
-
             <CardCourseDetails
-                title={title}
-                instructor={instructor}
+                title={course.course_title}
+                instructor={course.course_type} // Use course properties here
                 size={size}
-                pricing={pricing}
-                hoursDuration={hoursDuration}
-                numSections={numSections}
-                numLectures={numLectures}
+                pricing={course.course_pricing}
+                hoursDuration={course.course_enrollment_number} // Example, adjust as needed
+                numSections={course.course_number_of_section}
+                numLectures={course.course_enrollment_number} // Example, adjust as needed
                 buttonText={buttonText}
                 onButtonClick={onButtonClick}
             />
         </div>
     );
-}
+};
 
 export default CardCourseComponent;

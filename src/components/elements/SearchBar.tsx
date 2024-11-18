@@ -1,6 +1,12 @@
-import {BiSearch} from 'react-icons/bi'; // Importing a different search icon
+import React from 'react';
+import { BiSearch } from 'react-icons/bi'; // Importing a different search icon
 
-const SearchBar = ({query, handleInputChange}) => {
+interface SearchBarProps {
+    query: string;
+    handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const SearchBar = ({query, handleInputChange}: SearchBarProps) => {
     return (
         <div className='relative w-3/4 mx-auto mt-8'>
             {/* Search Icon */}

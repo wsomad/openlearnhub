@@ -1,9 +1,21 @@
 import React from 'react';
-import {RiTimer2Line} from 'react-icons/ri';
-import {HiOutlineDocumentText} from 'react-icons/hi';
-import {MdQuiz} from 'react-icons/md';
+import { HiOutlineDocumentText } from 'react-icons/hi';
+import { MdQuiz } from 'react-icons/md';
+import { RiTimer2Line } from 'react-icons/ri';
 
-function CardCourseDetails({
+interface CardCourseDetailsProps {
+    title: string;
+    instructor: string;
+    size: 'small' | 'medium' | 'big' | 'default';
+    hoursDuration: number;
+    numSections: number;
+    numLectures: number;
+    pricing: number;
+    onButtonClick: () => void;
+    buttonText: string;
+}
+
+const CardCourseDetails = ({
     title,
     instructor,
     size,
@@ -13,7 +25,7 @@ function CardCourseDetails({
     pricing,
     onButtonClick,
     buttonText,
-}) {
+}: CardCourseDetailsProps) => {
     return (
         <div
             className={`p-3 border border-gray ${
@@ -27,6 +39,7 @@ function CardCourseDetails({
             <p className='font-abhaya font-semibold text-md text-secondary'>
                 {instructor}
             </p>
+
             <div className='flex items-center justify-between w-full mt-4'>
                 {size === 'big' && (
                     <div className='flex flex-row flex gap-6 justify-between mt-2'>
@@ -64,6 +77,6 @@ function CardCourseDetails({
             </div>
         </div>
     );
-}
+};
 
 export default CardCourseDetails;

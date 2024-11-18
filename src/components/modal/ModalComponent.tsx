@@ -1,40 +1,67 @@
-import {useState, useEffect} from 'react';
-import {IoCloseOutline} from 'react-icons/io5';
+import { useEffect, useState } from 'react';
+import { IoCloseOutline } from 'react-icons/io5';
 
-const ModalComponent = ({isOpen, onClose, onSubmit, initialData}) => {
-    const [titleLesson, setTitleLesson] = useState('');
-    const [duration, setDuration] = useState('');
-    const [linkContent, setLinkContent] = useState('');
-    const [uploadContent, setUploadContent] = useState(null);
+import { Lesson } from '../../types/Lesson';
+
+interface ModalComponentProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (lessonData: Partial<Lesson>) => void;
+    initialData?: Lesson | null;
+}
+
+const ModalComponent: React.FC<ModalComponentProps> = ({
+    isOpen,
+    onClose,
+    onSubmit,
+    initialData,
+}) => {
+    const [lessonTitle, setLessonTitle] = useState<string>('');
+    const [duration, setDuration] = useState<string>('');
+    const [content, setContent] = useState<string>('');
+    const [videoUrl, setVideoUrl] = useState<string>('');
+    const [documentUrl, setDocumentUrl] = useState<string>('');
 
     useEffect(() => {
         if (initialData) {
-            setTitleLesson(initialData.title || '');
-            setDuration(initialData.duration?.toString() || '');
-            setLinkContent(initialData.link || '');
-            setUploadContent(initialData.uploadContent || null);
+            setLessonTitle(initialData.lesson_title || '');
+            setDuration(initialData.lesson_duration?.toString() || '');
+            setContent(initialData.lesson_content || '');
+            setVideoUrl(initialData.lesson_videoUrl || '');
+            setDocumentUrl(initialData.lesson_documentUrl || '');
         }
     }, [initialData]);
 
-    const handleClose = () => {
-        if (onClose) onClose();
+    const handleClose = (): void => {
+        resetForm();
+        onClose();
     };
 
-    const handleSubmit = (e) => {
+    const resetForm = (): void => {
+        setLessonTitle('');
+        setDuration('');
+        setContent('');
+        setVideoUrl('');
+        setDocumentUrl('');
+    };
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
         e.preventDefault();
-        if (!titleLesson || !duration) {
+
+        if (!lessonTitle || !duration) {
             alert('Title and Duration are required fields.');
             return;
         }
 
-        const newLessonData = {
-            title: titleLesson,
-            duration: parseInt(duration, 10),
-            link: linkContent,
-            uploadContent,
+        const lessonData: Partial<Lesson> = {
+            lesson_title: lessonTitle,
+            lesson_duration: parseInt(duration, 10),
+            lesson_content: content,
+            lesson_videoUrl: videoUrl || undefined,
+            lesson_documentUrl: documentUrl || undefined,
         };
 
-        onSubmit(newLessonData);
+        onSubmit(lessonData);
         handleClose();
     };
 
@@ -54,6 +81,7 @@ const ModalComponent = ({isOpen, onClose, onSubmit, initialData}) => {
                             type='button'
                             className='text-3xl w-16 h-16 flex items-center justify-center'
                             onClick={handleClose}
+                            aria-label='Close modal'
                         >
                             <IoCloseOutline />
                         </button>
@@ -61,27 +89,36 @@ const ModalComponent = ({isOpen, onClose, onSubmit, initialData}) => {
 
                     <div className='space-y-4'>
                         <div>
-                            <label className='font-abhaya text-lg font-medium mb-1 block'>
-                                Title Lesson
+                            <label
+                                htmlFor='lessonTitle'
+                                className='font-abhaya text-lg font-medium mb-1 block'
+                            >
+                                Lesson Title*
                             </label>
                             <input
+                                id='lessonTitle'
                                 className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                 type='text'
-                                placeholder='Title Lesson'
-                                value={titleLesson}
-                                onChange={(e) => setTitleLesson(e.target.value)}
+                                placeholder='Enter lesson title'
+                                value={lessonTitle}
+                                onChange={(e) => setLessonTitle(e.target.value)}
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className='font-abhaya text-lg font-medium mb-1 block'>
-                                Duration (minutes)
+                            <label
+                                htmlFor='duration'
+                                className='font-abhaya text-lg font-medium mb-1 block'
+                            >
+                                Duration (minutes)*
                             </label>
                             <input
+                                id='duration'
                                 className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
-                                type='text'
-                                placeholder='Duration in minutes'
+                                type='number'
+                                min='1'
+                                placeholder='Enter duration in minutes'
                                 value={duration}
                                 onChange={(e) => setDuration(e.target.value)}
                                 required
@@ -89,41 +126,63 @@ const ModalComponent = ({isOpen, onClose, onSubmit, initialData}) => {
                         </div>
 
                         <div>
-                            <label className='font-abhaya text-lg font-medium mb-1 block'>
-                                Link Content
+                            <label
+                                htmlFor='content'
+                                className='font-abhaya text-lg font-medium mb-1 block'
+                            >
+                                Lesson Content
                             </label>
-                            <input
+                            <textarea
+                                id='content'
                                 className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
-                                type='text'
-                                placeholder='Link Content'
-                                value={linkContent}
-                                onChange={(e) => setLinkContent(e.target.value)}
+                                rows={4}
+                                placeholder='Enter lesson content or description'
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label className='font-abhaya text-lg font-medium mb-1 block'>
-                                Upload Content
+                            <label
+                                htmlFor='videoUrl'
+                                className='font-abhaya text-lg font-medium mb-1 block'
+                            >
+                                Video URL
                             </label>
                             <input
+                                id='videoUrl'
                                 className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
-                                type='file'
-                                accept='.pdf,video/*'
-                                onChange={(e) =>
-                                    setUploadContent(e.target.files[0])
-                                }
+                                type='url'
+                                placeholder='Enter video URL'
+                                value={videoUrl}
+                                onChange={(e) => setVideoUrl(e.target.value)}
+                            />
+                        </div>
+
+                        <div>
+                            <label
+                                htmlFor='documentUrl'
+                                className='font-abhaya text-lg font-medium mb-1 block'
+                            >
+                                Document URL
+                            </label>
+                            <input
+                                id='documentUrl'
+                                className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
+                                type='url'
+                                placeholder='Enter document URL'
+                                value={documentUrl}
+                                onChange={(e) => setDocumentUrl(e.target.value)}
                             />
                         </div>
                     </div>
 
                     <div className='mt-8'>
                         <button
-                            className='w-full py-3 rounded-3xl bg-primary text-white text-lg active:scale-[.98] font-abhaya'
                             type='submit'
+                            className='w-full py-3 rounded-3xl bg-primary text-white text-lg active:scale-[.98] font-abhaya'
                         >
-                            {initialData
-                                ? 'Save Lesson Content'
-                                : 'Add New Lesson Content'}
+                            {initialData ? 'Save Changes' : 'Add Lesson'}
                         </button>
                     </div>
                 </form>

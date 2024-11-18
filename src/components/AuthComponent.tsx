@@ -1,25 +1,63 @@
-import {useAuth} from '../hooks/useAuth';
-import {useState} from 'react';
+import { useState } from 'react';
+import { FaGoogle } from 'react-icons/fa';
+
 import authImage from '../assets/images/authimage.png';
-import {FaGoogle} from 'react-icons/fa';
-import {useUser} from '../hooks/useUser';
+import { useAuth } from '../hooks/useAuth';
+import { useUser } from '../hooks/useUser';
+import { User } from '../types/User';
 
-const AuthComponent = () => {
-    const {signIn, signUp, isAuthenticated} = useAuth();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [username, setUsername] = useState('');
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [isSignIn, setSignIn] = useState(true);
-    const {userRole} = useUser();
+interface AuthHook {
+    signIn: (
+        email: string,
+        password: string,
+        role: User['role'],
+    ) => Promise<void>;
+    signUp: (
+        username: string,
+        firstname: string,
+        lastname: string,
+        email: string,
+        password: string,
+        role: User['role'],
+    ) => Promise<void>;
+    isAuthenticated: boolean;
+}
 
-    const handleSubmit = (e) => {
+interface UserHook {
+    userRole: User['role'];
+}
+
+const AuthComponent: React.FC = () => {
+    const {signIn, signUp, isAuthenticated} = useAuth() as AuthHook;
+    const {userRole} = useUser() as UserHook;
+
+    // Form state
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
+    const [firstName, setFirstName] = useState<string>('');
+    const [lastName, setLastName] = useState<string>('');
+    const [isSignIn, setSignIn] = useState<boolean>(true);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (isSignIn) {
-            signIn(email, password, userRole);
-        } else {
-            signUp(username, firstName, lastName, email, password, userRole);
+
+        try {
+            if (isSignIn) {
+                await signIn(email, password, userRole);
+            } else {
+                await signUp(
+                    username,
+                    firstName,
+                    lastName,
+                    email,
+                    password,
+                    userRole,
+                );
+            }
+        } catch (error) {
+            console.error('Authentication error:', error);
+            // Handle error appropriately
         }
     };
 
@@ -55,14 +93,13 @@ const AuthComponent = () => {
                             <span className='text-primary'>Learn</span>
                             <span className='text-black'>Hub.</span>
                         </span>
-                        <span className='font-abhaya text-7xl block text-primary'></span>
                     </h2>
                 </div>
             </div>
+
             {/* Main form container */}
             <div className='w-full flex items-center justify-center lg:w-1/2'>
                 <form onSubmit={handleSubmit} className='w-full max-w-xl'>
-                    {/* Form title */}
                     <h1 className='font-abhaya text-7xl font-bold mb-6'>
                         {isSignIn ? 'Sign In' : 'Sign Up'}
                     </h1>
@@ -71,10 +108,14 @@ const AuthComponent = () => {
                     {!isSignIn && (
                         <div className='space-y-4'>
                             <div>
-                                <label className='font-abhaya font-bold text-lg mb-1 block '>
+                                <label
+                                    htmlFor='firstName'
+                                    className='font-abhaya font-bold text-lg mb-1 block'
+                                >
                                     First Name
                                 </label>
                                 <input
+                                    id='firstName'
                                     className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                     type='text'
                                     placeholder='First Name'
@@ -82,13 +123,18 @@ const AuthComponent = () => {
                                     onChange={(e) =>
                                         setFirstName(e.target.value)
                                     }
+                                    required
                                 />
                             </div>
                             <div>
-                                <label className='font-abhaya text-lg font-medium mb-1 block'>
+                                <label
+                                    htmlFor='lastName'
+                                    className='font-abhaya text-lg font-medium mb-1 block'
+                                >
                                     Last Name
                                 </label>
                                 <input
+                                    id='lastName'
                                     className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                     type='text'
                                     placeholder='Last Name'
@@ -96,13 +142,18 @@ const AuthComponent = () => {
                                     onChange={(e) =>
                                         setLastName(e.target.value)
                                     }
+                                    required
                                 />
                             </div>
                             <div>
-                                <label className='font-abhaya text-lg font-medium mb-1 block'>
+                                <label
+                                    htmlFor='username'
+                                    className='font-abhaya text-lg font-medium mb-1 block'
+                                >
                                     Username
                                 </label>
                                 <input
+                                    id='username'
                                     className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                     type='text'
                                     placeholder='Username'
@@ -110,6 +161,7 @@ const AuthComponent = () => {
                                     onChange={(e) =>
                                         setUsername(e.target.value)
                                     }
+                                    required
                                 />
                             </div>
                         </div>
@@ -118,27 +170,37 @@ const AuthComponent = () => {
                     {/* Common email and password fields */}
                     <div className='space-y-4 mt-4'>
                         <div>
-                            <label className='font-abhaya text-lg font-medium mb-1 block'>
+                            <label
+                                htmlFor='email'
+                                className='font-abhaya text-lg font-medium mb-1 block'
+                            >
                                 Email
                             </label>
                             <input
+                                id='email'
                                 className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
-                                type='text'
+                                type='email'
                                 placeholder='Email@example.com'
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                required
                             />
                         </div>
                         <div>
-                            <label className='font-abhaya text-lg font-medium mb-1 block'>
+                            <label
+                                htmlFor='password'
+                                className='font-abhaya text-lg font-medium mb-1 block'
+                            >
                                 Password
                             </label>
                             <input
+                                id='password'
                                 className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                 type='password'
                                 placeholder='Password'
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                required
                             />
                         </div>
                     </div>
@@ -157,7 +219,7 @@ const AuthComponent = () => {
                                     Don't have an account?{' '}
                                     <button
                                         type='button'
-                                        className='text-primary font-bold hover:underline'
+                                        className='text-primary font-bold hover:underline ml-1'
                                         onClick={() => setSignIn(false)}
                                     >
                                         Sign Up
@@ -168,7 +230,7 @@ const AuthComponent = () => {
                                     Already have an account?{' '}
                                     <button
                                         type='button'
-                                        className='text-primary font-bold hover:underline'
+                                        className='text-primary font-bold hover:underline ml-1'
                                         onClick={() => setSignIn(true)}
                                     >
                                         Sign In
@@ -189,8 +251,11 @@ const AuthComponent = () => {
                     <button
                         type='button'
                         className='w-full flex items-center justify-center py-3 border-2 border-gray-300 rounded-3xl hover:bg-gray-100'
+                        onClick={() => {
+                            /* Handle Google sign-in */
+                        }}
                     >
-                        <FaGoogle className='text-xl mr-3' />{' '}
+                        <FaGoogle className='text-xl mr-3' />
                         <span className='text-lg font-abhaya'>
                             Continue with Google
                         </span>

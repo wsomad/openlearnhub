@@ -1,200 +1,232 @@
-import {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {useAuth} from '../hooks/useAuth';
-import {useUser} from '../hooks/useUser';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-const HeaderComponent = () => {
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isUserOpen, setIsUserOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(true);
-    const [userType, setUserType] = useState('student');
-    const {user} = useAuth();
+import { useAuth } from '../hooks/useAuth';
+import { useUser } from '../hooks/useUser';
+import { UserProfile } from '../types/Profile';
+import { ViewMode } from '../types/Shared';
+import { UserRole } from '../types/User';
+
+interface Category {
+    name: string;
+    path: string;
+}
+
+interface MenuItem {
+    name: string;
+    path: string;
+}
+
+interface HeaderComponentProps {
+    userType: ViewMode;
+    currentRole: UserRole;
+    onToggleView: () => void;
+}
+
+const HeaderComponent: React.FC<HeaderComponentProps> = ({
+    userType,
+    currentRole,
+    onToggleView,
+}) => {
+    const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+    const [isUserOpen, setIsUserOpen] = useState<boolean>(false);
+    // const [isLoggedIn, setIsLoggedIn] = useState(true);
+    const {user, signOut} = useAuth();
     const {currentUser, fetchUserById} = useUser();
     const navigate = useNavigate();
-    const {userRole} = useUser();
 
     useEffect(() => {
-        let isCancelled = false;
+        let isMounted = true;
 
-        const fetchUser = async () => {
-            if (user && user.uid && !isCancelled) {
+        const fetchUserData = async () => {
+            if (user?.uid && isMounted) {
                 try {
                     await fetchUserById(user.uid);
                 } catch (error) {
-                    console.error('Failed to fetch user: ', error);
+                    console.error('Failed to fetch user:', error);
                 }
             }
         };
-        if (user && user.uid) {
-            fetchUser();
-        }
+
+        fetchUserData();
+
         return () => {
-            isCancelled = true;
+            isMounted = false;
         };
     }, [user?.uid, fetchUserById]);
 
-    const categories = [
-        {name: 'Development', path: '/development'},
-        {name: 'Language', path: '/language'},
-        {name: 'Nature', path: '/nature'},
-        {name: 'Science', path: '/science'},
+    const categories: Category[] = [
+        {name: 'Development', path: '/categories/development'},
+        {name: 'Language', path: '/categories/language'},
+        {name: 'Nature', path: '/categories/nature'},
+        {name: 'Science', path: '/categories/science'},
     ];
 
-    const studentMenu = [
+    const studentMenu: MenuItem[] = [
         {name: 'Profile', path: '/profile'},
-        {name: 'Course Enrolled', path: '/course-enrolled'},
-        {name: 'Go to Instructor Site', path: '/instructor'},
+        {name: 'Enrolled Courses', path: '/courses/enrolled'},
+        ...(currentRole === 'both'
+            ? [{name: 'Switch to Instructor', path: '/instructor/dashboard'}]
+            : []),
     ];
 
-    const instructorMenu = [
+    const instructorMenu: MenuItem[] = [
         {name: 'Profile', path: '/profile'},
-        {name: 'Course Dashboard', path: '/course-dashboard'},
-        {name: 'Go to Student Site', path: '/home'},
+        {name: 'Course Dashboard', path: '/instructor/courses'},
+        ...(currentRole === 'both'
+            ? [{name: 'Switch to Student', path: '/courses/enrolled'}]
+            : []),
     ];
 
-    const toggleDropdown = () => {
-        setIsDropdownOpen((prev) => !prev);
-    };
+    const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
+    const toggleUser = () => setIsUserOpen((prev) => !prev);
 
-    const toggleUser = () => {
-        setIsUserOpen((prev) => !prev);
-    };
+    const handleSignInAndSignUp = () => navigate('/auth');
 
-    const handleSignInAndSignUp = () => {
-        navigate('/auth');
-    };
-
-    const handleCategoryClick = (path) => {
+    const closeDropdowns = () => {
         setIsDropdownOpen(false);
-        navigate(path);
-    };
-
-    const handleUserClick = (path) => {
         setIsUserOpen(false);
-        navigate(path);
     };
 
-    const handleLogout = () => {
-        setIsLoggedIn(false);
-        navigate('/auth');
+    const handleLogout = async () => {
+        try {
+            await signOut();
+            navigate('/auth');
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
+    };
+
+    const handleViewSwitch = (path: string) => {
+        if (path.includes('Switch to')) {
+            onToggleView();
+        }
+        navigate(path);
+        closeDropdowns();
     };
 
     return (
         <>
-            <header className='flex items-center justify-between p-4 px-10'>
+            <header className='flex items-center justify-between p-4 px-10 bg-white shadow-sm'>
                 <div className='flex items-center space-x-4'>
-                    <div className='text-2xl font-bold'>
+                    {/* Logo */}
+                    <Link to='/' className='text-2xl font-bold no-underline'>
                         <span className='font-abhaya text-2xl text-primary'>
-                            OpenLearn
+                            Learn
                         </span>
                         <span className='font-abhaya text-2xl text-tertiary'>
                             Hub.
                         </span>
-                    </div>
+                    </Link>
 
+                    {/* Categories Dropdown */}
                     <div className='relative'>
                         <button
                             onClick={toggleDropdown}
-                            className='font-abhaya font-semibold mt-1 ml-5 text-lg bg-gray-800 hover:bg-gray-700 rounded-md'
+                            className='font-abhaya font-semibold mt-1 ml-5 text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors'
+                            aria-expanded={isDropdownOpen}
                         >
                             Categories
                         </button>
 
-                        <div
-                            className={`transition-all duration-300 ease-in-out absolute bg-white text-black mt-1 rounded-sm shadow-lg z-20 w-48 ml-10 transform ${
-                                isDropdownOpen
-                                    ? 'opacity-100 h-auto'
-                                    : 'opacity-0 h-0'
-                            } overflow-hidden`}
-                        >
-                            <ul>
-                                {categories.map((category) => (
-                                    <li
-                                        key={category.name}
-                                        className='font-abhaya p-2 hover:bg-gray-200 mr-12'
-                                    >
-                                        <button
-                                            onClick={() =>
-                                                handleCategoryClick(
-                                                    category.path,
-                                                )
-                                            }
-                                            className='w-full text-left ml-2'
-                                        >
-                                            {category.name}
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
+                        {isDropdownOpen && (
+                            <div
+                                className='absolute bg-white text-black mt-1 rounded-md shadow-lg z-20 w-48 ml-10'
+                                onClick={closeDropdowns}
+                            >
+                                <ul className='py-1'>
+                                    {categories.map((category) => (
+                                        <li key={category.name}>
+                                            <Link
+                                                to={category.path}
+                                                className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-abhaya no-underline'
+                                            >
+                                                {category.name}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 </div>
 
+                {/* Auth Buttons / User Menu */}
                 <div className='flex space-x-4'>
-                    {!isLoggedIn ? (
-                        <>
+                    {!currentUser ? (
+                        <div className='space-x-4'>
                             <button
                                 onClick={handleSignInAndSignUp}
-                                className='w-32 h-10 border border-primary text-primary rounded-3xl text-md font-abhaya font-bold'
+                                className='px-6 py-2 border border-primary text-primary rounded-3xl text-md font-abhaya font-bold hover:bg-primary hover:text-white transition-colors'
                             >
                                 Sign In
                             </button>
                             <button
                                 onClick={handleSignInAndSignUp}
-                                className='w-32 h-10 bg-primary text-white rounded-3xl text-md font-abhaya font-bold'
+                                className='px-6 py-2 bg-primary text-white rounded-3xl text-md font-abhaya font-bold hover:bg-primary-dark transition-colors'
                             >
                                 Get Started
                             </button>
-                        </>
+                        </div>
                     ) : (
                         <div className='relative'>
-                            <div className='flex justify-end'>
-                                {' '}
-                                {/* Adjust to align the button to the right */}
+                            <div className='flex items-center space-x-4'>
+                                {currentRole === 'both' && (
+                                    <button
+                                        onClick={onToggleView}
+                                        className='px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary-dark transition-colors'
+                                    >
+                                        Switch to{' '}
+                                        {userType === 'student'
+                                            ? 'Instructor'
+                                            : 'Student'}
+                                    </button>
+                                )}
                                 <button
                                     onClick={toggleUser}
-                                    className='font-abhaya font-semibold text-lg bg-gray-800 hover:bg-gray-700 rounded-md text-right' // Align text to the right
+                                    className='font-abhaya font-semibold text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors flex items-center space-x-2'
+                                    aria-expanded={isUserOpen}
                                 >
-                                    {currentUser
-                                        ? currentUser.username
-                                        : 'User'}
+                                    <span>
+                                        {currentUser.username || 'User'}
+                                    </span>
                                 </button>
                             </div>
 
-                            <div
-                                className={`transition-all duration-300 ease-in-out absolute bg-white text-center text-black mt-1 rounded-sm shadow-lg z-20 w-48 ${
-                                    isUserOpen ? 'opacity-100' : 'opacity-0'
-                                }`}
-                            >
-                                <ul>
-                                    {(userType === 'student'
-                                        ? studentMenu
-                                        : instructorMenu
-                                    ).map((item) => (
-                                        <li
-                                            key={item.name}
-                                            className='font-abhaya p-2 hover:bg-gray-200'
-                                        >
+                            {isUserOpen && (
+                                <div
+                                    className='absolute right-0 mt-2 bg-white rounded-md shadow-lg z-20 w-48'
+                                    onClick={closeDropdowns}
+                                >
+                                    <ul className='py-1'>
+                                        {(userType === 'student'
+                                            ? studentMenu
+                                            : instructorMenu
+                                        ).map((item) => (
+                                            <li key={item.name}>
+                                                <button
+                                                    onClick={() =>
+                                                        handleViewSwitch(
+                                                            item.path,
+                                                        )
+                                                    }
+                                                    className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-abhaya'
+                                                >
+                                                    {item.name}
+                                                </button>
+                                            </li>
+                                        ))}
+                                        <li>
                                             <button
-                                                onClick={() =>
-                                                    handleUserClick(item.path)
-                                                }
-                                                className='w-full text-left ml-2'
+                                                onClick={handleLogout}
+                                                className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-abhaya'
                                             >
-                                                {item.name}
+                                                Sign Out
                                             </button>
                                         </li>
-                                    ))}
-                                    <li className='font-abhaya p-2 hover:bg-gray-200'>
-                                        <button
-                                            onClick={handleLogout}
-                                            className='w-full text-left ml-2'
-                                        >
-                                            Sign Out
-                                        </button>
-                                    </li>
-                                </ul>
-                            </div>
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
