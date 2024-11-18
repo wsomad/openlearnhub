@@ -10,5 +10,6 @@ export interface Course {
     course_created_at: Date;
     course_updated_at: Date;
     course_title: string;
+    course_instructor: string;
     course_thumbnail_url: string;
 }

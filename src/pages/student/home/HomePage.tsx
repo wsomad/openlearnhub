@@ -2,13 +2,13 @@ import React, {useEffect, useState} from 'react';
 import HeaderComponent from '../../../components/HeaderComponent';
 import SearchComponent from '../../../components/SearchComponent';
 import CardCourseComponent from '../../../components/card/CardCourseComponent';
-import thumbnail from '../../../assets/images/thumbnail.png';
+import thumbnail from '../../../assets/images/thumbnail.png'; // Adjust the path if needed
 import {useCourses} from '../../../hooks/useCourses';
-import {useUser} from '../../../hooks/useUser';
+import {Course} from '../../../types/course'; // Import the correct Course type
 
-function HomePage() {
+const HomePage: React.FC = () => {
     const {courses, fetchAllCourses} = useCourses();
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const loadCourses = async () => {
@@ -16,15 +16,15 @@ function HomePage() {
             setLoading(false); // Set loading to false once data is fetched
         };
         loadCourses();
-    }, []);
+    }, [fetchAllCourses]);
 
     useEffect(() => {
         console.log('List of courses:', courses);
     }, [courses]);
 
-    const renderedCourses = courses.map((course) => (
+    const renderedCourses = courses.map((course: Course) => (
         <CardCourseComponent
-            key={course.course_title} // Add a unique key for each item
+            key={course.course_title} // Use a unique key for each item
             thumbnail={thumbnail}
             title={course.course_title}
             instructor={course.course_instructor}
@@ -68,7 +68,6 @@ function HomePage() {
                             <div className='animate-spin border-4 border-t-4 border-solid border-gray rounded-full h-16 w-16 border-t-primary'></div>
                         </div>
                     ) : (
-                        // mx-auto max-w-screen-2xl grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6 mt-6 mb-6
                         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6 my-6'>
                             {renderedCourses}
                         </div>
@@ -77,6 +76,6 @@ function HomePage() {
             </div>
         </div>
     );
-}
+};
 
 export default HomePage;

@@ -1,25 +1,37 @@
+import React, {useState, FormEvent} from 'react';
 import {useAuth} from '../hooks/useAuth';
-import {useState} from 'react';
-import authImage from '../assets/images/authimage.png';
+import authImage from '../assets/images/thumbnail.png';
 import {FaGoogle} from 'react-icons/fa';
 import {useUser} from '../hooks/useUser';
 
-const AuthComponent = () => {
-    const {signIn, signUp, isAuthenticated} = useAuth();
+const AuthComponent: React.FC = () => {
+    const {signIn, signUp} = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
+    const [firstname, setFirstName] = useState('');
+    const [lastname, setLastName] = useState('');
     const [isSignIn, setSignIn] = useState(true);
-    const {userRole} = useUser();
+    const {userRole} = useUser(); // Assuming userRole is obtained from useUser
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
         if (isSignIn) {
-            signIn(email, password, userRole);
+            await signIn(email, password, userRole);
         } else {
-            signUp(username, firstName, lastName, email, password, userRole);
+            const userProfile = {
+                email,
+                password,
+                username,
+                firstname,
+                lastname,
+                role: userRole,
+                created_at: new Date(),
+                updated_at: new Date(),
+            };
+
+            await signUp(userProfile);
         }
     };
 
@@ -55,30 +67,28 @@ const AuthComponent = () => {
                             <span className='text-primary'>Learn</span>
                             <span className='text-black'>Hub.</span>
                         </span>
-                        <span className='font-abhaya text-7xl block text-primary'></span>
                     </h2>
                 </div>
             </div>
+
             {/* Main form container */}
             <div className='w-full flex items-center justify-center lg:w-1/2'>
                 <form onSubmit={handleSubmit} className='w-full max-w-xl'>
-                    {/* Form title */}
                     <h1 className='font-abhaya text-7xl font-bold mb-6'>
                         {isSignIn ? 'Sign In' : 'Sign Up'}
                     </h1>
 
-                    {/* Conditionally rendered sign-up fields */}
                     {!isSignIn && (
                         <div className='space-y-4'>
                             <div>
-                                <label className='font-abhaya font-bold text-lg mb-1 block '>
+                                <label className='font-abhaya font-bold text-lg mb-1 block'>
                                     First Name
                                 </label>
                                 <input
                                     className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                     type='text'
                                     placeholder='First Name'
-                                    value={firstName}
+                                    value={firstname}
                                     onChange={(e) =>
                                         setFirstName(e.target.value)
                                     }
@@ -92,7 +102,7 @@ const AuthComponent = () => {
                                     className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                     type='text'
                                     placeholder='Last Name'
-                                    value={lastName}
+                                    value={lastname}
                                     onChange={(e) =>
                                         setLastName(e.target.value)
                                     }
@@ -115,7 +125,6 @@ const AuthComponent = () => {
                         </div>
                     )}
 
-                    {/* Common email and password fields */}
                     <div className='space-y-4 mt-4'>
                         <div>
                             <label className='font-abhaya text-lg font-medium mb-1 block'>
@@ -123,7 +132,7 @@ const AuthComponent = () => {
                             </label>
                             <input
                                 className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
-                                type='text'
+                                type='email'
                                 placeholder='Email@example.com'
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -143,7 +152,6 @@ const AuthComponent = () => {
                         </div>
                     </div>
 
-                    {/* Buttons */}
                     <div className='mt-8 flex flex-col gap-y-4'>
                         <button
                             className='w-full py-3 rounded-3xl bg-primary text-white text-lg active:scale-[.98] font-abhaya'

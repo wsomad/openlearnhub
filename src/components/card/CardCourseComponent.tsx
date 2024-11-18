@@ -1,7 +1,20 @@
 import React from 'react';
 import CardCourseDetails from './CardCourseDetails';
 
-function CardCourseComponent({
+interface CardCourseComponentProps {
+    thumbnail: string;
+    title: string;
+    instructor: string;
+    pricing: number | string;
+    buttonText: string;
+    onButtonClick: () => void;
+    size: 'small' | 'medium' | 'big' | 'default'; // Assuming size can be these values
+    hoursDuration?: number | string;
+    numSections?: number | string;
+    numLectures?: number | string;
+}
+
+const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
     thumbnail,
     title,
     instructor,
@@ -12,10 +25,11 @@ function CardCourseComponent({
     hoursDuration,
     numSections,
     numLectures,
-}) {
+}) => {
     let cardSizeClass = '';
     let imageSizeClass = '';
 
+    // Set the correct class based on the `size` prop
     switch (size) {
         case 'small':
             cardSizeClass = 'w-[280px] h-[300px]';
@@ -62,6 +76,6 @@ function CardCourseComponent({
             />
         </div>
     );
-}
+};
 
 export default CardCourseComponent;

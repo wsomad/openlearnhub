@@ -8,102 +8,120 @@ import {
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
     signOut,
+    User as FirebaseUser,
 } from 'firebase/auth';
-import UserModel from '../models/UserModel';
 import {useNavigate} from 'react-router-dom';
+import {AppDispatch, RootState} from '../store/store';
+import {User} from '../types/user'; // Assuming you have a User type here.
 
 export const useAuth = () => {
-    // To dispatch an action
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const user = useSelector((state) => state.auth.user);
-    const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+    const user = useSelector((state: RootState) => state.auth.user);
+    const isAuthenticated = useSelector(
+        (state: RootState) => state.auth.isAuthenticated,
+    );
 
-    // SignIn function
-    const signIn = async (email, password, role) => {
+    /**
+     * SignIn function
+     */
+    const signIn = async (
+        email: string,
+        password: string,
+        role: 'student' | 'instructor',
+    ): Promise<void> => {
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            if (user) {
-                const userProfile = await getUserById(user.uid); // Fetch full user profile
+            const userCredential = await signInWithEmailAndPassword(
+                auth,
+                email,
+                password,
+            );
+            const currentUser = userCredential.user;
+
+            if (currentUser) {
+                const userProfile = (await getUserById(
+                    currentUser.uid,
+                )) as User;
                 dispatch(setUser({...userProfile, role}));
+                console.log(
+                    'Successfully signed in as',
+                    currentUser.uid,
+                    'and user role is',
+                    role,
+                );
+                navigate('/home');
             } else {
                 dispatch(clearUser());
             }
-            console.log(
-                'Successfully sign in as',
-                user.uid,
-                'and user role is',
-                role,
-            );
-            navigate('/home');
-            // No need to fetch user profile here, since onAuthStateChanged will handle it
-        } catch (error) {
-            console.error('Sign In Error:', error);
+        } catch (error: unknown) {
+            console.error('Sign In Error:', (error as Error).message);
         }
     };
 
-    // SignUp function
+    /**
+     * SignUp function
+     */
     const signUp = async (
-        username,
-        firstName,
-        lastName,
-        email,
-        password,
-        role,
-    ) => {
+        userProfile: Omit<User, 'uid'> & {password: string},
+    ): Promise<void> => {
+        const {email, password} = userProfile;
         try {
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
                 email,
                 password,
             );
-            const userProfile = {
-                uid: userCredential.user.uid, // Access the 'uid' from 'user' in 'userCredential'
-                email: email,
-                firstName: firstName,
-                lastName: lastName,
-                username: username,
-                role: role,
+            const newUser: User = {
+                ...userProfile,
+                uid: userCredential.user.uid, // Add UID from Firebase
             };
 
-            await addUser(userProfile); // Send object directly to addUser
+            await addUser(newUser); // Save user to Firestore
             console.log(
                 'Successfully signed up as',
-                userCredential.user.uid, // Use userCredential.user.uid here
+                newUser.uid,
                 'and user role is',
-                role,
+                userProfile.role,
             );
 
-            dispatch(setUser(userProfile)); // Pass userProfile directly to setUser
+            dispatch(setUser(newUser));
             navigate('/auth');
-        } catch (error) {
-            console.error('Sign Up Error:', error);
+        } catch (error: unknown) {
+            console.error('Sign Up Error:', (error as Error).message);
         }
     };
 
-    // SignOut function
-    const signUserOut = async () => {
+    /**
+     * SignOut function
+     */
+    const signUserOut = async (): Promise<void> => {
         try {
             await signOut(auth);
-            dispatch(clearUser()); // Clear user data on sign out
+            dispatch(clearUser());
             navigate('/auth');
-        } catch (error) {
-            console.error('Sign Out Error:', error);
+        } catch (error: unknown) {
+            console.error('Sign Out Error:', (error as Error).message);
         }
     };
 
-    // // Listen for auth state changes and fetch user data on login
-    // useEffect(() => {
-    //     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-    //         if (user) {
-    //             const userProfile = await getUserById(user.uid); // Fetch full user profile
-    //             dispatch(setUser(userProfile));
-    //         } else {
-    //             dispatch(clearUser());
-    //         }
-    //     });
-    //     return unsubscribe;
-    // }, [dispatch]);
+    // Listen for auth state changes and fetch user data on login
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(
+            auth,
+            async (firebaseUser: FirebaseUser | null) => {
+                if (firebaseUser) {
+                    const userProfile = (await getUserById(
+                        firebaseUser.uid,
+                    )) as User;
+                    dispatch(setUser(userProfile));
+                } else {
+                    dispatch(clearUser());
+                }
+            },
+        );
 
-    return {user, isAuthenticated, signIn, signUp, signOut};
+        return unsubscribe; // Cleanup the listener when the component unmounts
+    }, [dispatch]);
+
+    return {user, isAuthenticated, signIn, signUp, signUserOut};
 };

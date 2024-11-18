@@ -3,7 +3,20 @@ import {RiTimer2Line} from 'react-icons/ri';
 import {HiOutlineDocumentText} from 'react-icons/hi';
 import {MdQuiz} from 'react-icons/md';
 
-function CardCourseDetails({
+// Defining the types for props
+interface CardCourseDetailsProps {
+    title: string;
+    instructor: string;
+    size: 'small' | 'medium' | 'big' | 'default';
+    hoursDuration?: number | string;
+    numSections?: number | string;
+    numLectures?: number | string;
+    pricing: number | string;
+    onButtonClick: () => void;
+    buttonText: string;
+}
+
+const CardCourseDetails: React.FC<CardCourseDetailsProps> = ({
     title,
     instructor,
     size,
@@ -13,7 +26,7 @@ function CardCourseDetails({
     pricing,
     onButtonClick,
     buttonText,
-}) {
+}) => {
     return (
         <div
             className={`p-3 border border-gray ${
@@ -29,7 +42,7 @@ function CardCourseDetails({
             </p>
             <div className='flex items-center justify-between w-full mt-4'>
                 {size === 'big' && (
-                    <div className='flex flex-row flex gap-6 justify-between mt-2'>
+                    <div className='flex flex-row gap-6 justify-between mt-2'>
                         <div className='flex flex-row items-center mr-4'>
                             <RiTimer2Line className='mr-2' />
                             <p className='font-abhaya font-semibold text-lg text-black'>
@@ -64,6 +77,6 @@ function CardCourseDetails({
             </div>
         </div>
     );
-}
+};
 
 export default CardCourseDetails;
