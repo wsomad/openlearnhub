@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
+import { Course } from '../../types/Course';
+import { UserProfile } from '../../types/Profile';
+import { ViewMode } from '../../types/Shared';
 import userProfileImg from '../assets/images/userProfile.png';
-import { Course } from '../types/Course';
-import { UserProfile } from '../types/Profile';
-import { ViewMode } from '../types/Shared';
 
 interface ProfileViewProps {
     viewMode: ViewMode;

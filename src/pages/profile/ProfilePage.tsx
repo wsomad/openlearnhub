@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 import SearchBar from '../../components/elements/SearchBar';
 import HeaderComponent from '../../components/HeaderComponent';
-import ProfileComponent from '../../components/ProfileComponent';
-import ProfileView from '../../components/ProfileView';
+import ProfileComponent from '../../components/profile/ProfileComponent';
+import ProfileView from '../../components/profile/ProfileView';
 import { Course } from '../../types/Course';
 import { UserProfile } from '../../types/Profile';
 import { ProfileStatistics } from '../../types/ProfileStatistics';

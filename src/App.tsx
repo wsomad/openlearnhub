@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 import CourseContentList from './components/enrollment/course_list/CourseContentList';
 import HeaderComponent from './components/HeaderComponent';
-import ProfileComponent from './components/ProfileComponent';
+import ProfileComponent from './components/profile/ProfileComponent';
 import SearchComponent from './components/SearchComponent';
 import TestComponent from './components/TestComponent';
 import { auth } from './config/FirebaseConfiguration';
