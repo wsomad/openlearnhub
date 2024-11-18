@@ -1,4 +1,4 @@
-import { Section } from './Section';
+import { Section } from './section';
 
 export interface Course {
     course_id: string;
@@ -13,6 +13,7 @@ export interface Course {
     course_type: string;
     course_created_at: Date;
     course_updated_at: Date;
+    course_instructor: string;
     course_thumbnail_url: string;
     enrolled_students: string[]; // Array of user_ids
     sections: Section[];

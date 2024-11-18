@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction } from 'react';
 
 import { Lesson } from './Lesson';
 import { UserProfile } from './Profile';
-import { Section } from './Section';
+import { Section } from './section';
 import { UserRole } from './User';
 
 // 1. Types

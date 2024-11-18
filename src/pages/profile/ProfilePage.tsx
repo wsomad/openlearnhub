@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import SearchBar from '../../components/elements/SearchBar';
-import HeaderComponent from '../../components/HeaderComponent';
 import ProfileComponent from '../../components/profile/ProfileComponent';
 import ProfileView from '../../components/profile/ProfileView';
 import { Course } from '../../types/Course';
@@ -86,13 +84,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({userId}) => {
         fetchProfileData();
     }, [userId, navigate]);
 
-    // Toggle between student and instructor profile view modes (only allow switching if user is both)
-    const toggleProfileMode = () => {
-        if (userProfile?.role === 'both') {
-            setViewMode(viewMode === 'student' ? 'instructor' : 'student');
-        }
-    };
-
     // Open/close modal for profile editing
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
@@ -126,13 +117,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({userId}) => {
 
     return (
         <div className='font-abhaya profile-page p-6'>
-            <HeaderComponent userType={viewMode} currentRole='student' />
             <ProfileView
                 viewMode={viewMode}
                 userProfile={userProfile}
-                toggleProfileMode={toggleProfileMode}
                 toggleModal={toggleModal}
-                isInstructor={userProfile.role === 'both'}
+                isInstructor={userProfile.role === 'instructor'}
                 courses={userCourses}
             />
 

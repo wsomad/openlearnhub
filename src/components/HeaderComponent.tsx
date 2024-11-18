@@ -1,3 +1,4 @@
+// HeaderComponent.tsx
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -30,7 +31,6 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
 }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
     const [isUserOpen, setIsUserOpen] = useState<boolean>(false);
-    // const [isLoggedIn, setIsLoggedIn] = useState(true);
     const {user, signOut} = useAuth();
     const {currentUser, fetchUserById} = useUser();
     const navigate = useNavigate();
@@ -62,20 +62,9 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
         {name: 'Science', path: '/categories/science'},
     ];
 
-    const studentMenu: MenuItem[] = [
-        {name: 'Profile', path: '/profile'},
-        {name: 'Enrolled Courses', path: '/courses/enrolled'},
-        ...(currentRole === 'both'
-            ? [{name: 'Switch to Instructor', path: '/instructor/dashboard'}]
-            : []),
-    ];
-
-    const instructorMenu: MenuItem[] = [
+    const menuItems = [
         {name: 'Profile', path: '/profile'},
         {name: 'Course Dashboard', path: '/instructor/courses'},
-        ...(currentRole === 'both'
-            ? [{name: 'Switch to Student', path: '/courses/enrolled'}]
-            : []),
     ];
 
     const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
@@ -98,9 +87,6 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
     };
 
     const handleViewSwitch = (path: string) => {
-        if (path.includes('Switch to')) {
-            onToggleView();
-        }
         navigate(path);
         closeDropdowns();
     };
@@ -170,28 +156,13 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                         </div>
                     ) : (
                         <div className='relative'>
-                            <div className='flex items-center space-x-4'>
-                                {currentRole === 'both' && (
-                                    <button
-                                        onClick={onToggleView}
-                                        className='px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary-dark transition-colors'
-                                    >
-                                        Switch to{' '}
-                                        {userType === 'student'
-                                            ? 'Instructor'
-                                            : 'Student'}
-                                    </button>
-                                )}
-                                <button
-                                    onClick={toggleUser}
-                                    className='font-abhaya font-semibold text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors flex items-center space-x-2'
-                                    aria-expanded={isUserOpen}
-                                >
-                                    <span>
-                                        {currentUser.username || 'User'}
-                                    </span>
-                                </button>
-                            </div>
+                            <button
+                                onClick={toggleUser}
+                                className='font-abhaya font-semibold text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors flex items-center space-x-2'
+                                aria-expanded={isUserOpen}
+                            >
+                                <span>{currentUser.username || 'User'}</span>
+                            </button>
 
                             {isUserOpen && (
                                 <div
@@ -199,10 +170,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                                     onClick={closeDropdowns}
                                 >
                                     <ul className='py-1'>
-                                        {(userType === 'student'
-                                            ? studentMenu
-                                            : instructorMenu
-                                        ).map((item) => (
+                                        {menuItems.map((item) => (
                                             <li key={item.name}>
                                                 <button
                                                     onClick={() =>

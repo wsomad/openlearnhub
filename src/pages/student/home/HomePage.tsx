@@ -1,10 +1,11 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
+
+import thumbnail from '../../../assets/images/thumbnail.png';
+import CardCourseComponent from '../../../components/card/CardCourseComponent';
 import HeaderComponent from '../../../components/HeaderComponent';
 import SearchComponent from '../../../components/SearchComponent';
-import CardCourseComponent from '../../../components/card/CardCourseComponent';
-import thumbnail from '../../../assets/images/thumbnail.png';
-import {useCourses} from '../../../hooks/useCourses';
-import {useUser} from '../../../hooks/useUser';
+import { useCourses } from '../../../hooks/useCourses';
+import { useUser } from '../../../hooks/useUser';
 
 function HomePage() {
     const {courses, fetchAllCourses} = useCourses();
@@ -39,7 +40,6 @@ function HomePage() {
 
     return (
         <div>
-            <HeaderComponent />
             <div className='flex flex-col justify-center items-center mt-12'>
                 <h1 className='font-abhaya font-bold text-6xl'>
                     Find All <span className='text-primary'>Free Courses</span>{' '}

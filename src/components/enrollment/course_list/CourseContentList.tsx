@@ -1,10 +1,11 @@
+// CourseContentList.tsx
 import { useEffect, useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 
 import { Course } from '../../../types/Course';
 import { Lesson } from '../../../types/Lesson';
 import { UserProfile } from '../../../types/Profile';
-import { Section } from '../../../types/Section';
+import { Section } from '../../../types/section';
 import AddSectionModal from '../../modal/AddSectionModal';
 import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 import CourseContentView from './CourseContentView';
@@ -39,20 +40,27 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                 const response = await fetch('/dummyData.json');
                 const data = await response.json();
 
+                // Find course
                 const course = data.courses.find(
                     (c: Course) => c.course_id === courseId,
                 );
-                if (!course) throw new Error('Course not found');
+                if (!course) {
+                    throw new Error('Course not found');
+                }
 
+                // Find user profile
                 const profile = data.users.find(
                     (u: UserProfile) => u.uid === userId,
                 );
-                if (!profile) throw new Error('User not found');
+                if (!profile) {
+                    throw new Error('User not found');
+                }
 
                 setCourseData(course);
-                setCourseSections(course.sections);
+                setCourseSections(course.sections || []);
                 setUserProfile(profile);
             } catch (error) {
+                console.error('Error details:', error);
                 setError(
                     error instanceof Error
                         ? error.message
@@ -68,10 +76,6 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
 
     const canEditCourse = (): boolean => {
         if (!courseData || !userProfile) return false;
-        console.log('User Type:', userType);
-        console.log('Instructor ID:', courseData.instructor_id);
-        console.log('User Profile ID:', userProfile.uid);
-
         return (
             userType === 'instructor' &&
             courseData.instructor_id === userProfile.uid
@@ -210,63 +214,78 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         );
     };
 
-    if (isLoading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
-    if (!courseData || !userProfile) return <div>No course data available</div>;
+    if (isLoading) {
+        return (
+            <div className='flex justify-center items-center min-h-[400px]'>
+                Loading...
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className='flex justify-center items-center min-h-[400px] text-red-500'>
+                Error: {error}
+            </div>
+        );
+    }
+
+    if (!courseData || !userProfile) {
+        return (
+            <div className='flex justify-center items-center min-h-[400px]'>
+                No course data available
+            </div>
+        );
+    }
 
     return (
-        <div
-            className={`font-abhaya p-4 bg-white border border-gray overflow-y-auto ${
-                userType === 'student'
-                    ? 'w-[500px] max-h-[600px]'
-                    : 'w-[1175px] h-[450px]'
-            }`}
-        >
-            <div className='mb-2 font-bold text-xl flex justify-between items-center'>
-                <span>Course Content</span>
-                {canEditCourse() && (
-                    <button
-                        className='bg-secondary text-white px-3 py-2 rounded-2xl flex items-center mr-4'
-                        onClick={openAddContentModal}
-                    >
-                        <span className='text-lg mt-0.5'>New Section</span>
-                        <FaPlus className='ml-2 h-4 w-4' />
-                    </button>
+        <div className='w-full bg-white shadow-sm rounded-lg'>
+            <div className='p-6 border-b'>
+                <div className='flex justify-between items-center'>
+                    <h2 className='text-2xl font-bold'>Course Content</h2>
+                    {canEditCourse() && (
+                        <button
+                            className='bg-secondary text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-secondary-dark transition-colors'
+                            onClick={openAddContentModal}
+                        >
+                            <span>New Section</span>
+                            <FaPlus className='w-4 h-4' />
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            <div className='p-6'>
+                <CourseContentView
+                    userType={userType}
+                    courseSections={courseSections}
+                    setCourseSections={setCourseSections}
+                    onDeleteSection={handleDeleteSection}
+                    onEditSectionTitle={handleEditSectionTitle}
+                    canEdit={canEditCourse()}
+                    onAddLesson={handleAddLesson}
+                    onEditLesson={handleEditLesson}
+                    onDeleteLesson={handleDeleteLesson}
+                />
+
+                {isModalOpen && (
+                    <AddSectionModal
+                        isOpen={isModalOpen}
+                        onClose={closeModal}
+                        onSubmit={handleAddSection}
+                    />
+                )}
+
+                {isConfirmModalOpen && sectionToDelete && (
+                    <ConfirmDeleteModal
+                        isOpen={isConfirmModalOpen}
+                        onClose={closeConfirmModal}
+                        onConfirm={confirmDeleteSection}
+                        itemTitle={sectionToDelete.section_title}
+                        isSection={true}
+                    />
                 )}
             </div>
-            <div className='-mx-4'>
-                <hr className='border-t border-gray' />
-            </div>
-
-            <CourseContentView
-                userType={userType}
-                courseSections={courseSections}
-                setCourseSections={setCourseSections}
-                onDeleteSection={handleDeleteSection}
-                onEditSectionTitle={handleEditSectionTitle}
-                canEdit={canEditCourse()}
-                onAddLesson={handleAddLesson}
-                onEditLesson={handleEditLesson}
-                onDeleteLesson={handleDeleteLesson}
-            />
-
-            {isModalOpen && (
-                <AddSectionModal
-                    isOpen={isModalOpen}
-                    onClose={closeModal}
-                    onSubmit={handleAddSection}
-                />
-            )}
-
-            {isConfirmModalOpen && sectionToDelete && (
-                <ConfirmDeleteModal
-                    isOpen={isConfirmModalOpen}
-                    onClose={closeConfirmModal}
-                    onConfirm={confirmDeleteSection}
-                    itemTitle={sectionToDelete.section_title}
-                    isSection={true}
-                />
-            )}
         </div>
     );
 };

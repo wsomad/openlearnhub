@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'both';
+export type UserRole = 'student' | 'instructor';
 export type StudentType =
     | 'Secondary'
     | 'High School'
