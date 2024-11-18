@@ -1,21 +1,22 @@
 import React from 'react';
-import { HiOutlineDocumentText } from 'react-icons/hi';
-import { MdQuiz } from 'react-icons/md';
-import { RiTimer2Line } from 'react-icons/ri';
+import {RiTimer2Line} from 'react-icons/ri';
+import {HiOutlineDocumentText} from 'react-icons/hi';
+import {MdQuiz} from 'react-icons/md';
 
+// Defining the types for props
 interface CardCourseDetailsProps {
     title: string;
     instructor: string;
     size: 'small' | 'medium' | 'big' | 'default';
-    hoursDuration: number;
-    numSections: number;
-    numLectures: number;
-    pricing: number;
+    hoursDuration?: number | string;
+    numSections?: number | string;
+    numLectures?: number | string;
+    pricing: number | string;
     onButtonClick: () => void;
     buttonText: string;
 }
 
-const CardCourseDetails = ({
+const CardCourseDetails: React.FC<CardCourseDetailsProps> = ({
     title,
     instructor,
     size,
@@ -25,7 +26,7 @@ const CardCourseDetails = ({
     pricing,
     onButtonClick,
     buttonText,
-}: CardCourseDetailsProps) => {
+}) => {
     return (
         <div
             className={`p-3 border border-gray ${
@@ -42,7 +43,7 @@ const CardCourseDetails = ({
 
             <div className='flex items-center justify-between w-full mt-4'>
                 {size === 'big' && (
-                    <div className='flex flex-row flex gap-6 justify-between mt-2'>
+                    <div className='flex flex-row gap-6 justify-between mt-2'>
                         <div className='flex flex-row items-center mr-4'>
                             <RiTimer2Line className='mr-2' />
                             <p className='font-abhaya font-semibold text-lg text-black'>

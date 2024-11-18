@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Course } from '../../../types/Course';
+import { Course } from '../../../types/course';
+import { useCourses } from './CourseContext';
 
 interface CreateCoursePageProps {
     initialCourse?: Course | null;
@@ -10,6 +11,7 @@ interface CreateCoursePageProps {
 
 const CreateCoursePage: React.FC<CreateCoursePageProps> = ({initialCourse}) => {
     const navigate = useNavigate();
+    const {updateCourse, addCourse} = useCourses();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -80,8 +82,15 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({initialCourse}) => {
         setError(null);
 
         try {
-            // Here you would typically make an API call to save the course
-            console.log('Submitting course data:', courseData);
+            if (initialCourse) {
+                // Update existing course
+                updateCourse(initialCourse.course_id, courseData as Course);
+                console.log('Course updated:', courseData);
+            } else {
+                // Create new course
+                addCourse(courseData as Course);
+                console.log('Course created:', courseData);
+            }
 
             // Redirect to the courses dashboard after successful creation/update
             navigate('/instructor/courses');

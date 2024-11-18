@@ -21,7 +21,7 @@ function EnrolledCoursePage() {
                             title='Build Web Application with React Redux'
                             instructor='John Doe'
                             pricing='FREE'
-                            buttonText='Incomplete' // ubah nanti
+                            buttonText='Incomplete' // You can change this later based on the course status
                             onButtonClick={() =>
                                 console.log('Navigating to Course Details page')
                             }
@@ -30,9 +30,7 @@ function EnrolledCoursePage() {
                             numSections='23'
                             numLectures='120'
                         />
-                        <CourseContentList
-                            userType={'student'}
-                        ></CourseContentList>
+                        <CourseContentList userType={'student'} />
                     </div>
                 </div>
                 <div className='flex flex-col justify-start items-start mt-10'>
@@ -46,7 +44,7 @@ function EnrolledCoursePage() {
                     </p>
                 </div>
                 <div className='mt-6'>
-                    <CourseRequirements></CourseRequirements>
+                    <CourseRequirements />
                 </div>
             </div>
         </div>

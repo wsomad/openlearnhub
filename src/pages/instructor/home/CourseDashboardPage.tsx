@@ -2,20 +2,23 @@ import React, { useEffect, useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
-import { Course } from '../../../types/Course';
+import { Course } from '../../../types/course';
 import { UserProfile } from '../../../types/Profile';
+import { useCourses } from '../course/CourseContext';
 
 interface CourseDashboardProps {
     userId: string;
 }
 
 const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
-    const [courses, setCourses] = useState<Course[]>([]);
+    const {courses} = useCourses();
+    const [instructorCourses, setInstructorCourses] = useState<Course[]>([]);
+
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchIntructorCourses = async () => {
+        const fetchInstructorData = async () => {
             try {
                 setIsLoading(true);
                 const response = await fetch('/dummyData.json');
@@ -30,14 +33,13 @@ const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
                 }
 
                 // Get instructor courses
-                const instructorCourses = data.courses.filter(
-                    (course: Course) =>
-                        instructor.instructorProfile?.created_courses.includes(
-                            course.course_id,
-                        ),
+                const filteredCourses = courses.filter((course: Course) =>
+                    instructor.instructorProfile?.created_courses.includes(
+                        course.course_id,
+                    ),
                 );
 
-                setCourses(instructorCourses);
+                setInstructorCourses(filteredCourses);
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -49,8 +51,8 @@ const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
             }
         };
 
-        fetchIntructorCourses();
-    }, [userId]);
+        fetchInstructorData();
+    }, [userId, courses]);
 
     if (isLoading) {
         return (

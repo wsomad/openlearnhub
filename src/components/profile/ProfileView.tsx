@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import userProfileImg from '../../assets/images/userProfile.png';
-import { Course } from '../../types/Course';
+import { Course } from '../../types/course';
 import { UserProfile } from '../../types/Profile';
 import { ViewMode } from '../../types/Shared';
 

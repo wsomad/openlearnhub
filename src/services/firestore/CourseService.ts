@@ -1,12 +1,3 @@
-// In this service, it has:
-
-// addCourse
-// getCourseById
-// getSpecificCourse
-// getAllCourses
-// updateCourseById
-// deleteCourseById
-
 import {
     doc,
     setDoc,
@@ -15,87 +6,138 @@ import {
     updateDoc,
     deleteDoc,
     collection,
+    DocumentData,
+    QuerySnapshot,
 } from 'firebase/firestore';
 import {db} from '../../config/FirebaseConfiguration';
+import {Course} from '../../types/course'; // Assuming you have a Course type defined
 
-export const addCourse = async (courseData) => {
+const coursesCollection = collection(db, 'courses');
+
+/**
+ * Add a new course to Firestore.
+ * @param courseData - The course data to add.
+ */
+export const addCourse = async (courseData: Course): Promise<Course> => {
     try {
-        const courseDocRef = doc(db, 'courses');
-        const courseDoc = await setDoc(courseDocRef, courseData);
-        return {course_title: courseData.course_title, ...courseData};
+        const courseDocRef = doc(coursesCollection);
+        await setDoc(courseDocRef, courseData);
+        console.log('Course successfully added.');
+
+        return {...courseData, course_id: courseDocRef.id}; // Assuming `Course` has an `id` field to be populated
     } catch (error) {
-        console.error('Error creating course:', error.message);
+        console.error('Error creating course:', error);
+        throw error; // Rethrow the error so the calling function can handle it
     }
 };
 
-export const getCourseById = async (course_id) => {
+/**
+ * Get a course by its ID.
+ * @param course_id - The ID of the course to retrieve.
+ * @returns The course data if found, otherwise `null`.
+ */
+export const getCourseById = async (
+    course_id: string,
+): Promise<Course | null> => {
     try {
-        const courseDocRef = doc(db, 'courses', course_id);
+        const courseDocRef = doc(coursesCollection, course_id);
         const courseDoc = await getDoc(courseDocRef);
 
         if (courseDoc.exists()) {
             console.log('Course data: ', courseDoc.data());
-            return courseDoc.data();
+            return {course_id, ...courseDoc.data()} as Course;
         } else {
             console.log('No such course.');
             return null;
         }
     } catch (error) {
-        console.error('Error getting course: ', error.message);
+        console.error('Error getting course:', error);
+        return null;
     }
 };
 
-export const getSpecificCourse = async (searchQuery) => {
+/**
+ * Get courses that match a specific query.
+ * @param searchQuery - The search string to filter courses by title.
+ * @returns An array of matching courses.
+ */
+export const getSpecificCourse = async (
+    searchQuery: string,
+): Promise<Course[]> => {
     try {
-        const coursesRef = collection(db, 'courses'); // Reference to the 'courses' collection
-        const querySnapshot = await getDocs(coursesRef); // Get all documents in the 'courses' collection
+        const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(
+            coursesCollection,
+        );
+        const courses: Course[] = [];
 
-        const courses = [];
         querySnapshot.forEach((doc) => {
-            // Here, doc.id is the course title, so we can check if it matches the search query
-            if (doc.id.toLowerCase().includes(searchQuery.toLowerCase())) {
-                // Push matching course documents into the array
-                courses.push({...doc.data(), course_title: doc.id}); // Add doc.id as course_title
+            const courseTitle = doc.data().course_title?.toLowerCase() ?? '';
+            if (courseTitle.includes(searchQuery.toLowerCase())) {
+                courses.push({course_id: doc.id, ...doc.data()} as Course);
             }
         });
-        return courses; // Return all the matching courses
+
+        return courses;
     } catch (error) {
         console.error('Error searching courses:', error);
-        throw new Error('Failed to search courses');
+        return [];
     }
 };
 
-export const getAllCourses = async () => {
+/**
+ * Get all courses in Firestore.
+ * @returns An array of all courses.
+ */
+export const getAllCourses = async (): Promise<Course[]> => {
     try {
-        const courseDocRef = collection(db, 'courses');
-        const courseDoc = await getDocs(courseDocRef);
-        const courses = courseDoc.docs.map((doc) => ({
+        const querySnapshot = await getDocs(coursesCollection);
+        const courses = querySnapshot.docs.map((doc) => ({
             course_id: doc.id,
             ...doc.data(),
-        }));
+        })) as Course[];
+
         console.log('All courses data: ', courses);
         return courses;
     } catch (error) {
-        console.log('Error getting all courses: ', error.message);
+        console.error('Error getting all courses:', error);
+        return [];
     }
 };
 
-export const updateCourseById = async (course_id, updatedCourse) => {
+/**
+ * Update a course by its ID.
+ * @param course_id - The ID of the course to update.
+ * @param updatedCourse - The updated course data.
+ * @returns The updated course data.
+ */
+export const updateCourseById = async (
+    course_id: string,
+    updatedCourse: Partial<Course>,
+): Promise<Course | void> => {
     try {
-        const courseDoc = doc(doc, 'courses', course_id);
-        await updateDoc(courseDoc, updatedCourse);
-        return {course_id, ...updatedCourse};
+        const courseDocRef = doc(coursesCollection, course_id);
+        await updateDoc(courseDocRef, updatedCourse);
+
+        return {course_id, ...updatedCourse} as Course;
     } catch (error) {
-        console.error('Error updating course: ', error.message);
+        console.error('Error updating course:', error);
     }
 };
 
-export const deleteCourseById = async (course_id) => {
+/**
+ * Delete a course by its ID.
+ * @param course_id - The ID of the course to delete.
+ * @returns The ID of the deleted course.
+ */
+export const deleteCourseById = async (
+    course_id: string,
+): Promise<string | void> => {
     try {
-        const courseDoc = doc(db, 'courses', course_id);
-        await deleteDoc(courseDoc);
+        const courseDocRef = doc(coursesCollection, course_id);
+        await deleteDoc(courseDocRef);
+        console.log('Course successfully deleted.');
         return course_id;
     } catch (error) {
-        console.log('Error deleting course: ', error.message);
+        console.error('Error deleting course:', error);
     }
 };

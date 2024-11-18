@@ -1,63 +1,40 @@
-import { useState } from 'react';
-import { FaGoogle } from 'react-icons/fa';
-
+import React, {useState, FormEvent} from 'react';
+import {useAuth} from '../hooks/useAuth';
 import authImage from '../assets/images/authimage.png';
-import { useAuth } from '../hooks/useAuth';
-import { useUser } from '../hooks/useUser';
-import { User } from '../types/User';
+import {FaGoogle} from 'react-icons/fa';
+import {useUser} from '../hooks/useUser';
+import {User} from '../types/user';
 
-interface AuthHook {
-    signIn: (
-        email: string,
-        password: string,
-        role: User['role'],
-    ) => Promise<void>;
-    signUp: (
-        username: string,
-        firstname: string,
-        lastname: string,
-        email: string,
-        password: string,
-        role: User['role'],
-    ) => Promise<void>;
-    isAuthenticated: boolean;
-}
-
-interface UserHook {
-    userRole: User['role'];
-}
+type UserRole = 'student' | 'instructor';
 
 const AuthComponent: React.FC = () => {
-    const {signIn, signUp, isAuthenticated} = useAuth() as AuthHook;
-    const {userRole} = useUser() as UserHook;
+    const {signIn, signUp} = useAuth();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
+    const [firstname, setFirstName] = useState('');
+    const [lastname, setLastName] = useState('');
+    const [isSignIn, setSignIn] = useState(true);
+    const {userRole} = useUser(); // Assuming userRole is obtained from useUser
 
-    // Form state
-    const [email, setEmail] = useState<string>('');
-    const [password, setPassword] = useState<string>('');
-    const [username, setUsername] = useState<string>('');
-    const [firstName, setFirstName] = useState<string>('');
-    const [lastName, setLastName] = useState<string>('');
-    const [isSignIn, setSignIn] = useState<boolean>(true);
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        try {
-            if (isSignIn) {
-                await signIn(email, password, userRole);
-            } else {
-                await signUp(
-                    username,
-                    firstName,
-                    lastName,
-                    email,
-                    password,
-                    userRole,
-                );
-            }
-        } catch (error) {
-            console.error('Authentication error:', error);
-            // Handle error appropriately
+        if (isSignIn) {
+            await signIn(email, password, userRole);
+        } else {
+            const userProfile: Omit<User, 'uid'> & {password: string} = {
+                email,
+                password,
+                username,
+                firstname,
+                lastname,
+                role: userRole,
+                created_at: new Date(),
+                updated_at: new Date(),
+            };
+
+            await signUp(userProfile);
         }
     };
 
@@ -104,14 +81,10 @@ const AuthComponent: React.FC = () => {
                         {isSignIn ? 'Sign In' : 'Sign Up'}
                     </h1>
 
-                    {/* Conditionally rendered sign-up fields */}
                     {!isSignIn && (
                         <div className='space-y-4'>
                             <div>
-                                <label
-                                    htmlFor='firstName'
-                                    className='font-abhaya font-bold text-lg mb-1 block'
-                                >
+                                <label className='font-abhaya font-bold text-lg mb-1 block'>
                                     First Name
                                 </label>
                                 <input
@@ -119,7 +92,7 @@ const AuthComponent: React.FC = () => {
                                     className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                     type='text'
                                     placeholder='First Name'
-                                    value={firstName}
+                                    value={firstname}
                                     onChange={(e) =>
                                         setFirstName(e.target.value)
                                     }
@@ -138,7 +111,7 @@ const AuthComponent: React.FC = () => {
                                     className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
                                     type='text'
                                     placeholder='Last Name'
-                                    value={lastName}
+                                    value={lastname}
                                     onChange={(e) =>
                                         setLastName(e.target.value)
                                     }
@@ -167,7 +140,6 @@ const AuthComponent: React.FC = () => {
                         </div>
                     )}
 
-                    {/* Common email and password fields */}
                     <div className='space-y-4 mt-4'>
                         <div>
                             <label
@@ -205,7 +177,6 @@ const AuthComponent: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Buttons */}
                     <div className='mt-8 flex flex-col gap-y-4'>
                         <button
                             className='w-full py-3 rounded-3xl bg-primary text-white text-lg active:scale-[.98] font-abhaya'

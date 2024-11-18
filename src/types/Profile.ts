@@ -1,4 +1,4 @@
-import { SpecializationArea, StudentType, UserRole } from './User';
+import { SpecializationArea, StudentType, UserRole } from './user';
 
 export interface UserProfile {
     uid: string;

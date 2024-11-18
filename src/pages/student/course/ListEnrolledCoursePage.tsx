@@ -21,24 +21,24 @@ function ListEnrolledCoursePage() {
             course_pricing: '$39.99',
         },
         {
-            course_title: 'Web Development Bootcamp',
-            course_instructor: 'Alex Johnson',
-            course_pricing: '$39.99',
+            course_title: 'Full Stack Developer Course',
+            course_instructor: 'Emma Brown',
+            course_pricing: '$49.99',
         },
         {
-            course_title: 'React for Beginners',
-            course_instructor: 'John Doe',
-            course_pricing: '$19.99',
+            course_title: 'UX/UI Design Fundamentals',
+            course_instructor: 'James Lee',
+            course_pricing: '$24.99',
         },
         {
-            course_title: 'Advanced JavaScript',
-            course_instructor: 'Jane Smith',
-            course_pricing: '$29.99',
+            course_title: 'Python for Data Science',
+            course_instructor: 'Linda Green',
+            course_pricing: '$34.99',
         },
         {
-            course_title: 'Web Development Bootcamp',
-            course_instructor: 'Alex Johnson',
-            course_pricing: '$39.99',
+            course_title: 'Machine Learning with TensorFlow',
+            course_instructor: 'Chris Harris',
+            course_pricing: '$44.99',
         },
     ];
 
@@ -60,6 +60,7 @@ function ListEnrolledCoursePage() {
                             {totalCoursesEnrolled} Courses Enrolled
                         </p>
                     </div>
+
                     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-5 mt-6'>
                         {dummyCourses.map((course, index) => (
                             <CardCourseComponent

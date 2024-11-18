@@ -1,4 +1,4 @@
-import { SpecializationArea, StudentType } from './User';
+import {SpecializationArea, StudentType} from './user';
 
 export interface ProfileStatistics {
     student_types: StudentType[];

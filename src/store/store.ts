@@ -3,14 +3,15 @@ import authReducer from './slices/authSlice';
 import userReducer from './slices/userSlice';
 import courseReducer from './slices/courseSlice';
 
+// Define RootState type based on your store's structure
 export const store = configureStore({
     reducer: {
-        // `auth` key corresponds to the key in Redux state where `authReducer` --
-        // -- handles the `auth` slice properties like `user` and `isAuthenticated`.
-        // `authReducer` is responsible for handling actions like `setUser` and `cleanUser`.
-        // This means it responsibles in updating authentication state accordingly.
         auth: authReducer,
         users: userReducer,
         courses: courseReducer,
     },
 });
+
+// Infer RootState from the store
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

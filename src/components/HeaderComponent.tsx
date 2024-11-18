@@ -1,4 +1,3 @@
-// HeaderComponent.tsx
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -6,7 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useUser } from '../hooks/useUser';
 import { UserProfile } from '../types/Profile';
 import { ViewMode } from '../types/Shared';
-import { UserRole } from '../types/User';
+import { UserRole } from '../types/user';
 
 interface Category {
     name: string;
@@ -22,38 +21,62 @@ interface HeaderComponentProps {
     userType: ViewMode;
     currentRole: UserRole;
     onToggleView: () => void;
+    userId: string;
 }
 
 const HeaderComponent: React.FC<HeaderComponentProps> = ({
     userType,
     currentRole,
     onToggleView,
+    userId,
 }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
     const [isUserOpen, setIsUserOpen] = useState<boolean>(false);
-    const {user, signOut} = useAuth();
-    const {currentUser, fetchUserById} = useUser();
+    // const [isLoggedIn, setIsLoggedIn] = useState(true);
+    const {user, signUserOut} = useAuth();
+    // const {currentUser, fetchUserById} = useUser();
+    const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        let isMounted = true;
+    // useEffect(() => {
+    //     let isMounted = true;
 
+    //     const fetchUserData = async () => {
+    //         if (user?.uid && isMounted) {
+    //             try {
+    //                 await fetchUserById(user.uid);
+    //             } catch (error) {
+    //                 console.error('Failed to fetch user:', error);
+    //             }
+    //         }
+    //     };
+
+    //     fetchUserData();
+
+    //     return () => {
+    //         isMounted = false;
+    //     };
+    // }, [user?.uid, fetchUserById]);
+
+    // Fetch user data from dummyData.json
+    useEffect(() => {
         const fetchUserData = async () => {
-            if (user?.uid && isMounted) {
-                try {
-                    await fetchUserById(user.uid);
-                } catch (error) {
-                    console.error('Failed to fetch user:', error);
+            try {
+                const response = await fetch('/dummyData.json');
+                const data = await response.json();
+                const user = data.users.find(
+                    (u: UserProfile) => u.uid === userId,
+                );
+                if (user) {
+                    setCurrentUser(user);
                 }
+            } catch (error) {
+                console.error('Failed to fetch user:', error);
             }
         };
 
         fetchUserData();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [user?.uid, fetchUserById]);
+    }, [userId]);
 
     const categories: Category[] = [
         {name: 'Development', path: '/categories/development'},
@@ -62,9 +85,20 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
         {name: 'Science', path: '/categories/science'},
     ];
 
-    const menuItems = [
+    const studentMenu: MenuItem[] = [
+        {name: 'Profile', path: '/profile'},
+        {name: 'Enrolled Courses', path: '/courses/enrolled'},
+        ...(currentRole === 'instructor'
+            ? [{name: 'Switch to Instructor', path: '/instructor/dashboard'}]
+            : []),
+    ];
+
+    const instructorMenu: MenuItem[] = [
         {name: 'Profile', path: '/profile'},
         {name: 'Course Dashboard', path: '/instructor/courses'},
+        ...(currentRole === 'student'
+            ? [{name: 'Switch to Student', path: '/courses/enrolled'}]
+            : []),
     ];
 
     const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
@@ -79,7 +113,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
 
     const handleLogout = async () => {
         try {
-            await signOut();
+            await signUserOut();
             navigate('/auth');
         } catch (error) {
             console.error('Logout failed:', error);
@@ -87,9 +121,15 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
     };
 
     const handleViewSwitch = (path: string) => {
+        if (path.includes('Switch to')) {
+            onToggleView();
+        }
         navigate(path);
         closeDropdowns();
     };
+
+    const menuItems =
+        currentRole === 'instructor' ? instructorMenu : studentMenu;
 
     return (
         <>
@@ -156,13 +196,28 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                         </div>
                     ) : (
                         <div className='relative'>
-                            <button
-                                onClick={toggleUser}
-                                className='font-abhaya font-semibold text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors flex items-center space-x-2'
-                                aria-expanded={isUserOpen}
-                            >
-                                <span>{currentUser.username || 'User'}</span>
-                            </button>
+                            <div className='flex items-center space-x-4'>
+                                {currentRole === 'instructor' && (
+                                    <button
+                                        onClick={onToggleView}
+                                        className='px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary-dark transition-colors'
+                                    >
+                                        Switch to{' '}
+                                        {userType === 'student'
+                                            ? 'Instructor'
+                                            : 'Student'}
+                                    </button>
+                                )}
+                                <button
+                                    onClick={toggleUser}
+                                    className='font-abhaya font-semibold text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors flex items-center space-x-2'
+                                    aria-expanded={isUserOpen}
+                                >
+                                    <span>
+                                        {currentUser.username || 'User'}
+                                    </span>
+                                </button>
+                            </div>
 
                             {isUserOpen && (
                                 <div

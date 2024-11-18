@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction } from 'react';
 import { Lesson } from './Lesson';
 import { UserProfile } from './Profile';
 import { Section } from './section';
-import { UserRole } from './User';
+import { UserRole } from './user';
 
 // 1. Types
 // Used for UI/display purposes

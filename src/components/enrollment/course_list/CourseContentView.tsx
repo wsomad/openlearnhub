@@ -20,7 +20,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 import { Lesson } from '../../../types/Lesson';
-import { Section } from '../../../types/Section';
+import { Section } from '../../../types/section';
 import CourseLesson from './CourseLesson';
 
 interface SortableCourseSectionProps {

@@ -1,4 +1,4 @@
-import { StudentType, User } from './User';
+import { StudentType, User } from './user';
 
 export interface Student extends Omit<User, 'role'> {
     studentType: StudentType;

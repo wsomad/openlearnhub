@@ -1,24 +1,37 @@
 import React from 'react';
 
-import { Course } from '../../types/Course'; // Import the Course interface
+import {Course} from '../../types/course'; // Import the Course interface
 import CardCourseDetails from './CardCourseDetails';
 
 interface CardCourseComponentProps {
-    course: Course;
+    thumbnail: string;
+    title: string;
+    instructor: string;
+    pricing: number | string;
     buttonText: string;
     onButtonClick: () => void;
-    size: 'small' | 'medium' | 'big' | 'default';
+    size: 'small' | 'medium' | 'big' | 'default'; // Assuming size can be these values
+    hoursDuration?: number | string;
+    numSections?: number | string;
+    numLectures?: number | string;
 }
 
-const CardCourseComponent = ({
-    course,
+const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
+    thumbnail,
+    title,
+    instructor,
+    pricing,
     buttonText,
     onButtonClick,
     size,
-}: CardCourseComponentProps) => {
+    hoursDuration,
+    numSections,
+    numLectures,
+}) => {
     let cardSizeClass = '';
     let imageSizeClass = '';
 
+    // Set the correct class based on the `size` prop
     switch (size) {
         case 'small':
             cardSizeClass = 'w-[280px] h-[300px]';
@@ -45,20 +58,20 @@ const CardCourseComponent = ({
             }`}
         >
             <img
-                src={course.course_thumbnail_url} // Use properties from the course object
-                alt={course.course_title}
+                src={thumbnail} // Use properties from the course object
+                alt={title}
                 className={`w-full ${imageSizeClass} object-cover ${
                     size === 'big' ? 'rounded-tl-md' : 'rounded-t-md'
                 }`}
             />
             <CardCourseDetails
-                title={course.course_title}
-                instructor={course.course_type} // Use course properties here
+                title={title}
+                instructor={thumbnail} // Use course properties here
                 size={size}
-                pricing={course.course_pricing}
-                hoursDuration={course.course_enrollment_number} // Example, adjust as needed
-                numSections={course.course_number_of_section}
-                numLectures={course.course_enrollment_number} // Example, adjust as needed
+                pricing={pricing}
+                hoursDuration={hoursDuration}
+                numSections={numSections}
+                numLectures={numLectures}
                 buttonText={buttonText}
                 onButtonClick={onButtonClick}
             />

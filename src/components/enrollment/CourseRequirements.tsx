@@ -1,9 +1,6 @@
 import React from 'react';
-import {RiTimer2Line} from 'react-icons/ri';
-import {HiOutlineDocumentText} from 'react-icons/hi';
-import {MdQuiz} from 'react-icons/md';
 
-function CourseRequirements() {
+const CourseRequirements: React.FC = () => {
     return (
         <div>
             <h2 className='font-abhaya text-2xl font-bold mb-2'>
@@ -34,6 +31,6 @@ function CourseRequirements() {
             </ul>
         </div>
     );
-}
+};
 
 export default CourseRequirements;

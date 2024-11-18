@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { getSpecificCourse } from '../services/firestore/CourseService'; // Correct import
-import { Course } from '../types/Course';
+import { Course } from '../types/course';
 import SearchBar from './elements/SearchBar'; // Assuming you have a SearchBar component
 
 function SearchComponent() {

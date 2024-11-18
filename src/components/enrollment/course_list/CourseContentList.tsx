@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 
-import { Course } from '../../../types/Course';
+import { useCourses } from '../../../pages/instructor/course/CourseContext';
+import { Course } from '../../../types/course';
 import { Lesson } from '../../../types/Lesson';
 import { UserProfile } from '../../../types/Profile';
 import { Section } from '../../../types/section';
@@ -21,6 +22,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     courseId,
     userId,
 }) => {
+    const {findCourseById, updateCourseSections} = useCourses();
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [courseSections, setCourseSections] = useState<Section[]>([]);
     const [isConfirmModalOpen, setIsConfirmModalOpen] =
@@ -37,42 +39,40 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         const fetchData = async () => {
             try {
                 setIsLoading(true);
-                const response = await fetch('/dummyData.json');
-                const data = await response.json();
+                const course = findCourseById(courseId);
 
-                // Find course
-                const course = data.courses.find(
-                    (c: Course) => c.course_id === courseId,
-                );
                 if (!course) {
-                    throw new Error('Course not found');
+                    setError('Course not found');
+                    setIsLoading(false);
+                    return;
                 }
 
-                // Find user profile
-                const profile = data.users.find(
+                // Get user data from dummyData.json
+                const response = await fetch('/dummyData.json');
+                const data = await response.json();
+                const userProfile = data.users.find(
                     (u: UserProfile) => u.uid === userId,
                 );
-                if (!profile) {
-                    throw new Error('User not found');
+
+                if (!userProfile) {
+                    setError('User not found');
+                    setIsLoading(false);
+                    return;
                 }
 
                 setCourseData(course);
                 setCourseSections(course.sections || []);
-                setUserProfile(profile);
+                setUserProfile(userProfile);
+                setIsLoading(false);
             } catch (error) {
                 console.error('Error details:', error);
-                setError(
-                    error instanceof Error
-                        ? error.message
-                        : 'Failed to load course data',
-                );
-            } finally {
+                setError('Failed to load course data');
                 setIsLoading(false);
             }
         };
 
         fetchData();
-    }, [courseId, userId]);
+    }, [courseId, userId, findCourseById]);
 
     const canEditCourse = (): boolean => {
         if (!courseData || !userProfile) return false;
