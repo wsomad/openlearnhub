@@ -21,7 +21,7 @@ const userSlice = createSlice({
     reducers: {
         // Action to set the current user in the state.
         setUser(state, action: PayloadAction<User>) {
-            // `action.payload` contains data belongs to user.
+            // `action.payload` contains data belongs to current user.
             const user = action.payload;
             // Assigned that data to the current user.
             state.currentUser = user;
@@ -33,7 +33,7 @@ const userSlice = createSlice({
         modifyUser(state, action: PayloadAction<Partial<User>>) {
             // `action.payload` contains specific data belongs to user.
             const updatedUser = action.payload;
-            // If currentUser is not null & current user's uid matches the user id being updated.
+            // If currentUser is not null & current user's uid matches the user id being updated,
             if (
                 state.currentUser &&
                 state.currentUser.uid === updatedUser.uid
@@ -50,6 +50,6 @@ const userSlice = createSlice({
     },
 });
 
-// Export actions and reducer
+// Export actions and reducer.
 export const {setUser, modifyUser, clearUser} = userSlice.actions;
 export default userSlice.reducer;

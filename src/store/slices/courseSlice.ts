@@ -1,36 +1,37 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {Course} from '../../types/course';
 
-// Import the Course type if it's defined elsewhere
-import {Course} from '../../types/course'; // Adjust the path to your Course type
-
-// Define the initial state type
+// Define the CourseState type.
 interface CourseState {
     selectedCourse: Course | null;
     allCourses: Course[];
 }
 
-// Define the initial state
+// Define the initial state of CourseState.
 const initialState: CourseState = {
     selectedCourse: null,
     allCourses: [],
 };
 
-// Create the slice
+// Create a slice named `courses`.
 const courseSlice = createSlice({
     name: 'courses',
     initialState,
+    // Reducers define how the state changes in response to specific actions.
     reducers: {
-        // Set the selected course
+        // Action to set a course.
         setCourse(state, action: PayloadAction<Course>) {
+            // `action.payload` contains data belongs to a course.
             state.selectedCourse = action.payload;
         },
 
-        // Set all courses
+        // Action to set all courses.
         setCourses(state, action: PayloadAction<Course[]>) {
+            // `action.payload` contains list of data belongs to all courses.
             state.allCourses = action.payload;
         },
 
-        // Modify a course in the list
+        // Action to modify any course in the list.
         modifyCourse(
             state,
             action: PayloadAction<{
@@ -38,28 +39,38 @@ const courseSlice = createSlice({
                 updatedCourseObject: Partial<Course>;
             }>,
         ) {
+            // `action.payload` contains data belongs to a course.
+            // We are accessing the `id` and `updatedCourseObject` from `action.payload`.
             const {id, updatedCourseObject} = action.payload;
+            // Since `allCourses` is a list, we are mapping that list to find matches course ID.
             const existingCourse = state.allCourses.find(
                 (course: Course) => course.course_id === id,
             );
+            // If that specific course exists, then merge the update data to that course.
             if (existingCourse) {
                 Object.assign(existingCourse, updatedCourseObject);
             }
         },
 
-        // Clear a course from the list
+        // Action to clear any course from the list.
         clearCourse(state, action: PayloadAction<string>) {
-            const courseId = action.payload;
+            // `action.payload` contains data belongs to a course.
+            // We are accessing `id` from `action.payload`.
+            const id = action.payload;
+            // Since `allCourses` is a list, we are mapping that list to check if course ID is false.
+            // If false, we remove that course from list.
+            // How this works? Let's say `id` from action.payload is 2, and course_id = 2,
+            // Then, surely `course_id` === `id` is true right?
+            // But, we mentioned that `course_id` !== `id`, (2 !== 2) which means it's false.
+            // This must be true but since we use !==, then it becomes false, so we remove it.
             state.allCourses = state.allCourses.filter(
-                (course: Course) => course.course_id !== courseId,
+                (course: Course) => course.course_id !== id,
             );
         },
     },
 });
 
-// Export the actions
+// Export the actions and reducer.
 export const {setCourse, setCourses, modifyCourse, clearCourse} =
     courseSlice.actions;
-
-// Export the reducer
 export default courseSlice.reducer;

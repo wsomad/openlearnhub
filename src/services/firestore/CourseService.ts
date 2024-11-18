@@ -10,8 +10,9 @@ import {
     QuerySnapshot,
 } from 'firebase/firestore';
 import {db} from '../../config/FirebaseConfiguration';
-import {Course} from '../../types/course'; // Assuming you have a Course type defined
+import {Course} from '../../types/course';
 
+// Reference to `courses` collection (root reference for courses).
 const coursesCollection = collection(db, 'courses');
 
 /**
@@ -20,29 +21,39 @@ const coursesCollection = collection(db, 'courses');
  */
 export const addCourse = async (courseData: Course): Promise<Course> => {
     try {
-        const courseDocRef = doc(coursesCollection);
+        // Check if course title already exists.
+        const isExists = await checkCourseTitle(courseData.course_title);
+        if (isExists) {
+            throw new Error('A course with this title already exists.');
+        }
+
+        // Define a document reference for the course by passing two params: `coursesCollection` and title of course.
+        const courseDocRef = doc(coursesCollection, courseData.course_title);
+        // Set that document with data belongs to course.
         await setDoc(courseDocRef, courseData);
         console.log('Course successfully added.');
-
-        return {...courseData, course_id: courseDocRef.id}; // Assuming `Course` has an `id` field to be populated
+        return {...courseData, course_id: courseDocRef.id};
     } catch (error) {
         console.error('Error creating course:', error);
-        throw error; // Rethrow the error so the calling function can handle it
+        throw error;
     }
 };
 
 /**
  * Get a course by its ID.
- * @param course_id - The ID of the course to retrieve.
+ * @param course_id - The ID of the course to retrieve = title of the course.
  * @returns The course data if found, otherwise `null`.
  */
 export const getCourseById = async (
     course_id: string,
 ): Promise<Course | null> => {
     try {
+        // Define the document reference for the course by passing two params: `coursesCollection` and id of course.
+        // Course ID = Course Title.
         const courseDocRef = doc(coursesCollection, course_id);
+        // Get that document with data belongs to course.
         const courseDoc = await getDoc(courseDocRef);
-
+        // If that document exists, returns data belongs to course.
         if (courseDoc.exists()) {
             console.log('Course data: ', courseDoc.data());
             return {course_id, ...courseDoc.data()} as Course;
@@ -65,18 +76,21 @@ export const getSpecificCourse = async (
     searchQuery: string,
 ): Promise<Course[]> => {
     try {
+        // Get whole course collection with data belongs to all courses.
         const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(
             coursesCollection,
         );
+        // Define an empty array of course.
         const courses: Course[] = [];
 
+        // Iterate each course in course collection to find particular course.
+        // Then, all matched queries are pushed into the array of course.
         querySnapshot.forEach((doc) => {
             const courseTitle = doc.data().course_title?.toLowerCase() ?? '';
             if (courseTitle.includes(searchQuery.toLowerCase())) {
                 courses.push({course_id: doc.id, ...doc.data()} as Course);
             }
         });
-
         return courses;
     } catch (error) {
         console.error('Error searching courses:', error);
@@ -90,7 +104,9 @@ export const getSpecificCourse = async (
  */
 export const getAllCourses = async (): Promise<Course[]> => {
     try {
+        // Get whole course collection with data belongs to all courses.
         const querySnapshot = await getDocs(coursesCollection);
+        // Mapped that course collection and get each document within it.
         const courses = querySnapshot.docs.map((doc) => ({
             course_id: doc.id,
             ...doc.data(),
@@ -115,9 +131,10 @@ export const updateCourseById = async (
     updatedCourse: Partial<Course>,
 ): Promise<Course | void> => {
     try {
+        // Define the document reference for the course by passing two params: `coursesCollection` and id of course.
         const courseDocRef = doc(coursesCollection, course_id);
+        // Update that document with updated data of the course.
         await updateDoc(courseDocRef, updatedCourse);
-
         return {course_id, ...updatedCourse} as Course;
     } catch (error) {
         console.error('Error updating course:', error);
@@ -133,11 +150,27 @@ export const deleteCourseById = async (
     course_id: string,
 ): Promise<string | void> => {
     try {
+        // Define the document reference for the course by passing two params: `coursesCollection` and id of course.
         const courseDocRef = doc(coursesCollection, course_id);
+        // Delete that document with data belongs to course.
         await deleteDoc(courseDocRef);
         console.log('Course successfully deleted.');
         return course_id;
     } catch (error) {
         console.error('Error deleting course:', error);
     }
+};
+
+/**
+ * Check if course title already exists.
+ * @param course_title
+ * @returns
+ */
+const checkCourseTitle = async (course_title: string): Promise<boolean> => {
+    // Define the document reference for the course by passing two params: `coursesCollection` and title of course.
+    const courseDocRef = doc(coursesCollection, course_title);
+    // Get that document with data belongs to course.
+    const courseDoc = await getDoc(courseDocRef);
+    // Return if that document exists.
+    return courseDoc.exists();
 };

@@ -1,3 +1,16 @@
+export interface User {
+    uid: string;
+    username: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+    password: string;
+    role: UserRole;
+    created_at: Date;
+    updated_at: Date;
+    profileImage?: string;
+}
+
 export type UserRole = 'student' | 'instructor';
 export type StudentType =
     | 'Secondary'
@@ -18,16 +31,3 @@ export type SpecializationArea =
     | 'UI/UX Design'
     | 'Business Analytics'
     | 'Digital Marketing';
-
-export interface User {
-    uid: string;
-    username: string;
-    firstname: string;
-    lastname: string;
-    email: string;
-    password: string;
-    role: UserRole;
-    created_at: Date;
-    updated_at: Date;
-    profileImage?: string;
-}
