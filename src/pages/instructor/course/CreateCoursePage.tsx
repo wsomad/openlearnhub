@@ -7,9 +7,13 @@ import { useCourses } from './CourseContext';
 
 interface CreateCoursePageProps {
     initialCourse?: Course | null;
+    instructorId: string;
 }
 
-const CreateCoursePage: React.FC<CreateCoursePageProps> = ({initialCourse}) => {
+const CreateCoursePage: React.FC<CreateCoursePageProps> = ({
+    initialCourse,
+    instructorId,
+}) => {
     const navigate = useNavigate();
     const {updateCourse, addCourse} = useCourses();
     const [isLoading, setIsLoading] = useState(false);
@@ -84,12 +88,22 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({initialCourse}) => {
         try {
             if (initialCourse) {
                 // Update existing course
-                updateCourse(initialCourse.course_id, courseData as Course);
+                await updateCourse(initialCourse.course_id, {
+                    ...courseData,
+                    sections: initialCourse.sections,
+                } as Course);
                 console.log('Course updated:', courseData);
             } else {
                 // Create new course
-                addCourse(courseData as Course);
+                const newCourseId = await addCourse(
+                    {
+                        ...courseData,
+                        instructor_id: instructorId,
+                    } as Partial<Course>,
+                    instructorId,
+                );
                 console.log('Course created:', courseData);
+                navigate(`/instructor/courses/${newCourseId}/edit`);
             }
 
             // Redirect to the courses dashboard after successful creation/update

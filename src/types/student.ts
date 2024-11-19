@@ -7,15 +7,9 @@ export interface Student extends Omit<User, 'role'> {
     completed_courses: number;
     courses_enrolled: number;
     completion_status: boolean;
-    enrolled_courses: Course[]; // Array of course_ids
+    enrolled_courses: string[];
+    // enrolled_courses: Course[]; // Array of course_ids
 }
-
-// studentType: StudentType;
-//     coursesEnrolled: number;
-//     completed_courses: number;
-//     completion_status: boolean;
-//     enrollment_date: Date;
-//     enrolled_courses: string[];
 
 export type StudentType =
     | 'Secondary'

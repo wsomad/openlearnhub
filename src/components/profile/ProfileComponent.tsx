@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { IoCloseOutline } from 'react-icons/io5';
 
-import { UserProfile } from '../../types/profile';
+import { SpecializationArea } from '../../types/instructor';
 import { ProfileStatistics } from '../../types/profilestatistics';
 import { ViewMode } from '../../types/shared';
-import { SpecializationArea, StudentType } from '../../types/user';
+import { StudentType } from '../../types/student';
+import { User } from '../../types/user';
 
 interface ProfileComponentProps {
-    userProfile: UserProfile;
+    userProfile: User;
     viewMode: ViewMode;
     onClose: () => void;
-    onProfileUpdate: (updatedProfile: UserProfile) => void;
+    onProfileUpdate: (updatedProfile: User) => void;
     statistics: ProfileStatistics;
 }
 
@@ -28,24 +29,24 @@ const ProfileComponent: React.FC<ProfileComponentProps> = ({
 
     // Student-specific fields
     const [studentType, setStudentType] = useState<StudentType>(
-        userProfile.studentProfile?.studentType || 'Undergraduate',
+        userProfile.student?.student_type || 'Undergraduate',
     );
 
     // Instructor-specific fields
     const [summary, setSummary] = useState<string>(
-        userProfile.instructorProfile?.profileSummary || '',
+        userProfile.instructor?.profile_summary || '',
     );
     const [specializations, setSpecializations] = useState<
         SpecializationArea[]
-    >(userProfile.instructorProfile?.specializationArea || []);
+    >(userProfile.instructor?.specialization_area || []);
     const [experience, setExperience] = useState<number>(
-        userProfile.instructorProfile?.yearsOfExperience || 0,
+        userProfile.instructor?.years_of_experience || 0,
     );
     const [github, setGithub] = useState<string>(
-        userProfile.instructorProfile?.socialLinks.github || '',
+        userProfile.instructor?.social_links.github || '',
     );
     const [linkedin, setLinkedin] = useState<string>(
-        userProfile.instructorProfile?.socialLinks.linkedin || '',
+        userProfile.instructor?.social_links.linkedin || '',
     );
 
     // Security fields
@@ -81,25 +82,25 @@ const ProfileComponent: React.FC<ProfileComponentProps> = ({
         if (!validateForm()) return;
 
         // Create updated profile object
-        const updatedProfile: UserProfile = {
+        const updatedProfile: User = {
             ...userProfile,
             username,
             firstname: firstName,
             lastname: lastName,
-            studentProfile: {
-                ...userProfile.studentProfile,
-                studentType,
+            student: {
+                ...userProfile.student,
+                student_type: studentType,
             },
         };
 
         // Update instructor profile if in instructor mode and user has instructor profile
-        if (viewMode === 'instructor' && userProfile.instructorProfile) {
-            updatedProfile.instructorProfile = {
-                ...userProfile.instructorProfile,
-                profileSummary: summary,
-                specializationArea: specializations,
-                yearsOfExperience: experience,
-                socialLinks: {
+        if (viewMode === 'instructor' && userProfile.instructor) {
+            updatedProfile.instructor = {
+                ...userProfile.instructor,
+                profile_summary: summary,
+                specialization_area: specializations,
+                years_of_experience: experience,
+                social_links: {
                     github,
                     linkedin,
                 },
