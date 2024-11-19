@@ -5,18 +5,21 @@ import { Link } from 'react-router-dom';
 import { Course } from '../../../types/course';
 import { Instructor } from '../../../types/instructor';
 import { User } from '../../../types/user';
+import { useCourses } from '../course/CourseContext';
 
 interface CourseDashboardProps {
     userId: string;
 }
 
 const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
-    const [instructorCourses, setInstructorCourses] = useState<Course[]>([]);
+    const {findCoursesByInstructor, addCourse} = useCourses();
+    const [coursesByInstructor, setCoursesByInstructor] = useState<Course[]>(
+        [],
+    );
     const [instructor, setInstructor] = useState<Instructor | null>(null);
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-
     useEffect(() => {
         const fetchInstructorData = async () => {
             try {
@@ -31,13 +34,10 @@ const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
                 }
                 const instructor = user.instructor as Instructor;
 
-                // Get instructor courses
-                const filteredCourses = data.courses.filter((course: Course) =>
-                    instructor.created_courses.includes(course.course_id),
-                );
-
+                // Get instructor courses using the useCourses hook
+                const courses = findCoursesByInstructor(user.uid);
+                setCoursesByInstructor(courses);
                 setInstructor(instructor);
-                setInstructorCourses(filteredCourses);
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -50,15 +50,7 @@ const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
         };
 
         fetchInstructorData();
-    }, [userId]);
-
-    if (isLoading) {
-        return (
-            <div className='flex justify-center items-center h-screen'>
-                Loading ...
-            </div>
-        );
-    }
+    }, [userId, useCourses, setCoursesByInstructor, addCourse]);
 
     if (error) {
         return <div className='text-red text-center'>Error: {error}</div>;
@@ -98,7 +90,7 @@ const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
                 </Link>
 
                 {/* Existing Courses */}
-                {instructorCourses.map((course) => (
+                {coursesByInstructor.map((course) => (
                     <div
                         key={course.course_id}
                         className='bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow'

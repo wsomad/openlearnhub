@@ -8,9 +8,14 @@ import CreateCoursePage from './CreateCoursePage';
 interface EditCoursePageProps {
     userId: string;
     userType: 'student' | 'instructor';
+    instructorId: string;
 }
 
-const EditCoursePage: React.FC<EditCoursePageProps> = ({userId, userType}) => {
+const EditCoursePage: React.FC<EditCoursePageProps> = ({
+    userId,
+    userType,
+    instructorId,
+}) => {
     const {courseId} = useParams<{courseId: string}>();
     const {findCourseById} = useCourses();
     const course = courseId ? findCourseById(courseId) : null;
@@ -38,7 +43,10 @@ const EditCoursePage: React.FC<EditCoursePageProps> = ({userId, userType}) => {
                         </h2>
                     </div>
                     <div className='p-6'>
-                        <CreateCoursePage initialCourse={course} />
+                        <CreateCoursePage
+                            initialCourse={course}
+                            instructorId={instructorId}
+                        />
                     </div>
                 </div>
 

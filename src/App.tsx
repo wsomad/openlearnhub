@@ -127,7 +127,9 @@ const App: React.FC = () => {
                                         <h1 className='text-3xl font-bold font-abhaya mb-8'>
                                             Create New Course
                                         </h1>
-                                        <CreateCoursePage />
+                                        <CreateCoursePage
+                                            instructorId={defaultUserId}
+                                        />
                                     </div>
                                 </Layout>
                             }

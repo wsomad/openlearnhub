@@ -22,6 +22,7 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({
     // Form state
     const [courseData, setCourseData] = useState<Partial<Course>>({
         course_title: '',
+        uid: instructorId,
         course_description: '',
         course_pricing: 0,
         course_requirements: [''],
@@ -95,6 +96,10 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({
                 console.log('Course updated:', courseData);
             } else {
                 // Create new course
+                console.log(
+                    'Instructor ID passed for adding course:',
+                    instructorId,
+                );
                 const newCourseId = await addCourse(
                     {
                         ...courseData,
