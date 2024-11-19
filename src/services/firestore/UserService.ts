@@ -7,9 +7,9 @@ import {
     deleteDoc,
 } from 'firebase/firestore';
 import {db} from '../../config/FirebaseConfiguration';
-import {User} from '../../types/user'; // Assuming User type is defined here
+import {User} from '../../types/user';
 
-// Reference to the `users` collection
+// Reference to the `users` collection (root reference of user).
 const userCollection = collection(db, 'users');
 
 /**
@@ -18,55 +18,25 @@ const userCollection = collection(db, 'users');
  */
 export const addUser = async (userData: User): Promise<void> => {
     try {
-        // Get a DocumentReference for the user
+        // Define a document reference for the user by passing two params: `userCollection` and uid of user.
         const userDocRef = doc(userCollection, userData.uid);
+        // Set that document with data belongs to user.
         await setDoc(userDocRef, userData);
     } catch (error) {
         console.error('Failed to create user: ', error);
     }
 };
 
-// /**
-//  * Add a new instructor user to the Firestore database.
-//  * @param userData - The user data to add.
-//  */
-// export const addUserAsInstructor = async (userData: User): Promise<void> => {
-//     try {
-//         // Get a DocumentReference for the user
-//         const userDocRef = doc(userCollection, userData.uid);
-//         const instructorCollection = collection(userDocRef, 'instructor');
-//         const instructorDocRef = doc(instructorCollection); // Create a new doc in the instructor subcollection
-//         await setDoc(instructorDocRef, userData);
-//     } catch (error) {
-//         console.error('Failed to create instructor: ', error);
-//     }
-// };
-
-// /**
-//  * Add a new student user to the Firestore database.
-//  * @param userData - The user data to add.
-//  */
-// export const addUserAsStudent = async (userData: User): Promise<void> => {
-//     try {
-//         // Get a DocumentReference for the user
-//         const userDocRef = doc(userCollection, userData.uid);
-//         const studentCollection = collection(userDocRef, 'student');
-//         const studentDocRef = doc(studentCollection); // Create a new doc in the student subcollection
-//         await setDoc(studentDocRef, userData);
-//     } catch (error) {
-//         console.error('Failed to create student: ', error);
-//     }
-// };
-
 /**
  * Get user data by user ID.
  * @param uid - The user ID.
- * @returns A Promise containing the user data or undefined if the user is not found.
+ * @returns - A Promise containing the user data or undefined if the user is not found.
  */
 export const getUserById = async (uid: string): Promise<User | undefined> => {
     try {
-        // Get a DocumentReference for the user
+        // Define the document reference for the user by passing two params: `userCollection` and uid of user.
         const userDocRef = doc(userCollection, uid);
+        // Get that document with data belongs to user.
         const userDoc = await getDoc(userDocRef);
         console.log('Get user data from Firestore: ', userDoc.data());
         return userDoc.data() as User | undefined;
@@ -86,8 +56,9 @@ export const updateUserById = async (
     updatedUser: Partial<User>,
 ): Promise<User | undefined> => {
     try {
-        // Get a DocumentReference for the user
+        // Define the document reference for the user by passing two params: `userCollection` and uid of user.
         const userDocRef = doc(userCollection, uid);
+        // Update that document with updated data of the user.
         await updateDoc(userDocRef, updatedUser);
         return {uid, ...updatedUser} as User;
     } catch (error) {
@@ -104,8 +75,9 @@ export const deleteUserById = async (
     uid: string,
 ): Promise<string | undefined> => {
     try {
-        // Get a DocumentReference for the user
+        // Define the document reference for the user by passing two params: `userCollection` and uid of user.
         const userDocRef = doc(userCollection, uid);
+        // Delete that document with data belongs to user.
         await deleteDoc(userDocRef);
         return uid;
     } catch (error) {

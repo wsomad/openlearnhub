@@ -2,7 +2,7 @@ import { Section } from './section';
 
 export interface Course {
     course_id: string;
-    instructor_id: string; // References user_id of instructor
+    instructor_id: string;
     course_title: string;
     course_description: string;
     course_enrollment_number: number;
@@ -13,8 +13,7 @@ export interface Course {
     course_type: string;
     course_created_at: Date;
     course_updated_at: Date;
-    course_instructor: string;
     course_thumbnail_url: string;
-    enrolled_students: string[]; // Array of user_ids
+    enrolled_students: string[];
     sections: Section[];
 }
