@@ -34,7 +34,7 @@ const CardDashboard: React.FC<CardProps> = ({
                     <p className='text-gray-600 text-sm mb-2'>{description}</p>
                     <div className='flex justify-between items-center'>
                         <span className='text-primary font-semibold'>
-                            ${pricing}
+                            RM {pricing}
                         </span>
                         <span className='text-gray-500 text-sm'>
                             {enrollmentNumber} students

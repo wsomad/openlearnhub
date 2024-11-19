@@ -1,4 +1,8 @@
 import React from 'react';
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
+import { GiGiftOfKnowledge } from 'react-icons/gi';
+import { PiMapPinSimpleAreaFill } from 'react-icons/pi';
+import { SiCoursera } from 'react-icons/si';
 
 import userProfileImg from '../../assets/images/userProfile.png';
 import { Course } from '../../types/course';
@@ -61,41 +65,47 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                             <>
                                 {userProfile.instructor.social_links
                                     .linkedin && (
-                                    <p>
-                                        LinkedIn:{' '}
-                                        <a
-                                            href={
-                                                userProfile.instructor
-                                                    .social_links.linkedin
-                                            }
-                                            target='_blank'
-                                            rel='noopener noreferrer'
-                                            className='text-secondary hover:text-secondary-dark transition-colors'
-                                        >
-                                            {
-                                                userProfile.instructor
-                                                    .social_links.linkedin
-                                            }
-                                        </a>
+                                    <p className='flex items-center space-x-2'>
+                                        <FaLinkedin /> {/* LinkedIn icon */}
+                                        <span>
+                                            LinkedIn:{' '}
+                                            <a
+                                                href={
+                                                    userProfile.instructor
+                                                        .social_links.linkedin
+                                                }
+                                                target='_blank'
+                                                rel='noopener noreferrer'
+                                                className='text-secondary hover:text-secondary-dark transition-colors'
+                                            >
+                                                {
+                                                    userProfile.instructor
+                                                        .social_links.linkedin
+                                                }
+                                            </a>
+                                        </span>
                                     </p>
                                 )}
                                 {userProfile.instructor.social_links.github && (
-                                    <p>
-                                        GitHub:{' '}
-                                        <a
-                                            href={
-                                                userProfile.instructor
-                                                    .social_links.github
-                                            }
-                                            target='_blank'
-                                            rel='noopener noreferrer'
-                                            className='text-secondary hover:text-secondary-dark transition-colors'
-                                        >
-                                            {
-                                                userProfile.instructor
-                                                    .social_links.github
-                                            }
-                                        </a>
+                                    <p className='flex items-center space-x-2'>
+                                        <FaGithub /> {/* GitHub icon */}
+                                        <span>
+                                            GitHub:{' '}
+                                            <a
+                                                href={
+                                                    userProfile.instructor
+                                                        .social_links.github
+                                                }
+                                                target='_blank'
+                                                rel='noopener noreferrer'
+                                                className='text-secondary hover:text-secondary-dark transition-colors'
+                                            >
+                                                {
+                                                    userProfile.instructor
+                                                        .social_links.github
+                                                }
+                                            </a>
+                                        </span>
                                     </p>
                                 )}
                             </>
@@ -149,8 +159,9 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     userProfile.instructor && (
                         <>
                             <div className='flex flex-col'>
-                                <p className='text-md font-medium text-gray-500'>
-                                    Courses Created
+                                <p className='text-md font-medium text-gray-500 flex items-center space-x-2'>
+                                    <SiCoursera />
+                                    <span>Courses Created</span>{' '}
                                 </p>
                                 <p className='text-lg font-semibold text-gray-700'>
                                     {
@@ -160,8 +171,9 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                                 </p>
                             </div>
                             <div className='flex flex-col'>
-                                <p className='text-md font-medium text-gray-500'>
-                                    Specialization
+                                <p className='text-md font-medium text-gray-500 flex items-center space-x-2'>
+                                    <GiGiftOfKnowledge />{' '}
+                                    <span>Specialization</span>
                                 </p>
                                 <p className='text-lg font-semibold text-gray-700'>
                                     {userProfile.instructor.specialization_area.join(
@@ -169,9 +181,11 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                                     )}
                                 </p>
                             </div>
+
                             <div className='flex flex-col'>
-                                <p className='text-md font-medium text-gray-500'>
-                                    Experience
+                                <p className='text-md font-medium text-gray-500 flex items-center space-x-2'>
+                                    <PiMapPinSimpleAreaFill />{' '}
+                                    <span>Experience</span>
                                 </p>
                                 <p className='text-lg font-semibold text-gray-700'>
                                     {userProfile.instructor.years_of_experience}{' '}
