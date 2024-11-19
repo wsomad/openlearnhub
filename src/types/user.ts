@@ -1,11 +1,7 @@
+import { Instructor } from './Instructor';
+import { Student } from './Student';
+
 export type UserRole = 'student' | 'instructor';
-export type StudentType =
-    | 'Secondary'
-    | 'High School'
-    | 'Undergraduate'
-    | 'Postgraduate'
-    | 'Doctorate'
-    | 'Professional Certification';
 
 export type SpecializationArea =
     | 'Web Development'
@@ -30,4 +26,6 @@ export interface User {
     created_at: Date;
     updated_at: Date;
     profileImage?: string;
+    student: Student[];
+    instructor: Instructor[];
 }

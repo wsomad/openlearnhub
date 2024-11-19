@@ -1,10 +1,26 @@
-import { StudentType, User } from './user';
+import { Course } from './course';
+import { User } from './user';
 
 export interface Student extends Omit<User, 'role'> {
-    studentType: StudentType;
+    student_type: StudentType;
     enrollment_date: Date;
     completed_courses: number;
-    coursesEnrolled: number;
+    courses_enrolled: number;
     completion_status: boolean;
-    enrolled_courses: string[]; // Array of course_ids
+    enrolled_courses: Course[]; // Array of course_ids
 }
+
+// studentType: StudentType;
+//     coursesEnrolled: number;
+//     completed_courses: number;
+//     completion_status: boolean;
+//     enrollment_date: Date;
+//     enrolled_courses: string[];
+
+export type StudentType =
+    | 'Secondary'
+    | 'High School'
+    | 'Undergraduate'
+    | 'Postgraduate'
+    | 'Doctorate'
+    | 'Professional Certification';

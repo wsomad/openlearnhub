@@ -15,23 +15,7 @@ export interface UserProfile {
 }
 
 export interface StudentProfile {
-    studentType: StudentType;
-    coursesEnrolled: number;
-    completed_courses: number;
-    completion_status: boolean;
-    enrollment_date: Date;
-    enrolled_courses: string[]; // Array of course_ids
+    // Array of course_ids
 }
 
-export interface InstructorProfile {
-    profileSummary: string;
-    specializationArea: SpecializationArea[];
-    yearsOfExperience: number;
-    coursesCreated: number;
-    rating: 1 | 2 | 3 | 4 | 5;
-    created_courses: string[]; // Array of course_ids
-    socialLinks: {
-        github?: string;
-        linkedin?: string;
-    };
-}
+export interface InstructorProfile {}
