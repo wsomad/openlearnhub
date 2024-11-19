@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { IoCloseOutline } from 'react-icons/io5';
 
-import { Lesson } from '../../types/Lesson';
+import { Lesson } from '../../types/lesson';
 
 interface ModalComponentProps {
     isOpen: boolean;

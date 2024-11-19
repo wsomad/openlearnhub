@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import {IoCloseOutline} from 'react-icons/io5';
+import React, { useEffect, useState } from 'react';
+import { IoCloseOutline } from 'react-icons/io5';
 
-import {UserProfile} from '../../types/Profile';
-import {ProfileStatistics} from '../../types/ProfileStatistics';
-import {ViewMode} from '../../types/Shared';
-import {SpecializationArea, StudentType} from '../../types/user';
+import { UserProfile } from '../../types/profile';
+import { ProfileStatistics } from '../../types/profilestatistics';
+import { ViewMode } from '../../types/shared';
+import { SpecializationArea, StudentType } from '../../types/user';
 
 interface ProfileComponentProps {
     userProfile: UserProfile;

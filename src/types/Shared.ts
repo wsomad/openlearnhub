@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 
-import { Lesson } from './Lesson';
-import { UserProfile } from './Profile';
+import { Lesson } from './lesson';
+import { UserProfile } from './profile';
 import { Section } from './section';
 import { UserRole } from './user';
 

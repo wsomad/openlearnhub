@@ -21,7 +21,7 @@ import HomePage from './pages/student/home/HomePage';
 import ProtectedRoute from './routes/ProtectedRoute/ProtectedRoute';
 import { clearUser, setUser } from './store/slices/authSlice';
 // Types
-import { ViewMode } from './types/Shared';
+import { ViewMode } from './types/shared';
 import { UserRole } from './types/user';
 
 // React.FC stands for React Functional Component.

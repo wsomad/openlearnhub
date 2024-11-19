@@ -3,7 +3,7 @@ import { FaPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 import { Course } from '../../../types/course';
-import { UserProfile } from '../../../types/Profile';
+import { UserProfile } from '../../../types/profile';
 import { useCourses } from '../course/CourseContext';
 
 interface CourseDashboardProps {

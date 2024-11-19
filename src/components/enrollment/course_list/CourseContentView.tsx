@@ -19,7 +19,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-import { Lesson } from '../../../types/Lesson';
+import { Lesson } from '../../../types/lesson';
 import { Section } from '../../../types/section';
 import CourseLesson from './CourseLesson';
 

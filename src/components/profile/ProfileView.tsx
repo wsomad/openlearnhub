@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 
 import userProfileImg from '../../assets/images/userProfile.png';
 import { Course } from '../../types/course';
-import { UserProfile } from '../../types/Profile';
-import { ViewMode } from '../../types/Shared';
+import { UserProfile } from '../../types/profile';
+import { ViewMode } from '../../types/shared';
 
 interface ProfileViewProps {
     viewMode: ViewMode;

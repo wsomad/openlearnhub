@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import ProfileComponent from '../../components/profile/ProfileComponent';
 import ProfileView from '../../components/profile/ProfileView';
 import { Course } from '../../types/course';
-import { UserProfile } from '../../types/Profile';
-import { ProfileStatistics } from '../../types/ProfileStatistics';
-import { ViewMode } from '../../types/Shared';
+import { UserProfile } from '../../types/profile';
+import { ProfileStatistics } from '../../types/profilestatistics';
+import { ViewMode } from '../../types/shared';
 
 interface ProfilePageProps {
     userId: string;

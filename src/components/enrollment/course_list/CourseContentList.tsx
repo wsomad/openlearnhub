@@ -4,8 +4,8 @@ import { FaPlus } from 'react-icons/fa';
 
 import { useCourses } from '../../../pages/instructor/course/CourseContext';
 import { Course } from '../../../types/course';
-import { Lesson } from '../../../types/Lesson';
-import { UserProfile } from '../../../types/Profile';
+import { Lesson } from '../../../types/lesson';
+import { UserProfile } from '../../../types/profile';
 import { Section } from '../../../types/section';
 import AddSectionModal from '../../modal/AddSectionModal';
 import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';

@@ -1,4 +1,4 @@
-import { Lesson } from './Lesson';
+import { Lesson } from './lesson';
 import { Quiz } from './quiz';
 
 export interface Section {

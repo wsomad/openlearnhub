@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../hooks/useAuth';
 import { useUser } from '../hooks/useUser';
-import { UserProfile } from '../types/Profile';
-import { ViewMode } from '../types/Shared';
+import { UserProfile } from '../types/profile';
+import { ViewMode } from '../types/shared';
 import { UserRole } from '../types/user';
 
 interface Category {

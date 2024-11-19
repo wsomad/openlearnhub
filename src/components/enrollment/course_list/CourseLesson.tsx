@@ -3,13 +3,13 @@ import { FaAngleDown, FaAngleRight } from 'react-icons/fa';
 import { FaPlus } from 'react-icons/fa6';
 import { MdDeleteOutline, MdEditNote } from 'react-icons/md';
 
-import { Lesson } from '../../../types/Lesson';
+import { Lesson } from '../../../types/lesson';
 import { Section } from '../../../types/section';
 import {
 	BaseLessonHandlers,
 	BaseSectionHandlers,
 	EditableProps,
-} from '../../../types/Shared';
+} from '../../../types/shared';
 import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 import EditSectionModal from '../../modal/EditSectionModal';
 import ModalComponent from '../../modal/ModalComponent';

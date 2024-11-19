@@ -1,5 +1,5 @@
-import { Instructor } from './Instructor';
-import { Student } from './Student';
+import { Instructor } from './instructor';
+import { Student } from './student';
 
 export type UserRole = 'student' | 'instructor';
 
