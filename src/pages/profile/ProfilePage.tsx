@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import ProfileComponent from '../../components/profile/ProfileComponent';
 import ProfileView from '../../components/profile/ProfileView';
 import { Course } from '../../types/course';
-import { UserProfile } from '../../types/profile';
 import { ProfileStatistics } from '../../types/profilestatistics';
 import { ViewMode } from '../../types/shared';
+import { User } from '../../types/user';
 
 interface ProfilePageProps {
     userId: string;
@@ -18,7 +18,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({userId}) => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
     // Define initial user profile data
-    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [userProfile, setUserProfile] = useState<User | null>(null);
     const [statistics, setStatistics] = useState<ProfileStatistics | null>(
         null,
     );
@@ -39,18 +39,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({userId}) => {
                 const data = await response.json();
 
                 // Find user profile
-                const profile = data.users.find(
-                    (u: UserProfile) => u.uid === userId,
-                );
+                const profile = data.users.find((u: User) => u.uid === userId);
                 if (!profile) {
                     throw new Error('User not found');
                 }
 
                 // Get enrolled and created courses
                 const enrolledCourseIds =
-                    profile.studentProfile?.enrolled_courses || [];
+                    profile.student?.enrolled_courses || [];
                 const createdCourseIds =
-                    profile.instructorProfile?.created_courses || [];
+                    profile.instructor?.created_courses || [];
 
                 const enrolledCourses = data.courses.filter((course: Course) =>
                     enrolledCourseIds.includes(course.course_id),
@@ -98,7 +96,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({userId}) => {
         setIsModalOpen(!isModalOpen);
     };
 
-    const handleProfileUpdate = async (updatedProfile: UserProfile) => {
+    const handleProfileUpdate = async (updatedProfile: User) => {
         try {
             // In a real app, you would make an API call here
             setUserProfile(updatedProfile);

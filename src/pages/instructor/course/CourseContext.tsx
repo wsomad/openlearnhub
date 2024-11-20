@@ -2,12 +2,17 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import { Course } from '../../../types/course';
 import { Section } from '../../../types/section';
+import { User } from '../../../types/user';
 
 interface CourseContextType {
     courses: Course[];
+    users: User[];
+    instructorCourses: Course[];
+    setInstructorCourses: React.Dispatch<React.SetStateAction<Course[]>>;
     updateCourse: (courseId: string, updatedCourse: Course) => void;
-    addCourse: (newCourse: Partial<Course>) => string;
+    addCourse: (newCourse: Partial<Course>, instructorId: string) => string;
     findCourseById: (courseId: string) => Course | undefined;
+    findCoursesByInstructor: (instructorId: string) => Course[];
     updateCourseSections: (courseId: string, sections: Section[]) => void;
 }
 
@@ -17,39 +22,52 @@ export const CourseProvider: React.FC<{children: React.ReactNode}> = ({
     children,
 }) => {
     const [courses, setCourses] = useState<Course[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
+    const [instructorCourses, setInstructorCourses] = useState<Course[]>([]);
 
     useEffect(() => {
-        const loadCourses = async () => {
-            const response = await fetch('/dummyData.json');
-            const data = await response.json();
-            setCourses(data.courses);
+        const loadData = async () => {
+            try {
+                const response = await fetch('/dummyData.json');
+                const data = await response.json();
+                setCourses(data.courses);
+                setUsers(data.users);
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
         };
-        loadCourses();
+        loadData();
     }, []);
 
-    const addCourse = (newCourse: Partial<Course>) => {
-        const courseId = `course-${Date.now()}`;
-        const courseWithId: Course = {
-            course_id: courseId,
-            instructor_id: 'u3',
-            course_title: newCourse.course_title || '',
-            course_description: newCourse.course_description || '',
-            course_enrollment_number: 0,
-            course_number_of_section: 0,
-            course_pricing: newCourse.course_pricing || 0,
-            course_rating: 5,
-            course_requirements: newCourse.course_requirements || [],
-            course_type: newCourse.course_type || 'Online',
-            course_created_at: new Date(),
-            course_updated_at: new Date(),
-            course_instructor: 'Test Instructor',
-            course_thumbnail_url: newCourse.course_thumbnail_url || '',
-            enrolled_students: [],
-            sections: [],
-        };
+    const addCourse = (
+        newCourse: Partial<Course>,
+        instructorId: string,
+    ): string => {
+        console.log('Instructor ID passed for adding course:', instructorId);
 
-        setCourses((prev) => [...prev, courseWithId]);
-        return courseId;
+        const newCourseId = (
+            Math.floor(Math.random() * (Number.MAX_SAFE_INTEGER - 5 + 1)) + 5
+        ).toString();
+        console.log('New course ID created:', newCourseId);
+        const fullCourse: Course = {
+            ...newCourse,
+            course_id: newCourseId,
+            uid: instructorId,
+        } as Course;
+
+        // Log the details of the course being added.
+        console.log('Adding course:', fullCourse);
+
+        // Update the overall courses state
+        setCourses((prevCourses) => [...prevCourses, fullCourse]);
+
+        // Update the instructor's courses state
+        setInstructorCourses((prevInstructorCourses) => [
+            ...prevInstructorCourses,
+            fullCourse,
+        ]);
+
+        return newCourseId;
     };
 
     const updateCourse = (courseId: string, updatedCourse: Course) => {
@@ -58,14 +76,17 @@ export const CourseProvider: React.FC<{children: React.ReactNode}> = ({
                 course.course_id === courseId ? updatedCourse : course,
             ),
         );
+        setInstructorCourses((prevInstructorCourses) =>
+            prevInstructorCourses.map((course) =>
+                course.course_id === courseId ? updatedCourse : course,
+            ),
+        );
     };
 
     const updateCourseSections = (courseId: string, sections: Section[]) => {
         setCourses((prevCourses) =>
             prevCourses.map((course) =>
-                course.course_id === courseId
-                    ? {...course, sections: sections}
-                    : course,
+                course.course_id === courseId ? {...course, sections} : course,
             ),
         );
     };
@@ -74,13 +95,21 @@ export const CourseProvider: React.FC<{children: React.ReactNode}> = ({
         return courses.find((course) => course.course_id === courseId);
     };
 
+    const findCoursesByInstructor = (instructorUid: string) => {
+        return courses.filter((course) => course.uid === instructorUid);
+    };
+
     return (
         <CourseContext.Provider
             value={{
                 courses,
+                users,
+                instructorCourses,
+                setInstructorCourses,
                 updateCourse,
                 addCourse,
                 findCourseById,
+                findCoursesByInstructor,
                 updateCourseSections,
             }}
         >

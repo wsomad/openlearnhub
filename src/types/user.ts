@@ -14,6 +14,6 @@ export interface User {
     created_at: Date;
     updated_at: Date;
     profile_image?: string;
-    student: Student[];
-    instructor: Instructor[];
+    student: Student;
+    instructor?: Instructor;
 }

@@ -2,7 +2,7 @@ import { Section } from './section';
 
 export interface Course {
     course_id: string;
-    instructor_id: string;
+    uid: string;
     course_title: string;
     course_description: string;
     course_enrollment_number: number;

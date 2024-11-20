@@ -3,7 +3,8 @@ import { FaPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 import { Course } from '../../../types/course';
-import { UserProfile } from '../../../types/profile';
+import { Instructor } from '../../../types/instructor';
+import { User } from '../../../types/user';
 import { useCourses } from '../course/CourseContext';
 
 interface CourseDashboardProps {
@@ -11,12 +12,14 @@ interface CourseDashboardProps {
 }
 
 const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
-    const {courses} = useCourses();
-    const [instructorCourses, setInstructorCourses] = useState<Course[]>([]);
+    const {findCoursesByInstructor, addCourse} = useCourses();
+    const [coursesByInstructor, setCoursesByInstructor] = useState<Course[]>(
+        [],
+    );
+    const [instructor, setInstructor] = useState<Instructor | null>(null);
 
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-
     useEffect(() => {
         const fetchInstructorData = async () => {
             try {
@@ -25,21 +28,16 @@ const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
                 const data = await response.json();
 
                 // Find instructor
-                const instructor = data.users.find(
-                    (u: UserProfile) => u.uid === userId,
-                );
-                if (!instructor?.instructorProfile) {
+                const user = data.users.find((u: User) => u.uid === userId);
+                if (!user || user.role !== 'instructor' || !user.instructor) {
                     throw new Error('Instructor not found!');
                 }
+                const instructor = user.instructor as Instructor;
 
-                // Get instructor courses
-                const filteredCourses = courses.filter((course: Course) =>
-                    instructor.instructorProfile?.created_courses.includes(
-                        course.course_id,
-                    ),
-                );
-
-                setInstructorCourses(filteredCourses);
+                // Get instructor courses using the useCourses hook
+                const courses = findCoursesByInstructor(user.uid);
+                setCoursesByInstructor(courses);
+                setInstructor(instructor);
             } catch (err) {
                 setError(
                     err instanceof Error
@@ -52,15 +50,7 @@ const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
         };
 
         fetchInstructorData();
-    }, [userId, courses]);
-
-    if (isLoading) {
-        return (
-            <div className='flex justify-center items-center h-screen'>
-                Loading ...
-            </div>
-        );
-    }
+    }, [userId, useCourses, setCoursesByInstructor, addCourse]);
 
     if (error) {
         return <div className='text-red text-center'>Error: {error}</div>;
@@ -76,7 +66,9 @@ const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
                 <p className='text-xl text-gray-600'>
                     Manage your courses and create new ones
                 </p>
-                <p className='text-2xl text-primary mt-6'>3 Courses Created</p>
+                <p className='text-2xl text-primary mt-6'>
+                    {instructor?.total_courses_created || 0} Courses Created
+                </p>
             </div>
 
             {/* Course Grid */}
@@ -98,7 +90,7 @@ const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
                 </Link>
 
                 {/* Existing Courses */}
-                {courses.map((course) => (
+                {coursesByInstructor.map((course) => (
                     <div
                         key={course.course_id}
                         className='bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow'
@@ -143,7 +135,7 @@ const CourseDashboardPage: React.FC<CourseDashboardProps> = ({userId}) => {
                             <div className='flex space-x-2'>
                                 <Link
                                     to={`/instructor/courses/${course.course_id}/edit`}
-                                    className='flex-1 bg-primary text-white text-center py-2 rounded-md hover:bg-primary-dark transition-colors font-abhaya'
+                                    className='flex-1 bg-primary text-white text-center py-2 rounded-full hover:bg-primary-dark transition-colors font-abhaya'
                                 >
                                     Edit
                                 </Link>

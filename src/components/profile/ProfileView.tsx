@@ -1,14 +1,18 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
+import { GiGiftOfKnowledge } from 'react-icons/gi';
+import { PiMapPinSimpleAreaFill } from 'react-icons/pi';
+import { SiCoursera } from 'react-icons/si';
 
 import userProfileImg from '../../assets/images/userProfile.png';
 import { Course } from '../../types/course';
-import { UserProfile } from '../../types/profile';
 import { ViewMode } from '../../types/shared';
+import { User } from '../../types/user';
+import CardDashboard from '../CardDashboard';
 
 interface ProfileViewProps {
     viewMode: ViewMode;
-    userProfile: UserProfile;
+    userProfile: User;
     toggleModal: () => void;
     isInstructor: boolean;
     courses: {
@@ -44,7 +48,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     }`}
                 >
                     <img
-                        src={userProfile.profileImage || userProfileImg}
+                        src={userProfile.profile_image || userProfileImg}
                         alt={`${userProfile.firstname}'s Profile`}
                         className='w-full h-full object-cover'
                     />
@@ -57,46 +61,51 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                     </p>
 
                     <div className='mt-1 flex space-x-16'>
-                        {!isStudent && userProfile.instructorProfile && (
+                        {!isStudent && userProfile.instructor && (
                             <>
-                                {userProfile.instructorProfile.socialLinks
+                                {userProfile.instructor.social_links
                                     .linkedin && (
-                                    <p>
-                                        LinkedIn:{' '}
-                                        <a
-                                            href={
-                                                userProfile.instructorProfile
-                                                    .socialLinks.linkedin
-                                            }
-                                            target='_blank'
-                                            rel='noopener noreferrer'
-                                            className='text-secondary hover:text-secondary-dark transition-colors'
-                                        >
-                                            {
-                                                userProfile.instructorProfile
-                                                    .socialLinks.linkedin
-                                            }
-                                        </a>
+                                    <p className='flex items-center space-x-2'>
+                                        <FaLinkedin /> {/* LinkedIn icon */}
+                                        <span>
+                                            LinkedIn:{' '}
+                                            <a
+                                                href={
+                                                    userProfile.instructor
+                                                        .social_links.linkedin
+                                                }
+                                                target='_blank'
+                                                rel='noopener noreferrer'
+                                                className='text-secondary hover:text-secondary-dark transition-colors'
+                                            >
+                                                {
+                                                    userProfile.instructor
+                                                        .social_links.linkedin
+                                                }
+                                            </a>
+                                        </span>
                                     </p>
                                 )}
-                                {userProfile.instructorProfile.socialLinks
-                                    .github && (
-                                    <p>
-                                        GitHub:{' '}
-                                        <a
-                                            href={
-                                                userProfile.instructorProfile
-                                                    .socialLinks.github
-                                            }
-                                            target='_blank'
-                                            rel='noopener noreferrer'
-                                            className='text-secondary hover:text-secondary-dark transition-colors'
-                                        >
-                                            {
-                                                userProfile.instructorProfile
-                                                    .socialLinks.github
-                                            }
-                                        </a>
+                                {userProfile.instructor.social_links.github && (
+                                    <p className='flex items-center space-x-2'>
+                                        <FaGithub /> {/* GitHub icon */}
+                                        <span>
+                                            GitHub:{' '}
+                                            <a
+                                                href={
+                                                    userProfile.instructor
+                                                        .social_links.github
+                                                }
+                                                target='_blank'
+                                                rel='noopener noreferrer'
+                                                className='text-secondary hover:text-secondary-dark transition-colors'
+                                            >
+                                                {
+                                                    userProfile.instructor
+                                                        .social_links.github
+                                                }
+                                            </a>
+                                        </span>
                                     </p>
                                 )}
                             </>
@@ -134,7 +143,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                                 Courses Enrolled
                             </p>
                             <p className='text-lg font-semibold text-gray-700'>
-                                {userProfile.studentProfile.coursesEnrolled}
+                                {userProfile.student.courses_enrolled}
                             </p>
                         </div>
                         <div className='flex flex-col'>
@@ -142,43 +151,44 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                                 Student Type
                             </p>
                             <p className='text-lg font-semibold text-gray-700'>
-                                {userProfile.studentProfile.studentType}
+                                {userProfile.student.student_type}
                             </p>
                         </div>
                     </>
                 ) : (
-                    userProfile.instructorProfile && (
+                    userProfile.instructor && (
                         <>
                             <div className='flex flex-col'>
-                                <p className='text-md font-medium text-gray-500'>
-                                    Courses Created
+                                <p className='text-md font-medium text-gray-500 flex items-center space-x-2'>
+                                    <SiCoursera />
+                                    <span>Courses Created</span>{' '}
                                 </p>
                                 <p className='text-lg font-semibold text-gray-700'>
                                     {
-                                        userProfile.instructorProfile
-                                            .coursesCreated
+                                        userProfile.instructor
+                                            .total_courses_created
                                     }
                                 </p>
                             </div>
                             <div className='flex flex-col'>
-                                <p className='text-md font-medium text-gray-500'>
-                                    Specialization
+                                <p className='text-md font-medium text-gray-500 flex items-center space-x-2'>
+                                    <GiGiftOfKnowledge />{' '}
+                                    <span>Specialization</span>
                                 </p>
                                 <p className='text-lg font-semibold text-gray-700'>
-                                    {userProfile.instructorProfile.specializationArea.join(
+                                    {userProfile.instructor.specialization_area.join(
                                         ', ',
                                     )}
                                 </p>
                             </div>
+
                             <div className='flex flex-col'>
-                                <p className='text-md font-medium text-gray-500'>
-                                    Experience
+                                <p className='text-md font-medium text-gray-500 flex items-center space-x-2'>
+                                    <PiMapPinSimpleAreaFill />{' '}
+                                    <span>Experience</span>
                                 </p>
                                 <p className='text-lg font-semibold text-gray-700'>
-                                    {
-                                        userProfile.instructorProfile
-                                            .yearsOfExperience
-                                    }{' '}
+                                    {userProfile.instructor.years_of_experience}{' '}
                                     years
                                 </p>
                             </div>
@@ -196,48 +206,27 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                 </h3>
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
                     {currentCourses.map((course) => (
-                        <Link
+                        <CardDashboard
                             key={course.course_id}
-                            to={`/course/${course.course_id}`}
-                            className='block hover:shadow-lg transition-shadow'
-                        >
-                            <div className='bg-white rounded-lg overflow-hidden shadow'>
-                                <img
-                                    src={course.course_thumbnail_url}
-                                    alt={course.course_title}
-                                    className='w-full h-40 object-cover'
-                                />
-                                <div className='p-4'>
-                                    <h4 className='text-xl font-semibold mb-2'>
-                                        {course.course_title}
-                                    </h4>
-                                    <p className='text-gray-600 text-sm mb-2'>
-                                        {course.course_description}
-                                    </p>
-                                    <div className='flex justify-between items-center'>
-                                        <span className='text-primary font-semibold'>
-                                            ${course.course_pricing}
-                                        </span>
-                                        <span className='text-gray-500 text-sm'>
-                                            {course.course_enrollment_number}{' '}
-                                            students
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </Link>
+                            courseId={course.course_id}
+                            thumbnailUrl={course.course_thumbnail_url}
+                            title={course.course_title}
+                            description={course.course_description}
+                            pricing={course.course_pricing}
+                            enrollmentNumber={course.course_enrollment_number}
+                        />
                     ))}
                 </div>
             </div>
 
             {/* Instructor Summary Section */}
-            {!isStudent && userProfile.instructorProfile && (
+            {!isStudent && userProfile.instructor && (
                 <div className='mt-8 bg-white p-6 rounded-lg shadow-md'>
                     <h3 className='text-3xl font-semibold text-gray-800 mb-4'>
                         Profile Summary
                     </h3>
                     <p className='text-gray-700 text-lg'>
-                        {userProfile.instructorProfile.profileSummary}
+                        {userProfile.instructor.profile_summary}
                     </p>
                 </div>
             )}

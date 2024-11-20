@@ -3,9 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../hooks/useAuth';
 import { useUser } from '../hooks/useUser';
-import { UserProfile } from '../types/profile';
 import { ViewMode } from '../types/shared';
-import { UserRole } from '../types/user';
+import { User, UserRole } from '../types/user';
 
 interface Category {
     name: string;
@@ -35,7 +34,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
     // const [isLoggedIn, setIsLoggedIn] = useState(true);
     const {user, signUserOut} = useAuth();
     // const {currentUser, fetchUserById} = useUser();
-    const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const navigate = useNavigate();
 
     // useEffect(() => {
@@ -64,9 +63,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
             try {
                 const response = await fetch('/dummyData.json');
                 const data = await response.json();
-                const user = data.users.find(
-                    (u: UserProfile) => u.uid === userId,
-                );
+                const user = data.users.find((u: User) => u.uid === userId);
                 if (user) {
                     setCurrentUser(user);
                 }
@@ -101,15 +98,15 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
             : []),
     ];
 
+    const closeAllMenus = () => {
+        setIsDropdownOpen(false);
+        setIsUserOpen(false);
+    };
+
     const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
     const toggleUser = () => setIsUserOpen((prev) => !prev);
 
     const handleSignInAndSignUp = () => navigate('/auth');
-
-    const closeDropdowns = () => {
-        setIsDropdownOpen(false);
-        setIsUserOpen(false);
-    };
 
     const handleLogout = async () => {
         try {
@@ -125,7 +122,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
             onToggleView();
         }
         navigate(path);
-        closeDropdowns();
+        closeAllMenus();
     };
 
     const menuItems =
@@ -133,6 +130,13 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
 
     return (
         <>
+            {(isDropdownOpen || isUserOpen) && (
+                <div
+                    className='fixed inset-0 bg-black bg-opacity-50 z-10'
+                    onClick={closeAllMenus}
+                ></div>
+            )}
+
             <header className='flex items-center justify-between p-4 px-10 bg-white shadow-sm'>
                 <div className='flex items-center space-x-4'>
                     {/* Logo */}
@@ -158,7 +162,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                         {isDropdownOpen && (
                             <div
                                 className='absolute bg-white text-black mt-1 rounded-md shadow-lg z-20 w-48 ml-10'
-                                onClick={closeDropdowns}
+                                onClick={toggleDropdown}
                             >
                                 <ul className='py-1'>
                                     {categories.map((category) => (
@@ -197,33 +201,29 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                     ) : (
                         <div className='relative'>
                             <div className='flex items-center space-x-4'>
-                                {currentRole === 'instructor' && (
-                                    <button
-                                        onClick={onToggleView}
-                                        className='px-4 py-2 bg-secondary text-white rounded-md hover:bg-secondary-dark transition-colors'
-                                    >
-                                        Switch to{' '}
-                                        {userType === 'student'
-                                            ? 'Instructor'
-                                            : 'Student'}
-                                    </button>
-                                )}
+                                {/* User Dropdown Button */}
                                 <button
                                     onClick={toggleUser}
                                     className='font-abhaya font-semibold text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors flex items-center space-x-2'
                                     aria-expanded={isUserOpen}
                                 >
+                                    <img
+                                        src={
+                                            currentUser?.profile_image ||
+                                            '/path/to/default/image.jpg'
+                                        }
+                                        alt={`${currentUser?.username}'s Profile`}
+                                        className='w-8 h-8 border rounded-full object-cover'
+                                    />
                                     <span>
-                                        {currentUser.username || 'User'}
+                                        {currentUser?.username || 'User'}
                                     </span>
                                 </button>
                             </div>
 
+                            {/* User Dropdown Menu */}
                             {isUserOpen && (
-                                <div
-                                    className='absolute right-0 mt-2 bg-white rounded-md shadow-lg z-20 w-48'
-                                    onClick={closeDropdowns}
-                                >
+                                <div className='absolute right-0 mt-2 bg-white rounded-md shadow-lg z-20 w-48'>
                                     <ul className='py-1'>
                                         {menuItems.map((item) => (
                                             <li key={item.name}>
@@ -239,6 +239,30 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                                                 </button>
                                             </li>
                                         ))}
+
+                                        {/* Add "Go to Student/Instructor Page" Option */}
+                                        {currentRole === 'instructor' && (
+                                            <li>
+                                                <button
+                                                    onClick={() =>
+                                                        handleViewSwitch(
+                                                            userType ===
+                                                                'student'
+                                                                ? '/instructor/dashboard'
+                                                                : '/courses/enrolled',
+                                                        )
+                                                    }
+                                                    className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-abhaya'
+                                                >
+                                                    Go to{' '}
+                                                    {userType === 'student'
+                                                        ? 'Instructor Page'
+                                                        : 'Student Page'}
+                                                </button>
+                                            </li>
+                                        )}
+
+                                        {/* Sign Out Option */}
                                         <li>
                                             <button
                                                 onClick={handleLogout}
