@@ -26,7 +26,7 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({
         course_description: '',
         course_pricing: 0,
         course_requirements: [''],
-        course_type: 'Online',
+        course_type: undefined,
         course_thumbnail_url: '',
         course_enrollment_number: 0,
         course_number_of_section: 0,
@@ -203,14 +203,36 @@ const CreateCoursePage: React.FC<CreateCoursePageProps> = ({
                         <select
                             id='course_type'
                             name='course_type'
-                            value={courseData.course_type}
+                            value={courseData.course_type || ''}
                             onChange={handleInputChange}
                             className='w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary appearance-none'
                             required
                         >
-                            <option value='Online'>Online</option>
-                            <option value='Recorded'>Recorded</option>
-                            <option value='Live'>Live</option>
+                            <option value='' disabled>
+                                Select a type
+                            </option>
+                            <option value='Web Development'>
+                                Web Development
+                            </option>
+                            <option value='Data Science'>Data Science</option>
+                            <option value='Machine Learning'>
+                                Machine Learning
+                            </option>
+                            <option value='Mobile Development'>
+                                Mobile Development
+                            </option>
+                            <option value='Cloud Computing'>
+                                Cloud Computing
+                            </option>
+                            <option value='DevOps'>DevOps</option>
+                            <option value='Cybersecurity'>Cybersecurity</option>
+                            <option value='UI/UX Design'>UI/UX Design</option>
+                            <option value='Business Analytics'>
+                                Business Analytics
+                            </option>
+                            <option value='Digital Marketing'>
+                                Digital Marketing
+                            </option>
                         </select>
                     </div>
                 </div>

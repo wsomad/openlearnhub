@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { IoCloseOutline } from 'react-icons/io5';
 
+import { Section } from '../../types/section';
+
 interface EditSectionModalProps {
     isOpen: boolean;
     onClose: () => void;

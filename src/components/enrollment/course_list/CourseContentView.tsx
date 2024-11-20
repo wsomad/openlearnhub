@@ -19,7 +19,13 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-import { Lesson } from '../../../types/lesson';
+import {
+	DocumentLesson,
+	Lesson,
+	LessonBase,
+	QuizLesson,
+	VideoLesson,
+} from '../../../types/lesson';
 import { Section } from '../../../types/section';
 import CourseLesson from './CourseLesson';
 
@@ -30,11 +36,17 @@ interface SortableCourseSectionProps {
     canEdit: boolean;
     onDeleteSection: (sectionId: string) => void;
     onEditSectionTitle: (sectionId: string, newTitle: string) => void;
-    onAddLesson: (sectionId: string, lesson: Omit<Lesson, 'lesson_id'>) => void;
+    onAddLesson: (
+        sectionId: string,
+        lesson: Omit<
+            DocumentLesson | VideoLesson | QuizLesson,
+            'lesson_id' | 'section_id' | 'lesson_order'
+        >,
+    ) => void;
     onEditLesson: (
         sectionId: string,
         lessonId: string,
-        updatedLesson: Partial<Lesson>,
+        updatedLesson: Partial<DocumentLesson | VideoLesson | QuizLesson>,
     ) => void;
     onDeleteLesson: (sectionId: string, lessonId: string) => void;
 }
@@ -46,11 +58,17 @@ interface CourseContentViewProps {
     canEdit: boolean;
     onDeleteSection: (sectionId: string) => void;
     onEditSectionTitle: (sectionId: string, newTitle: string) => void;
-    onAddLesson: (sectionId: string, lesson: Omit<Lesson, 'lesson_id'>) => void;
+    onAddLesson: (
+        sectionId: string,
+        lesson: Omit<
+            DocumentLesson | VideoLesson | QuizLesson,
+            'lesson_id' | 'section_id' | 'lesson_order'
+        >,
+    ) => void;
     onEditLesson: (
         sectionId: string,
         lessonId: string,
-        updatedLesson: Partial<Lesson>,
+        updatedLesson: Partial<DocumentLesson | VideoLesson | QuizLesson>,
     ) => void;
     onDeleteLesson: (sectionId: string, lessonId: string) => void;
 }
@@ -82,10 +100,12 @@ const SortableCourseSection: React.FC<SortableCourseSectionProps> = ({
         opacity: isDragging ? 0.5 : 1,
     };
 
-    const totalDuration = section.lessons.reduce(
-        (acc, lesson) => acc + lesson.lesson_duration,
-        0,
-    );
+    const totalDuration = section.lessons.reduce((acc, lesson) => {
+        if (lesson.lesson_type === 'video') {
+            return acc + (lesson as VideoLesson).video_duration / 60;
+        }
+        return acc;
+    }, 0);
 
     const DragHandle = () => (
         <div

@@ -17,8 +17,14 @@ const EditCoursePage: React.FC<EditCoursePageProps> = ({
     instructorId,
 }) => {
     const {courseId} = useParams<{courseId: string}>();
+
+    // If courseId is undefined, you could handle it by showing an error or redirecting
+    if (!courseId) {
+        return <div>Course ID is missing or invalid</div>;
+    }
+
     const {findCourseById} = useCourses();
-    const course = courseId ? findCourseById(courseId) : null;
+    const course = findCourseById(courseId);
 
     if (!course) {
         return <div>Course not found</div>;
@@ -37,6 +43,13 @@ const EditCoursePage: React.FC<EditCoursePageProps> = ({
 
             <div className='grid grid-cols-1 gap-8'>
                 <div className='bg-white rounded-lg shadow-sm'>
+                    <div className='bg-white rounded-lg shadow-sm'>
+                        <CourseContentList
+                            userType={userType}
+                            courseId={courseId}
+                            userId={userId}
+                        />
+                    </div>
                     <div className='p-6 border-b'>
                         <h2 className='text-2xl font-bold font-abhaya'>
                             Course Details
@@ -48,14 +61,6 @@ const EditCoursePage: React.FC<EditCoursePageProps> = ({
                             instructorId={instructorId}
                         />
                     </div>
-                </div>
-
-                <div className='bg-white rounded-lg shadow-sm'>
-                    <CourseContentList
-                        userType={userType}
-                        courseId={courseId}
-                        userId={userId}
-                    />
                 </div>
             </div>
         </div>

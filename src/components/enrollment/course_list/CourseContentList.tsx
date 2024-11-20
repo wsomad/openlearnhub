@@ -1,12 +1,16 @@
-// CourseContentList.tsx
 import { useEffect, useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 
 import { useCourses } from '../../../pages/instructor/course/CourseContext';
 import { Course } from '../../../types/course';
-import { Lesson } from '../../../types/lesson';
-import { UserProfile } from '../../../types/profile';
+import {
+	DocumentLesson,
+	LessonBase,
+	QuizLesson,
+	VideoLesson,
+} from '../../../types/lesson';
 import { Section } from '../../../types/section';
+import { User } from '../../../types/user';
 import AddSectionModal from '../../modal/AddSectionModal';
 import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 import CourseContentView from './CourseContentView';
@@ -31,7 +35,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         null,
     );
     const [courseData, setCourseData] = useState<Course | null>(null);
-    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+    const [userProfile, setUserProfile] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +55,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                 const response = await fetch('/dummyData.json');
                 const data = await response.json();
                 const userProfile = data.users.find(
-                    (u: UserProfile) => u.uid === userId,
+                    (u: User) => u.uid === userId,
                 );
 
                 if (!userProfile) {
@@ -76,10 +80,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
 
     const canEditCourse = (): boolean => {
         if (!courseData || !userProfile) return false;
-        return (
-            userType === 'instructor' &&
-            courseData.instructor_id === userProfile.uid
-        );
+        return userType === 'instructor' && courseData.uid === userProfile.uid;
     };
 
     const openAddContentModal = (): void => {
@@ -95,7 +96,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     };
 
     const handleAddSection = async (
-        newSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
+        newSection: Omit<Section, 'section_id' | 'lessons'>,
     ): Promise<void> => {
         if (!canEditCourse()) return;
 
@@ -105,7 +106,6 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
             course_id: courseId,
             section_order: courseSections.length + 1,
             lessons: [],
-            quizzes: [],
         };
 
         setCourseSections([...courseSections, sectionWithId]);
@@ -151,50 +151,143 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
 
     const handleAddLesson = (
         sectionId: string,
-        newLesson: Omit<Lesson, 'lesson_id'>,
+        newLesson: Omit<
+            DocumentLesson | VideoLesson | QuizLesson,
+            'lesson_id' | 'section_id' | 'lesson_order'
+        >,
     ): void => {
         if (!canEditCourse()) return;
 
-        setCourseSections((prevSections) =>
-            prevSections.map((section) =>
-                section.section_id === sectionId
-                    ? {
-                          ...section,
-                          lessons: [
-                              ...section.lessons,
-                              {
-                                  ...newLesson,
-                                  lesson_id: `l${section.lessons.length + 1}`,
-                                  section_id: sectionId,
-                              },
-                          ],
-                      }
-                    : section,
-            ),
-        );
+        setCourseSections((prevSections: Section[]) => {
+            return prevSections.map((section) => {
+                if (section.section_id === sectionId) {
+                    let lessonWithIds: LessonBase;
+
+                    switch (newLesson.lesson_type) {
+                        case 'document':
+                            lessonWithIds = {
+                                ...newLesson,
+                                lesson_id: `l${section.lessons.length + 1}`,
+                                section_id: sectionId,
+                                lesson_order: section.lessons.length + 1,
+                                lesson_type: 'document',
+                                document_url: (newLesson as DocumentLesson)
+                                    .document_url,
+                            } as DocumentLesson;
+                            break;
+                        case 'video':
+                            lessonWithIds = {
+                                ...newLesson,
+                                lesson_id: `l${section.lessons.length + 1}`,
+                                section_id: sectionId,
+                                lesson_order: section.lessons.length + 1,
+                                lesson_type: 'video',
+                                video_url: (newLesson as VideoLesson).video_url,
+                                video_duration: (newLesson as VideoLesson)
+                                    .video_duration,
+                            } as VideoLesson;
+                            break;
+                        case 'quiz':
+                            lessonWithIds = {
+                                ...newLesson,
+                                lesson_id: `l${section.lessons.length + 1}`,
+                                section_id: sectionId,
+                                lesson_order: section.lessons.length + 1,
+                                lesson_type: 'quiz',
+                                quiz: (newLesson as QuizLesson).quiz,
+                            } as QuizLesson;
+                            break;
+                        default:
+                            throw new Error('Invalid lesson type');
+                    }
+
+                    return {
+                        ...section,
+                        lessons: [...section.lessons, lessonWithIds],
+                    };
+                }
+                return section;
+            });
+        });
     };
 
     const handleEditLesson = (
         sectionId: string,
         lessonId: string,
-        updatedLesson: Partial<Lesson>,
+        updatedLesson: Partial<DocumentLesson | VideoLesson | QuizLesson>,
     ): void => {
         if (!canEditCourse()) return;
 
-        setCourseSections((prevSections) =>
-            prevSections.map((section) =>
-                section.section_id === sectionId
-                    ? {
-                          ...section,
-                          lessons: section.lessons.map((lesson) =>
-                              lesson.lesson_id === lessonId
-                                  ? {...lesson, ...updatedLesson}
-                                  : lesson,
-                          ),
-                      }
-                    : section,
-            ),
-        );
+        setCourseSections((prevSections: Section[]) => {
+            return prevSections.map((section) => {
+                if (section.section_id === sectionId) {
+                    return {
+                        ...section,
+                        lessons: section.lessons.map((lesson) => {
+                            if (lesson.lesson_id === lessonId) {
+                                if (
+                                    updatedLesson.lesson_type &&
+                                    updatedLesson.lesson_type !==
+                                        lesson.lesson_type
+                                ) {
+                                    // Handle type change
+                                    switch (updatedLesson.lesson_type) {
+                                        case 'document':
+                                            return {
+                                                ...lesson,
+                                                ...updatedLesson,
+                                                lesson_type: 'document',
+                                                document_url:
+                                                    (
+                                                        updatedLesson as Partial<DocumentLesson>
+                                                    ).document_url || '',
+                                            } as DocumentLesson;
+                                        case 'video':
+                                            return {
+                                                ...lesson,
+                                                ...updatedLesson,
+                                                lesson_type: 'video',
+                                                video_url:
+                                                    (
+                                                        updatedLesson as Partial<VideoLesson>
+                                                    ).video_url || '',
+                                                video_duration:
+                                                    (
+                                                        updatedLesson as Partial<VideoLesson>
+                                                    ).video_duration || 0,
+                                            } as VideoLesson;
+                                        case 'quiz':
+                                            return {
+                                                ...lesson,
+                                                ...updatedLesson,
+                                                lesson_type: 'quiz',
+                                                quiz: (
+                                                    updatedLesson as Partial<QuizLesson>
+                                                ).quiz || {
+                                                    quiz_id: '',
+                                                    quiz_title: '',
+                                                    quiz_number_of_questions: 0,
+                                                    questions: [],
+                                                },
+                                            } as QuizLesson;
+                                        default:
+                                            return lesson;
+                                    }
+                                } else {
+                                    // Same type, just update fields
+                                    return {
+                                        ...lesson,
+                                        ...updatedLesson,
+                                    } as LessonBase;
+                                }
+                            }
+                            return lesson;
+                        }),
+                    };
+                }
+                return section;
+            });
+        });
     };
 
     const handleDeleteLesson = (sectionId: string, lessonId: string): void => {

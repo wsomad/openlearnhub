@@ -1,3 +1,4 @@
+import { SpecializationArea } from './instructor';
 import { Section } from './section';
 
 export interface Course {
@@ -10,7 +11,7 @@ export interface Course {
     course_pricing: number;
     course_rating: 1 | 2 | 3 | 4 | 5;
     course_requirements: string[];
-    course_type: string;
+    course_type: SpecializationArea;
     course_created_at: Date;
     course_updated_at: Date;
     course_thumbnail_url: string;
