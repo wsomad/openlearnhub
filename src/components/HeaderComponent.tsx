@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import {useEffect, useState} from 'react';
+import {Link, useNavigate} from 'react-router-dom';
 
-import { useAuth } from '../hooks/useAuth';
-import { useUser } from '../hooks/useUser';
-import { ViewMode } from '../types/shared';
-import { User, UserRole } from '../types/user';
+import {useAuth} from '../hooks/useAuth';
+import {useUser} from '../hooks/useUser';
+//import { ViewMode } from '../types/shared';
+import {User, UserRole} from '../types/user';
 
 interface Category {
     name: string;
@@ -17,63 +17,64 @@ interface MenuItem {
 }
 
 interface HeaderComponentProps {
-    userType: ViewMode;
+    //userType: ViewMode;
     currentRole: UserRole;
     onToggleView: () => void;
-    userId: string;
+    // userId: string;
 }
 
 const HeaderComponent: React.FC<HeaderComponentProps> = ({
-    userType,
+    //userType,
     currentRole,
     onToggleView,
-    userId,
+    // userId,
 }) => {
     const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
     const [isUserOpen, setIsUserOpen] = useState<boolean>(false);
-    // const [isLoggedIn, setIsLoggedIn] = useState(true);
+    const [isLoggedIn, setIsLoggedIn] = useState(true);
     const {user, signUserOut} = useAuth();
-    // const {currentUser, fetchUserById} = useUser();
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const {currentUser, fetchUserById} = useUser();
+    //const [currentUser, setCurrentUser] = useState<User | null>(null);
     const navigate = useNavigate();
 
-    // useEffect(() => {
-    //     let isMounted = true;
-
-    //     const fetchUserData = async () => {
-    //         if (user?.uid && isMounted) {
-    //             try {
-    //                 await fetchUserById(user.uid);
-    //             } catch (error) {
-    //                 console.error('Failed to fetch user:', error);
-    //             }
-    //         }
-    //     };
-
-    //     fetchUserData();
-
-    //     return () => {
-    //         isMounted = false;
-    //     };
-    // }, [user?.uid, fetchUserById]);
-
-    // Fetch user data from dummyData.json
     useEffect(() => {
+        let isMounted = true;
+
         const fetchUserData = async () => {
-            try {
-                const response = await fetch('/dummyData.json');
-                const data = await response.json();
-                const user = data.users.find((u: User) => u.uid === userId);
-                if (user) {
-                    setCurrentUser(user);
+            if (currentUser?.uid && isMounted) {
+                try {
+                    fetchUserById(currentUser?.uid);
+                    console.log(currentUser?.uid);
+                } catch (error) {
+                    console.error('Failed to fetch user:', error);
                 }
-            } catch (error) {
-                console.error('Failed to fetch user:', error);
             }
         };
 
         fetchUserData();
-    }, [userId]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [user?.uid, fetchUserById]);
+
+    // // Fetch user data from dummyData.json
+    // useEffect(() => {
+    //     const fetchUserData = async () => {
+    //         try {
+    //             const response = await fetch('/dummyData.json');
+    //             const data = await response.json();
+    //             const user = data.users.find((u: User) => u.uid === userId);
+    //             if (user) {
+    //                 setCurrentUser(user);
+    //             }
+    //         } catch (error) {
+    //             console.error('Failed to fetch user:', error);
+    //         }
+    //     };
+
+    //     fetchUserData();
+    // }, [userId]);
 
     const categories: Category[] = [
         {name: 'Development', path: '/categories/development'},
@@ -212,7 +213,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                                             currentUser?.profile_image ||
                                             '/path/to/default/image.jpg'
                                         }
-                                        alt={`${currentUser?.username}'s Profile`}
+                                        alt={`${currentUser.username}'s Profile`}
                                         className='w-8 h-8 border rounded-full object-cover'
                                     />
                                     <span>
@@ -240,7 +241,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                                             </li>
                                         ))}
 
-                                        {/* Add "Go to Student/Instructor Page" Option */}
+                                        {/* Add "Go to Student/Instructor Page" Option
                                         {currentRole === 'instructor' && (
                                             <li>
                                                 <button
@@ -260,7 +261,7 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                                                         : 'Student Page'}
                                                 </button>
                                             </li>
-                                        )}
+                                        )} */}
 
                                         {/* Sign Out Option */}
                                         <li>

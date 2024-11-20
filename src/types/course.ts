@@ -1,8 +1,9 @@
-import { Section } from './section';
+import {Section} from './section';
 
 export interface Course {
     course_id: string;
     uid: string;
+    course_instructor: string;
     course_title: string;
     course_description: string;
     course_enrollment_number: number;
