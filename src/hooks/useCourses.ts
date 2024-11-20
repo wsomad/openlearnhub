@@ -17,24 +17,25 @@ import {Course} from '../types/course'; // Import the Course type
 
 export const useCourses = () => {
     const dispatch = useDispatch();
-
-    // Selectors with type annotations
     const selectedCourse = useSelector(
         (state: RootState) => state.courses.selectedCourse,
     );
-    const courses = useSelector((state: RootState) => state.courses.allCourses);
+    const allCourses = useSelector(
+        (state: RootState) => state.courses.allCourses,
+    );
     const userRole = useSelector((state: RootState) => state.users.userRole);
     const isInstructor = userRole === 'instructor';
 
     /**
-     * Create a new course
+     * Create a new course.
+     * @param course
+     * @returns
      */
     const createCourse = async (course: Course): Promise<void> => {
         if (!isInstructor) {
             console.warn('Only instructors can create courses.');
             return;
         }
-
         try {
             const addedCourse = await addCourse(course);
             dispatch(setCourse(addedCourse)); // Dispatch the added course
@@ -45,7 +46,8 @@ export const useCourses = () => {
     };
 
     /**
-     * Fetch a course by its ID
+     * Fetch course by ID.
+     * @param course_id
      */
     const fetchCourseById = async (course_id: string): Promise<void> => {
         try {
@@ -60,19 +62,19 @@ export const useCourses = () => {
     };
 
     /**
-     * Fetch all courses
+     * Fetch all courses.
+     * @returns
      */
     const fetchAllCourses = async (): Promise<void> => {
-        if (courses.length > 0) {
+        if (allCourses.length > 0) {
             console.log('Courses already in Redux, skipping fetch.');
             return;
         }
-
         try {
-            const allCourses = await getAllCourses();
-            if (allCourses) {
-                dispatch(setCourses(allCourses));
-                console.log('All courses fetched successfully:', allCourses);
+            const courses = await getAllCourses();
+            if (courses) {
+                dispatch(setCourses(courses));
+                console.log('All courses fetched successfully:', courses);
             }
         } catch (error) {
             console.error('Failed to fetch all courses:', error);
@@ -80,23 +82,26 @@ export const useCourses = () => {
     };
 
     /**
-     * Update a course by its ID
+     * Update course by ID.
+     * @param course_id
+     * @param update_course
+     * @returns
      */
     const updateCourse = async (
         course_id: string,
-        updatedCourse: Partial<Course>,
+        update_course: Partial<Course>,
     ): Promise<void> => {
         if (!isInstructor) {
             console.warn('Only instructors can update courses.');
             return;
         }
         try {
-            const updated = await updateCourseById(course_id, updatedCourse);
+            const updated = await updateCourseById(course_id, update_course);
             if (updated) {
                 dispatch(
                     modifyCourse({
                         id: course_id,
-                        updatedCourseObject: updatedCourse,
+                        updatedCourseObject: update_course,
                     }),
                 );
                 console.log('Course updated successfully:', updated);
@@ -107,7 +112,9 @@ export const useCourses = () => {
     };
 
     /**
-     * Delete a course by its ID
+     * Delete course by ID.
+     * @param course_id
+     * @returns
      */
     const deleteCourse = async (course_id: string): Promise<void> => {
         if (!isInstructor) {
@@ -125,7 +132,7 @@ export const useCourses = () => {
 
     return {
         selectedCourse,
-        courses,
+        allCourses,
         userRole,
         createCourse,
         fetchCourseById,

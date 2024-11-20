@@ -8,6 +8,7 @@ import {
 } from 'firebase/firestore';
 import {db} from '../../config/FirebaseConfiguration';
 import {User} from '../../types/user';
+import {uploadUserAvatar} from '../storage/UserStorage';
 
 // Reference to the `users` collection (root reference of user).
 const userCollection = collection(db, 'users');
@@ -54,13 +55,25 @@ export const getUserById = async (uid: string): Promise<User | undefined> => {
 export const updateUserById = async (
     uid: string,
     updatedUser: Partial<User>,
+    avatarUrl?: string,
 ): Promise<User | undefined> => {
     try {
+        // Define initial value for user avatar.
+        let userAvatar = updatedUser.profile_image;
+        // If new avatar url is provided, then update it.
+        if (avatarUrl) {
+            userAvatar = await updateUserAvatar(uid, avatarUrl);
+        }
+
         // Define the document reference for the user by passing two params: `userCollection` and uid of user.
         const userDocRef = doc(userCollection, uid);
         // Update that document with updated data of the user.
         await updateDoc(userDocRef, updatedUser);
-        return {uid, ...updatedUser} as User;
+        return {
+            uid,
+            ...updatedUser,
+            profile_image: userAvatar || updatedUser.profile_image,
+        } as User;
     } catch (error) {
         console.error('Failed to update user: ', error);
     }
@@ -82,5 +95,25 @@ export const deleteUserById = async (
         return uid;
     } catch (error) {
         console.error('Failed to delete user: ', error);
+    }
+};
+
+/**
+ * Update user avatar.
+ * @param uid
+ * @param contentUrl
+ * @returns
+ */
+export const updateUserAvatar = async (
+    uid: string,
+    contentUrl: string,
+): Promise<string> => {
+    try {
+        // Download avatar url with given url.
+        const downloadUrl = await uploadUserAvatar(uid, contentUrl);
+        return downloadUrl;
+    } catch (error) {
+        console.error('Failed to update user avatar', error);
+        throw error;
     }
 };

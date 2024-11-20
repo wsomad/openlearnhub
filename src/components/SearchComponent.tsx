@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 
-import { getSpecificCourse } from '../services/firestore/CourseService'; // Correct import
-import { Course } from '../types/course';
+import {searchSpecificCourse} from '../services/firestore/CourseService'; // Correct import
+import {Course} from '../types/course';
 import SearchBar from './elements/SearchBar'; // Assuming you have a SearchBar component
 
 function SearchComponent() {
@@ -23,7 +23,7 @@ function SearchComponent() {
     const searchCoursesHandler = async (searchQuery: string) => {
         setLoading(true); // Start loading spinner
         try {
-            const courses = await getSpecificCourse(searchQuery); // Call search function
+            const courses = await searchSpecificCourse(searchQuery); // Call search function
             setResults(courses); // Store results in state
         } catch (error) {
             console.error('Error searching courses:', error); // Handle error

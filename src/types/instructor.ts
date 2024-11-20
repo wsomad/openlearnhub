@@ -1,5 +1,5 @@
-import { Course } from './course';
-import { SpecializationArea, User } from './user';
+import {Course} from './course';
+import {User} from './user';
 
 export interface Instructor extends Omit<User, 'role'> {
     profile_summary: string;
@@ -13,3 +13,15 @@ export interface Instructor extends Omit<User, 'role'> {
         linkedin?: string;
     };
 }
+
+export type SpecializationArea =
+    | 'Web Development'
+    | 'Data Science'
+    | 'Machine Learning'
+    | 'Mobile Development'
+    | 'Cloud Computing'
+    | 'DevOps'
+    | 'Cybersecurity'
+    | 'UI/UX Design'
+    | 'Business Analytics'
+    | 'Digital Marketing';

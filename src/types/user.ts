@@ -1,19 +1,7 @@
-import { Instructor } from './instructor';
-import { Student } from './student';
+import {Instructor} from './instructor';
+import {Student} from './student';
 
 export type UserRole = 'student' | 'instructor';
-
-export type SpecializationArea =
-    | 'Web Development'
-    | 'Data Science'
-    | 'Machine Learning'
-    | 'Mobile Development'
-    | 'Cloud Computing'
-    | 'DevOps'
-    | 'Cybersecurity'
-    | 'UI/UX Design'
-    | 'Business Analytics'
-    | 'Digital Marketing';
 
 export interface User {
     uid: string;
@@ -25,7 +13,7 @@ export interface User {
     role: UserRole;
     created_at: Date;
     updated_at: Date;
-    profileImage?: string;
+    profile_image?: string;
     student: Student[];
     instructor: Instructor[];
 }
