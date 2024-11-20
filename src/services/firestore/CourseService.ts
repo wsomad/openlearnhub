@@ -17,22 +17,25 @@ const coursesCollection = collection(db, 'courses');
 
 /**
  * Add a new course to Firestore.
- * @param courseData - The course data to add.
+ * @param course_data - The course data to add.
  */
-export const addCourse = async (courseData: Course): Promise<Course> => {
+export const addCourse = async (course_data: Course): Promise<Course> => {
     try {
         // Check if course title already exists.
-        const isExists = await checkCourseTitle(courseData.course_title);
+        const isExists = await checkCourseTitle(course_data.course_title);
         if (isExists) {
             throw new Error('A course with this title already exists.');
         }
-
         // Define a document reference for the course by passing two params: `coursesCollection` and title of course.
-        const courseDocRef = doc(coursesCollection, courseData.course_title);
+        const courseDocRef = doc(coursesCollection, course_data.course_title);
         // Set that document with data belongs to course.
-        await setDoc(courseDocRef, courseData);
-        console.log('Course successfully added.');
-        return {...courseData, course_id: courseDocRef.id};
+        await setDoc(courseDocRef, course_data);
+        const course = {
+            ...course_data,
+            course_id: courseDocRef.id,
+        } as Course;
+        console.log(`Course ${courseDocRef.id} successfully added.`);
+        return course;
     } catch (error) {
         console.error('Error creating course:', error);
         throw error;
@@ -55,8 +58,12 @@ export const getCourseById = async (
         const courseDoc = await getDoc(courseDocRef);
         // If that document exists, returns data belongs to course.
         if (courseDoc.exists()) {
-            console.log('Course data: ', courseDoc.data());
-            return {course_id, ...courseDoc.data()} as Course;
+            const course = {
+                course_id,
+                ...courseDoc.data(),
+            } as Course;
+            console.log(`Successfully get data from course ${courseDoc.id}`);
+            return course;
         } else {
             console.log('No such course.');
             return null;
@@ -69,11 +76,11 @@ export const getCourseById = async (
 
 /**
  * Get courses that match a specific query.
- * @param searchQuery - The search string to filter courses by title.
+ * @param search_query - The search string to filter courses by title.
  * @returns An array of matching courses.
  */
-export const getSpecificCourse = async (
-    searchQuery: string,
+export const searchSpecificCourse = async (
+    search_query: string,
 ): Promise<Course[]> => {
     try {
         // Get whole course collection with data belongs to all courses.
@@ -87,7 +94,7 @@ export const getSpecificCourse = async (
         // Then, all matched queries are pushed into the array of course.
         querySnapshot.forEach((doc) => {
             const courseTitle = doc.data().course_title?.toLowerCase() ?? '';
-            if (courseTitle.includes(searchQuery.toLowerCase())) {
+            if (courseTitle.includes(search_query.toLowerCase())) {
                 courses.push({course_id: doc.id, ...doc.data()} as Course);
             }
         });
@@ -111,7 +118,6 @@ export const getAllCourses = async (): Promise<Course[]> => {
             course_id: doc.id,
             ...doc.data(),
         })) as Course[];
-
         console.log('All courses data: ', courses);
         return courses;
     } catch (error) {
@@ -123,19 +129,23 @@ export const getAllCourses = async (): Promise<Course[]> => {
 /**
  * Update a course by its ID.
  * @param course_id - The ID of the course to update.
- * @param updatedCourse - The updated course data.
+ * @param updated_course - The updated course data.
  * @returns The updated course data.
  */
 export const updateCourseById = async (
     course_id: string,
-    updatedCourse: Partial<Course>,
+    updated_course: Partial<Course>,
 ): Promise<Course | void> => {
     try {
         // Define the document reference for the course by passing two params: `coursesCollection` and id of course.
         const courseDocRef = doc(coursesCollection, course_id);
         // Update that document with updated data of the course.
-        await updateDoc(courseDocRef, updatedCourse);
-        return {course_id, ...updatedCourse} as Course;
+        await updateDoc(courseDocRef, updated_course);
+        const course = {
+            course_id,
+            ...updated_course,
+        } as Course;
+        return course;
     } catch (error) {
         console.error('Error updating course:', error);
     }

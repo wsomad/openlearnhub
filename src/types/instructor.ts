@@ -1,5 +1,5 @@
-import { Course } from './course';
-import { User } from './user';
+import {Course} from './course';
+import {User} from './user';
 
 export interface Instructor extends Omit<User, 'role'> {
     profile_summary: string;

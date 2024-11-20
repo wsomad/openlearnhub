@@ -1,28 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 
 import thumbnail from '../../../assets/images/thumbnail.png';
 import CardCourseComponent from '../../../components/card/CardCourseComponent';
 import HeaderComponent from '../../../components/HeaderComponent';
 import SearchComponent from '../../../components/SearchComponent';
-import { useCourses } from '../../../hooks/useCourses';
-import { useUser } from '../../../hooks/useUser';
-import { Course } from '../../../types/course'; // Import the correct Course type
+import {useCourses} from '../../../hooks/useCourses';
+import {Course} from '../../../types/course';
 
 const HomePage: React.FC = () => {
-    const {courses, fetchAllCourses} = useCourses();
+    const {allCourses, fetchAllCourses} = useCourses();
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const loadCourses = async () => {
             await fetchAllCourses();
-            setLoading(false); // Set loading to false once data is fetched
+            setLoading(false);
         };
         loadCourses();
     }, [fetchAllCourses]);
 
-    const renderedCourses = courses.map((course: Course) => (
+    const renderedCourses = allCourses.map((course: Course) => (
         <CardCourseComponent
-            key={course.course_title} // Use a unique key for each item
+            key={course.course_title}
             thumbnail={thumbnail}
             title={course.course_title}
             instructor={course.course_instructor}
@@ -37,13 +36,12 @@ const HomePage: React.FC = () => {
 
     return (
         <div>
-            <HeaderComponent
-                userType={'student'}
+            {/* <HeaderComponent
                 currentRole={'student'}
                 onToggleView={function (): void {
                     throw new Error('Function not implemented.');
                 }}
-            />
+            /> */}
             <div className='flex flex-col justify-center items-center mt-12'>
                 <h1 className='font-abhaya font-bold text-6xl'>
                     Find All <span className='text-primary'>Free Courses</span>{' '}
