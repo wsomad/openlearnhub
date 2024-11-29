@@ -1,18 +1,42 @@
-import { useState } from 'react';
-import { FaAngleDown, FaAngleRight } from 'react-icons/fa';
-import { FaPlus } from 'react-icons/fa6';
-import { MdDeleteOutline, MdEditNote } from 'react-icons/md';
+import {useState} from 'react';
+import {FaAngleDown, FaAngleRight} from 'react-icons/fa';
+import {FaPlus} from 'react-icons/fa6';
+import {MdDeleteOutline, MdEditNote} from 'react-icons/md';
 
-import { Lesson } from '../../../types/lesson';
-import { Section } from '../../../types/section';
 import {
-	BaseLessonHandlers,
-	BaseSectionHandlers,
-	EditableProps,
-} from '../../../types/shared';
+    DocumentLesson,
+    LessonBase,
+    QuizLesson,
+    VideoLesson,
+} from '../../../types/lesson';
+import {Section} from '../../../types/section';
+import {
+    BaseLessonHandlers,
+    BaseSectionHandlers,
+    EditableProps,
+} from '../../../types/Shared';
+import {useCourses} from '../../../hooks/useCourses';
+import {useSections} from '../../../hooks/useSections';
+import {useLessons} from '../../../hooks/useLessons';
 import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 import EditSectionModal from '../../modal/EditSectionModal';
 import ModalComponent from '../../modal/ModalComponent';
+import {
+    closestCenter,
+    DndContext,
+    DragEndEvent,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+} from '@dnd-kit/core';
+import {
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import SortableLesson from './SortableLesson';
+import {useUser} from '../../../hooks/useUser';
 
 interface CourseLessonProps
     extends EditableProps,
@@ -29,7 +53,6 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
     index,
     lessonCount,
     totalDuration,
-    userType,
     canEdit,
     onDeleteSection,
     onEditSectionTitle,
@@ -40,25 +63,58 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
-    const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
     const [modalType, setModalType] = useState<'add' | 'edit'>('add');
     const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
     const [isEditTitleModalOpen, setIsEditTitleModalOpen] =
         useState<boolean>(false);
+    const {selectedCourse} = useCourses();
+    const {selectedSection} = useSections();
+    const {selectedLesson, createLessons} = useLessons();
+    const {userRole} = useUser();
+
+    //const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+    // const currentState = useSelector((state) => state);
+    // console.log('Current State from Selector:', currentState);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        }),
+    );
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const {active, over} = event;
+        if (over && active.id !== over.id) {
+            onEditLesson(section.section_id, active.id as string, {
+                lesson_order:
+                    section?.lessons?.findIndex(
+                        (lesson) => lesson.lesson_id === over.id,
+                    ) + 1,
+            });
+        }
+    };
 
     const toggleSection = (
         e: React.MouseEvent<HTMLDivElement | HTMLButtonElement>,
         isEditButton: boolean = false,
     ): void => {
-        if (!isEditButton && userType === 'instructor' && !canEdit) return;
-
+        if (!isEditButton && userRole === 'instructor' && !canEdit) return;
         e.stopPropagation();
         setIsOpen(!isOpen);
     };
 
-    const openModal = (lesson: Lesson): void => {
+    const openModal = (lesson: LessonBase): void => {
         if (!canEdit) return;
-        setSelectedLesson(lesson);
+        createLessons(
+            selectedCourse?.course_id || null,
+            selectedSection?.section_id || null,
+            lesson || null,
+        );
         setModalType('edit');
         setIsModalOpen(true);
     };
@@ -66,34 +122,62 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
     const openAddModal = (e: React.MouseEvent): void => {
         if (!canEdit) return;
         e.stopPropagation();
-        setSelectedLesson(null);
+        e.preventDefault();
+        createLessons(null, null, null);
         setModalType('add');
         setIsModalOpen(true);
     };
 
     const closeModal = (): void => {
         setIsModalOpen(false);
-        setSelectedLesson(null);
+        createLessons(null, null, null);
     };
 
-    const handleModalSubmit = (lessonData: Partial<Lesson>): void => {
-        if (!canEdit) return;
+    interface NewDocumentLesson extends Omit<DocumentLesson, 'lesson_id'> {}
+    interface NewVideoLesson extends Omit<VideoLesson, 'lesson_id'> {}
+    interface NewQuizLesson extends Omit<QuizLesson, 'lesson_id'> {}
 
+    const handleModalSubmit = (
+        lessonData: Partial<DocumentLesson | VideoLesson | QuizLesson>,
+    ): void => {
+        if (!canEdit) return;
         if (modalType === 'edit' && selectedLesson) {
             onEditLesson(
                 section.section_id,
                 selectedLesson.lesson_id,
                 lessonData,
             );
-        } else if (modalType === 'add') {
-            const newLesson: Omit<Lesson, 'lesson_id'> = {
+        } else if (modalType === 'add' && lessonData.lesson_type) {
+            const baseLesson = {
                 lesson_title: lessonData.lesson_title || '',
-                lesson_content: lessonData.lesson_content || '',
-                lesson_duration: lessonData.lesson_duration || 0,
                 section_id: section.section_id,
-                lesson_videoUrl: lessonData.lesson_videoUrl,
-                lesson_documentUrl: lessonData.lesson_documentUrl,
+                lesson_order: section.lessons.length + 1,
             };
+
+            let newLesson: NewDocumentLesson | NewVideoLesson | NewQuizLesson;
+
+            if (lessonData.lesson_type === 'document') {
+                newLesson = {
+                    ...baseLesson,
+                    lesson_type: 'document',
+                    document_url: (lessonData as DocumentLesson).document_url,
+                };
+            } else if (lessonData.lesson_type === 'video') {
+                newLesson = {
+                    ...baseLesson,
+                    lesson_type: 'video',
+                    video_url: (lessonData as VideoLesson).video_url,
+                    video_duration: (lessonData as VideoLesson).video_duration,
+                };
+            } else if (lessonData.lesson_type === 'quiz') {
+                newLesson = {
+                    ...baseLesson,
+                    lesson_type: 'quiz',
+                    quiz: (lessonData as QuizLesson).quiz,
+                };
+            } else {
+                throw new Error('Invalid lesson type');
+            }
             onAddLesson(section.section_id, newLesson);
         }
         closeModal();
@@ -142,7 +226,7 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
     return (
         <div className='mb-1'>
             <div
-                onClick={(e) => userType === 'student' && toggleSection(e)}
+                onClick={(e) => userRole === 'student' && toggleSection(e)}
                 className='cursor-pointer py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded-md flex items-start justify-between'
                 role='button'
                 aria-expanded={isOpen}
@@ -167,7 +251,7 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
                     </div>
                 </div>
 
-                {canEdit && userType === 'instructor' && (
+                {canEdit && userRole === 'instructor' && (
                     <div className='ml-auto flex space-x-2 mr-2.5 mt-2'>
                         <button
                             onClick={openAddModal}
@@ -207,7 +291,7 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
                     </div>
                 )}
 
-                {userType === 'student' && (
+                {userRole === 'student' && (
                     <div className='ml-auto mt-2'>
                         {isOpen ? (
                             <FaAngleDown className='text-xl text-gray' />
@@ -224,49 +308,29 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
                     role='region'
                     aria-label='Lesson list'
                 >
-                    {section.lessons.map((lesson, lessonIndex) => (
-                        <div
-                            key={lesson.lesson_id}
-                            className='cursor-pointer p-2 bg-gray-50 hover:bg-gray-100 rounded-md'
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext
+                            items={section.lessons.map(
+                                (lesson) => lesson.lesson_id,
+                            )}
+                            strategy={verticalListSortingStrategy}
                         >
-                            <div className='relative flex items-start'>
-                                <div className='border-secondary text-secondary absolute text-2xl w-10 h-10 rounded-full border-4 bg-white flex items-center justify-center mr-4 ml-8 mt-1'>
-                                    {lessonIndex + 1}
-                                </div>
-                                <div className='flex flex-col text-md pl-16 ml-8'>
-                                    <span className='font-bold'>
-                                        {lesson.lesson_title}
-                                    </span>
-                                    <span className='text-gray-500'>
-                                        {lesson.lesson_duration} mins
-                                    </span>
-                                </div>
-                                {canEdit && userType === 'instructor' && (
-                                    <div className='ml-auto flex space-x-2 mr-2.5 mt-3'>
-                                        <button
-                                            onClick={() => openModal(lesson)}
-                                            className='bg-edit text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-edit-dark transition-all duration-300'
-                                            aria-label={`Edit lesson: ${lesson.lesson_title}`}
-                                        >
-                                            <MdEditNote className='text-lg' />
-                                        </button>
-                                        <button
-                                            onClick={(e) =>
-                                                openDeleteModal(
-                                                    lesson.lesson_id,
-                                                    e,
-                                                )
-                                            }
-                                            className='bg-delete text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-delete-dark transition-all duration-300'
-                                            aria-label={`Delete lesson: ${lesson.lesson_title}`}
-                                        >
-                                            <MdDeleteOutline className='text-lg' />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
+                            {section.lessons.map((lesson, lessonIndex) => (
+                                <SortableLesson
+                                    key={lesson.lesson_id}
+                                    lesson={lesson}
+                                    lessonIndex={lessonIndex}
+                                    canEdit={canEdit}
+                                    onOpenModal={openModal}
+                                    onDeleteModal={openDeleteModal}
+                                />
+                            ))}
+                        </SortableContext>
+                    </DndContext>
                 </div>
             )}
 

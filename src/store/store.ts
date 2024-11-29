@@ -1,18 +1,18 @@
 import {configureStore} from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
 import userReducer from './slices/userSlice';
 import courseReducer from './slices/courseSlice';
 import sectionReducer from './slices/sectionSlice';
 import lessonReducer from './slices/lessonSlice';
+import questionReducer from './slices/questionSlice';
 
 // Define RootState type based on store's structure
 export const store = configureStore({
     reducer: {
-        auth: authReducer,
-        users: userReducer,
+        user: userReducer,
         courses: courseReducer,
         sections: sectionReducer,
         lessons: lessonReducer,
+        questions: questionReducer,
     },
 });
 

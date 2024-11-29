@@ -6,6 +6,7 @@ import {
     getDocs,
     setDoc,
     updateDoc,
+    writeBatch,
 } from 'firebase/firestore';
 import {Section} from '../../types/section';
 import {db} from '../../config/FirebaseConfiguration';
@@ -15,26 +16,67 @@ import {db} from '../../config/FirebaseConfiguration';
  * @param course_id
  * @param section_data
  */
-export const addSection = async (
+export const addSections = async (
     course_id: string,
-    section_data: Section,
-): Promise<void> => {
+    section_data: Section, // Use a plural name for clarity
+): Promise<Section> => {
     try {
-        // Define a document reference based on specific section under specific course.
         const sectionDocRef = doc(
             collection(db, `courses/${course_id}/sections`),
-            section_data.section_id,
+            section_data.section_title,
         );
-        // Set that document reference with data belongs to section.
-        await setDoc(sectionDocRef, section_data);
+        console.log('Section ID:', sectionDocRef.id); // Will print the section_title used as the ID
+
+        // Add the section data to Firestore
+        await setDoc(sectionDocRef, {
+            ...section_data, // Spread the section data to store it in Firestore
+            section_id: sectionDocRef.id, // Make sure to store the course_id if needed
+        });
+
         console.log(
-            `Successfully added section ${section_data.section_id} to course ${course_id}.`,
+            `Successfully added section with title ${section_data.section_title} to course ${course_id}.`,
         );
+        // const addedSections: Section[] = [];
+        // // Loop through each section and add it to Firestore
+        // for (const section of sections_data) {
+        //     // Use the section_title as the document ID for each section
+
+        // }
+        // return addedSections; // Return the array of added sections
+        return section_data;
     } catch (error) {
-        console.error('Error adding section:', error);
+        console.error('Error adding sections:', error);
         throw error;
     }
 };
+
+// export const addSection = async (
+//     course_id: string,
+//     section_data: Section[],
+// ): Promise<Section> => {
+//     try {
+//         // Define a document reference based on specific section under specific course.
+//         const sectionDocRef = doc(
+//             collection(db, `courses/${course_id}/sections`),
+//             section_data.section_title, // Section title is used as the document ID.
+//         );
+
+//         // Add the generated document ID to section_data.
+//         section_data.section_id = sectionDocRef.id;
+
+//         // Set that document reference with updated section data.
+//         await setDoc(sectionDocRef, section_data);
+
+//         console.log(
+//             `Successfully added section ${section_data.section_id} to course ${course_id}.`,
+//         );
+
+//         return section_data; // Return the updated section object.
+//     } catch (error) {
+//         console.error('Error adding section:', error);
+//         throw error;
+//     }
+// };
 
 /**
  * Get specific section under specific course.
@@ -48,7 +90,8 @@ export const getSectionById = async (
 ): Promise<Section | null> => {
     try {
         const sectionDocRef = doc(
-            collection(db, `courses/${course_id}/sections/${section_id}`),
+            collection(db, `courses/${course_id}/sections`),
+            section_id,
         );
         const sectionDoc = await getDoc(sectionDocRef);
         if (sectionDoc.exists()) {
@@ -104,19 +147,52 @@ export const getAllSections = async (course_id: string): Promise<Section[]> => {
  */
 export const updateSectionById = async (
     course_id: string,
-    section: Partial<Section>,
+    section_id: string,
+    section: Partial<Section> | Partial<Section>[],
 ): Promise<Section | void> => {
     try {
-        // Define a document reference that points to specific section.
-        const sectionDocRef = doc(
-            db,
-            `courses/${course_id}/sections/${section.section_id}`,
-        );
-        // Update that document with data belongs to a section.
-        await updateDoc(sectionDocRef, {...section});
-        console.log(
-            `Successfully update section ${section.section_id} under course ${course_id}.`,
-        );
+        if (Array.isArray(section)) {
+            // Define write batch for multiple data updates.
+            const batch = writeBatch(db);
+
+            // Iterate over sections and create references for each one.
+            section.forEach((updatedData) => {
+                if (updatedData.section_id) {
+                    const sectionDocRef = doc(
+                        db,
+                        `courses/${course_id}/sections/${updatedData.section_id}`,
+                    );
+                    batch.update(sectionDocRef, {...updatedData});
+                } else {
+                    console.warn(
+                        'Skipping update for a section without an ID.',
+                    );
+                }
+            });
+
+            // Commit updated batch.
+            await batch.commit();
+            console.log(
+                `Successfully updated ${section.length} sections under course ${course_id}.`,
+            );
+        } else {
+            if (!course_id || !section_id) {
+                throw new Error(
+                    `Invalid arguments: course_id (${course_id}) and section_id (${section_id}) must be defined.`,
+                );
+            }
+            // For single section updates, create a specific document reference.
+            const sectionDocRef = doc(
+                db,
+                `courses/${course_id}/sections/${section_id}`,
+            );
+
+            // Update that document with the provided data.
+            await updateDoc(sectionDocRef, {...section});
+            console.log(
+                `Successfully updated section ${section_id} under course ${course_id}.`,
+            );
+        }
     } catch (error) {
         console.error('Error updating section:', error);
         throw error;

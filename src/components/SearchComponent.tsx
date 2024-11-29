@@ -1,53 +1,77 @@
-import React, {useState} from 'react';
-
-import {searchSpecificCourse} from '../services/firestore/CourseService'; // Correct import
+import React, {useEffect, useState} from 'react';
 import {Course} from '../types/course';
-import SearchBar from './elements/SearchBar'; // Assuming you have a SearchBar component
+import SearchBar from './elements/SearchBar';
+import {useCourses} from '../hooks/useCourses';
+import {useDispatch} from 'react-redux';
+import {clearSearchCourseResults} from '../store/slices/courseSlice';
+import {useUser} from '../hooks/useUser';
 
-function SearchComponent() {
-    const [queryText, setQueryText] = useState<string>(''); // State for input
-    const [results, setResults] = useState<Course[]>([]); // State for storing search results
-    const [loading, setLoading] = useState<boolean>(false); // Loading state
+const SearchComponent: React.FC = () => {
+    const [queryText, setQueryText] = useState<string>('');
+    const [results, setResults] = useState<Course[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const {searchCourse} = useCourses();
+    const {currentUser, userRole} = useUser();
+    const dispatch = useDispatch();
 
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    useEffect(() => {
+        // Clear search results when the role changes
+        dispatch(clearSearchCourseResults());
+    }, [dispatch, userRole]);
+
+    // Handle any changes in search input.
+    const handleInputChange = (
+        event: React.ChangeEvent<HTMLInputElement>,
+    ): void => {
         const value = event.target.value;
-        setQueryText(value); // Update input text
+        setQueryText(value);
         if (value) {
-            searchCoursesHandler(value); // Start searching if input is non-empty
+            searchCoursesHandler(value);
         } else {
-            setResults([]); // Clear results if input is empty
+            setResults([]);
         }
     };
 
-    // Function to search courses
-    const searchCoursesHandler = async (searchQuery: string) => {
-        setLoading(true); // Start loading spinner
+    // Handle searching process.
+    const searchCoursesHandler = async (searchQuery: string): Promise<void> => {
+        setLoading(true);
         try {
-            const courses = await searchSpecificCourse(searchQuery); // Call search function
-            setResults(courses); // Store results in state
+            if (currentUser?.uid) {
+                // Search and fetch all results found with query.
+                const courses = await searchCourse(
+                    searchQuery,
+                    currentUser?.uid,
+                    userRole,
+                );
+                // Set the results.
+                setResults(courses);
+            }
         } catch (error) {
-            console.error('Error searching courses:', error); // Handle error
+            console.error('Error searching courses:', error);
         } finally {
-            setLoading(false); // Stop loading spinner
+            setLoading(false);
         }
     };
 
-    const handleSelect = (course: Course) => {
-        console.log('Selected course:', course); // Log selected course
-        setQueryText(''); // Clear input field
-        setResults([]); // Clear search results
+    // Clear the input.
+    const handleSelect = (course: Course): void => {
+        console.log('Selected course:', course);
+        setQueryText('');
+        setResults([]);
     };
 
     return (
         <div className='relative'>
             <SearchBar
                 query={queryText}
-                handleInputChange={handleInputChange} // Pass handler to SearchBar
+                handleInputChange={handleInputChange}
             />
             {queryText && (
-                <div className='absolute w-3/4 mt-2 mx-auto bg-white border border-gray rounded-md shadow-lg max-h-60 overflow-auto top-full left-1/2 transform -translate-x-1/2'>
+                <div className='absolute w-3/4 mt-2 mx-auto bg-white border border-gray shadow-lg max-h-60 overflow-auto top-full left-1/2 transform -translate-x-1/2'>
                     {loading ? (
-                        <div className='text-center py-2'>Loading...</div>
+                        <div className='text-center py-2 text-gray'>
+                            Wait, let's see what do we have here...
+                        </div>
                     ) : results.length > 0 ? (
                         <ul>
                             {results.map((course) => (
@@ -61,14 +85,14 @@ function SearchComponent() {
                             ))}
                         </ul>
                     ) : (
-                        <div className='px-4 py-2 text-center'>
-                            No results found
-                        </div> // No results message
+                        <div className='px-4 py-2 text-center text-gray'>
+                            No results match with this course
+                        </div>
                     )}
                 </div>
             )}
         </div>
     );
-}
+};
 
 export default SearchComponent;

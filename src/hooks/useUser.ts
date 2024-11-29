@@ -7,20 +7,20 @@ import {
 } from '../services/firestore/UserService';
 import {setUser, modifyUser, clearUser} from '../store/slices/userSlice';
 import {User} from '../types/user';
-
-interface UserState {
-    currentUser: User | null;
-    userRole: 'student' | 'instructor';
-}
+import {RootState} from '../store/store';
+import {useEffect} from 'react';
+import {
+    clearCourse,
+    clearCourses,
+    clearSearchCourseResults,
+    clearSingleCourse,
+} from '../store/slices/courseSlice';
+import {clearSections} from '../store/slices/sectionSlice';
 
 export const useUser = () => {
     const dispatch = useDispatch();
-    const currentUser = useSelector(
-        (state: {users: UserState}) => state.users.currentUser,
-    );
-    const userRole = useSelector(
-        (state: {users: UserState}) => state.users.userRole,
-    );
+    const currentUser = useSelector((state: RootState) => state.user.user);
+    const userRole = useSelector((state: RootState) => state.user.userRole);
 
     // Function to create a new user as 'student' (default role)
     const createUser = async (
@@ -46,7 +46,6 @@ export const useUser = () => {
             console.log('No current user found.');
             return null;
         }
-
         const newRole =
             currentUser.role === 'student' ? 'instructor' : 'student';
 
@@ -57,22 +56,25 @@ export const useUser = () => {
                 });
                 if (updatedUser) {
                     dispatch(modifyUser(updatedUser));
+                    dispatch(clearSingleCourse());
+                    dispatch(clearCourses());
+                    dispatch(clearSearchCourseResults());
                     return updatedUser;
                 }
+                console.log('Current user role:', newRole);
             } else {
                 console.log(`User is already a ${newRole}`);
             }
         } catch (error) {
             console.error(`Failed to change role to ${newRole}: `, error);
         }
-
         return null;
     };
 
     // Fetch user by ID and update Redux state
     const fetchUserById = async (uid: string): Promise<void> => {
         if (currentUser?.uid === uid) {
-            console.log('User data already available in Redux for UID: ', uid);
+            console.log(`This user ${uid} data is already available in Redux.`);
             return;
         }
 

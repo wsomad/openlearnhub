@@ -1,13 +1,37 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import HeaderComponent from '../../../components/HeaderComponent';
 import CardCourseComponent from '../../../components/card/CardCourseComponent';
 import thumbnail from '../../../assets/images/thumbnail.png';
 import {RiTimer2Line} from 'react-icons/ri';
 import {HiOutlineDocumentText} from 'react-icons/hi';
 import {MdQuiz} from 'react-icons/md';
+import {useCourses} from '../../../hooks/useCourses';
+import {useNavigate, useParams} from 'react-router-dom';
+import {useUser} from '../../../hooks/useUser';
+import CardDashboard from '../../../components/CardDashboard';
+import {useSelector} from 'react-redux';
 import CourseRequirements from '../../../components/enrollment/CourseRequirements';
 
 const SelectedCoursePage: React.FC = () => {
+    const {selectedCourse, fetchCourseById} = useCourses();
+    const {currentUser, userRole} = useUser();
+    const {id} = useParams<{id: string}>();
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    const currentState = useSelector((state) => state);
+    console.log('Current State from Selector:', currentState);
+
+    useEffect(() => {
+        const loadCourse = async () => {
+            if (id && currentUser?.uid) {
+                await fetchCourseById(id, currentUser?.uid, userRole);
+                console.log('Currently in selected course page.');
+                setLoading(false);
+            }
+        };
+        loadCourse();
+    }, [currentUser, userRole]);
+
     return (
         <div>
             <HeaderComponent />
@@ -16,12 +40,11 @@ const SelectedCoursePage: React.FC = () => {
                     {/* Course Title & Description */}
                     <div className='flex flex-col justify-start items-start mt-6'>
                         <h1 className='font-abhaya font-bold text-6xl'>
-                            Build Web Application with React Redux
+                            {selectedCourse?.course_title || 'Course Title'}
                         </h1>
                         <p className='font-abhaya font-semibold text-lg'>
-                            Technology and the world of work change fast — with
-                            us, you're faster. Get the skills to achieve goals
-                            and stay competitive.
+                            {selectedCourse?.course_description ||
+                                'Course Description'}
                         </p>
                     </div>
 
@@ -29,24 +52,57 @@ const SelectedCoursePage: React.FC = () => {
                     <div className='flex justify-between items-start mt-6 gap-6'>
                         <CardCourseComponent
                             thumbnail={thumbnail}
-                            title='Build Web Application with React Redux'
-                            instructor='John Doe'
-                            pricing='FREE'
-                            buttonText='Enroll Now'
+                            title={
+                                selectedCourse?.course_title || 'Course Title'
+                            }
+                            instructor={
+                                selectedCourse?.course_instructor ||
+                                'Course Instructor'
+                            }
+                            pricing={selectedCourse?.course_pricing || 'FREE'}
+                            buttonText='Enroll'
                             onButtonClick={() =>
                                 console.log('Navigating to Course Details page')
                             }
                             size='medium'
                         />
                         <div className='flex flex-col'>
-                            <div className='py-4 px-6 border border-gray rounded-md max-w-lg max-h-[550px] overflow-y-auto'>
-                                <CourseRequirements />
+                            <div className='py-4 border border-gray max-w-lg max-h-[550px] overflow-y-auto'>
+                                {/* <div>
+                                    <h2 className='font-abhaya px-6 text-2xl font-bold mb-2'>
+                                        About Course
+                                    </h2>
+                                    <hr className='border-t gray opacity-15 mb-4' />
+                                    <p className='font-abhaya  px-6 text-lg'>
+                                        {selectedCourse?.course_description}
+                                    </p>
+                                    <ul className='font-abhaya  px-6 text-lg list-disc list-inside mt-4'>
+                                        {renderedRequirements}
+                                    </ul>
+                                </div> */}
+                                <CourseRequirements
+                                    course_id={selectedCourse?.course_id || ''}
+                                    course_requirements={
+                                        selectedCourse?.course_requirements ||
+                                        []
+                                    }
+                                ></CourseRequirements>
                             </div>
+                            <button
+                                onClick={() =>
+                                    navigate(
+                                        `/enrolledcourse/${selectedCourse?.course_id}`,
+                                    )
+                                }
+                                className='bg-secondary font-abhaya font-semibold text-white py-2 px-4 mt-6'
+                            >
+                                Enroll Now
+                            </button>
                         </div>
                     </div>
 
                     {/* Course Details */}
-                    <div className='flex flex-col mt-5'>
+                    <div className='flex flex-col my-5'>
                         <h5 className='font-abhaya text-2xl font-bold'>
                             This course includes
                         </h5>

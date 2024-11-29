@@ -1,5 +1,5 @@
 import {getDownloadURL, getStorage, ref, uploadBytes} from 'firebase/storage';
-import {downloadAvatarUrl} from '../../api/diceBearApi';
+import {downloadAvatarUrl} from '../../api/dicebearApi';
 
 // Define a reference to storage.
 const storage = getStorage();

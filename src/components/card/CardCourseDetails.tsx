@@ -12,8 +12,8 @@ interface CardCourseDetailsProps {
     numSections?: number | string;
     numLectures?: number | string;
     pricing: number | string;
-    onButtonClick: () => void;
-    buttonText: string;
+    onButtonClick?: () => void;
+    buttonText?: string;
 }
 
 const CardCourseDetails: React.FC<CardCourseDetailsProps> = ({
@@ -29,9 +29,10 @@ const CardCourseDetails: React.FC<CardCourseDetailsProps> = ({
 }) => {
     return (
         <div
-            className={`p-3 border border-gray ${
-                size === 'big' ? 'rounded-bl-md' : 'rounded-b-md'
-            } w-full flex flex-col justify-between flex-grow`}
+            // ${
+            //     size === 'big' ? 'rounded-none' : 'rounded-b-md'
+            // }
+            className={`p-3 border border-gray  w-full flex flex-col justify-between flex-grow`}
         >
             <h3 className='font-abhaya font-bold text-lg text-black truncate w-full'>
                 {title}
@@ -41,7 +42,7 @@ const CardCourseDetails: React.FC<CardCourseDetailsProps> = ({
                 {instructor}
             </p>
 
-            <div className='flex items-center justify-between w-full mt-4'>
+            <div className='flex items-center justify-between w-full'>
                 {size === 'big' && (
                     <div className='flex flex-row gap-6 justify-between mt-2'>
                         <div className='flex flex-row items-center mr-4'>
@@ -69,12 +70,14 @@ const CardCourseDetails: React.FC<CardCourseDetailsProps> = ({
                         {pricing}
                     </p>
                 )}
-                <button
-                    onClick={onButtonClick}
-                    className='bg-secondary rounded-full font-abhaya font-semibold text-white py-2 px-4'
-                >
-                    {buttonText}
-                </button>
+                {size !== 'big' && (
+                    <button
+                        onClick={onButtonClick}
+                        className='bg-secondary font-abhaya font-semibold text-white py-1 px-5'
+                    >
+                        {buttonText}
+                    </button>
+                )}
             </div>
         </div>
     );

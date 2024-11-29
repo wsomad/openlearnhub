@@ -22,12 +22,13 @@ export const uploadContentToStorage = async (
     course_id: string,
     content_blob: Blob,
     section_id?: string,
+    lesson_id?: string,
 ) => {
     try {
         // Check the condition if section id is not null.
         const filePath =
             section_id != null
-                ? `${course_id}/files/${section_id}`
+                ? `${course_id}/files/${section_id}/${lesson_id}`
                 : `${course_id}/thumbnail`;
         // Define a reference to a specific storage.
         const contentRef = ref(courseStorage, filePath);

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BiSearch } from 'react-icons/bi'; // Importing a different search icon
+import {BiSearch} from 'react-icons/bi'; // Importing a different search icon
 
 interface SearchBarProps {
     query: string;
@@ -18,7 +18,7 @@ const SearchBar = ({query, handleInputChange}: SearchBarProps) => {
                 value={query}
                 onChange={handleInputChange}
                 placeholder='Search for any course...'
-                className='w-full font-abhaya text-lg pl-10 pr-4 py-2 border border-gray rounded-full focus:outline-none focus:ring-2 focus:ring-primary' // Adjusted padding to make space for the icon and increased height
+                className='w-full font-abhaya text-lg pl-10 pr-4 py-2 border border-gray focus:outline-none focus:ring-2 focus:ring-primary' // Adjusted padding to make space for the icon and increased height
             />
         </div>
     );

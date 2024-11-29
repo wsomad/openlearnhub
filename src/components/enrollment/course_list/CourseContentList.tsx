@@ -1,268 +1,280 @@
-// CourseContentList.tsx
-import { useEffect, useState } from 'react';
-import { FaPlus } from 'react-icons/fa';
-
-import { useCourses } from '../../../pages/instructor/course/CourseContext';
-import { Course } from '../../../types/course';
-import { Lesson } from '../../../types/lesson';
-import { UserProfile } from '../../../types/profile';
-import { Section } from '../../../types/section';
+import {useEffect, useState} from 'react';
+import {FaPlus} from 'react-icons/fa';
+import {useCourses} from '../../../hooks/useCourses';
+import {useSections} from '../../../hooks/useSections';
+import {Lesson} from '../../../types/lesson';
+import {Section} from '../../../types/section';
 import AddSectionModal from '../../modal/AddSectionModal';
 import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 import CourseContentView from './CourseContentView';
+import {useUser} from '../../../hooks/useUser';
+import {clearSingleSection} from '../../../store/slices/sectionSlice';
 
 interface CourseContentListProps {
-    userType: 'student' | 'instructor';
-    courseId: string;
-    userId: string;
+    course_id: string;
+    sectionsOrder: Section[];
+    setSectionsOrder: React.Dispatch<React.SetStateAction<Section[]>>;
+    onSaveOrder: () => void;
 }
 
 const CourseContentList: React.FC<CourseContentListProps> = ({
-    userType,
-    courseId,
-    userId,
+    course_id,
+    sectionsOrder,
+    setSectionsOrder,
+    onSaveOrder,
 }) => {
-    const {findCourseById, updateCourseSections} = useCourses();
+    const {selectedCourse, createCourse, fetchCourseById} = useCourses();
+    const {
+        allSections,
+        selectedSection,
+        createSections,
+        fetchSectionById,
+        fetchAllSections,
+        updateSection,
+        deleteSection,
+    } = useSections();
+    const {currentUser, userRole} = useUser();
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    const [courseSections, setCourseSections] = useState<Section[]>([]);
     const [isConfirmModalOpen, setIsConfirmModalOpen] =
         useState<boolean>(false);
-    const [sectionToDelete, setSectionToDelete] = useState<Section | null>(
-        null,
-    );
-    const [courseData, setCourseData] = useState<Course | null>(null);
-    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Initialize local state management for section.
+    const [sectionData, setSectionData] = useState<Section[]>([
+        {
+            section_id: '',
+            course_id: '',
+            lessons: [],
+            section_order: 0,
+            section_title: '',
+        },
+    ]);
+
+    // Run this side effect to set local state management with existing `allSections`.
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setIsLoading(true);
-                const course = findCourseById(courseId);
+        if (allSections) {
+            const sortedSections = [...allSections].sort(
+                (a, b) => a.section_order - b.section_order,
+            );
+            setSectionData(sortedSections);
+        }
+    }, [allSections]);
 
-                if (!course) {
-                    setError('Course not found');
-                    setIsLoading(false);
-                    return;
-                }
-
-                // Get user data from dummyData.json
-                const response = await fetch('/dummyData.json');
-                const data = await response.json();
-                const userProfile = data.users.find(
-                    (u: UserProfile) => u.uid === userId,
-                );
-
-                if (!userProfile) {
-                    setError('User not found');
-                    setIsLoading(false);
-                    return;
-                }
-
-                setCourseData(course);
-                setCourseSections(course.sections || []);
-                setUserProfile(userProfile);
-                setIsLoading(false);
-            } catch (error) {
-                console.error('Error details:', error);
-                setError('Failed to load course data');
-                setIsLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [courseId, userId, findCourseById]);
-
+    // Edit function based on role and uid.
     const canEditCourse = (): boolean => {
-        if (!courseData || !userProfile) return false;
+        if (!course_id || !userRole) return false;
+
         return (
-            userType === 'instructor' &&
-            courseData.instructor_id === userProfile.uid
+            userRole === 'instructor' &&
+            currentUser?.uid === selectedCourse?.instructor_id
         );
     };
 
-    const openAddContentModal = (): void => {
+    // Open modal function for modal of content to add section and lesson.
+    const openCreateSectionModal = (): void => {
         if (canEditCourse()) {
             setIsModalOpen(true);
         }
     };
 
-    const closeModal = (): void => setIsModalOpen(false);
+    // Close modal function for modal of content.
+    const closeSectionModal = (): void => setIsModalOpen(false);
+
+    // Close confirmation function to close modal of content.
     const closeConfirmModal = (): void => {
         setIsConfirmModalOpen(false);
-        setSectionToDelete(null);
+        clearSingleSection();
     };
 
+    // Handle add function to add section.
     const handleAddSection = async (
         newSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
     ): Promise<void> => {
         if (!canEditCourse()) return;
 
-        const sectionWithId: Section = {
-            section_id: `s${courseSections.length + 1}`,
-            ...newSection,
-            course_id: courseId,
-            section_order: courseSections.length + 1,
-            lessons: [],
-            quizzes: [],
-        };
+        if (!course_id) {
+            return;
+        }
 
-        setCourseSections([...courseSections, sectionWithId]);
-        closeModal();
-    };
-
-    const handleDeleteSection = (sectionId: string): void => {
-        if (!canEditCourse()) return;
-
-        const section = courseSections.find(
-            (section) => section.section_id === sectionId,
-        );
-        if (section) {
-            setIsConfirmModalOpen(true);
-            setSectionToDelete(section);
+        try {
+            const section: Section = {
+                ...newSection,
+                section_id: newSection.section_title || '',
+                section_order: newSection.section_order,
+                lessons: [],
+            };
+            await createSections(course_id, section);
+            closeSectionModal();
+            console.log('Section created successfully.');
+        } catch (error) {
+            console.error('Failed to create this section:', error);
         }
     };
 
-    const confirmDeleteSection = (): void => {
-        if (sectionToDelete && canEditCourse()) {
-            const filteredSections = courseSections.filter(
-                (section) => section.section_id !== sectionToDelete.section_id,
-            );
-            setCourseSections(filteredSections);
+    // Handle delete function to delete section.
+    const handleDeleteSection = (section_id: string): void => {
+        if (!canEditCourse()) return;
+
+        if (!course_id || !selectedSection?.section_id) {
+            return;
+        }
+
+        setIsConfirmModalOpen(true);
+        // const checkSection = selectedSection?.section_id === section_id;
+        // if (checkSection) {
+        //     setIsConfirmModalOpen(true);
+        //     deleteSection(selectedCourse.course_id, selectedSection.section_id);
+        // }
+    };
+
+    // Delete confirmation function to delete section.
+    const confirmDeleteSection = (section_id: string): void => {
+        if (selectedSection && canEditCourse()) {
+            if (!selectedCourse?.course_id || !selectedSection?.section_id) {
+                return;
+            }
+
+            const checkSection = selectedSection?.section_id === section_id;
+
+            if (checkSection) {
+                setIsConfirmModalOpen(true);
+                deleteSection(
+                    selectedCourse.course_id,
+                    selectedSection.section_id,
+                );
+            }
+
             closeConfirmModal();
         }
     };
 
-    const handleEditSectionTitle = (
-        sectionId: string,
-        newTitle: string,
-    ): void => {
+    // Handle edit function to edit section title.
+    const handleEditSectionTitle = async (
+        section_id: string,
+        new_title: string,
+    ): Promise<void> => {
         if (!canEditCourse()) return;
 
-        setCourseSections((prevSections) =>
-            prevSections.map((section) =>
-                section.section_id === sectionId
-                    ? {...section, section_title: newTitle}
-                    : section,
-            ),
-        );
+        const checkSection = selectedSection?.section_id === section_id;
+
+        if (checkSection) {
+            const updatedSection: Partial<Section> = {
+                section_title: new_title,
+            };
+            await updateSection(course_id, section_id, updatedSection);
+        }
+        // setCourseSections((prevSections) =>
+        //     prevSections.map((section) =>
+        //         section.section_id === sectionId
+        //             ? {...section, section_title: newTitle}
+        //             : section,
+        //     ),
+        // );
     };
 
+    // Handle add function to add lesson.
     const handleAddLesson = (
-        sectionId: string,
-        newLesson: Omit<Lesson, 'lesson_id'>,
+        //course_id: string,
+        section_id: string,
+        //lesson: Lesson,
+        lesson: Omit<Lesson, 'lesson_id'>,
     ): void => {
         if (!canEditCourse()) return;
+        // const lessonData: Lesson = {
+        //     lesson_id: lesson?.lesson_id || '',
+        //     lesson_title: lesson?.lesson_title || '',
+        //     lesson_content: '',
+        //     section_id: section_id,
 
-        setCourseSections((prevSections) =>
-            prevSections.map((section) =>
-                section.section_id === sectionId
-                    ? {
-                          ...section,
-                          lessons: [
-                              ...section.lessons,
-                              {
-                                  ...newLesson,
-                                  lesson_id: `l${section.lessons.length + 1}`,
-                                  section_id: sectionId,
-                              },
-                          ],
-                      }
-                    : section,
-            ),
-        );
+        // };
+
+        // setCourseSections((prevSections) =>
+        //     prevSections.map((section) =>
+        //         section.section_id === sectionId
+        //             ? {
+        //                   ...section,
+        //                   lessons: [
+        //                       ...section.lessons,
+        //                       {
+        //                           ...newLesson,
+        //                           lesson_id: `l${section.lessons.length + 1}`,
+        //                           section_id: sectionId,
+        //                       },
+        //                   ],
+        //               }
+        //             : section,
+        //     ),
+        // );
     };
 
     const handleEditLesson = (
-        sectionId: string,
-        lessonId: string,
-        updatedLesson: Partial<Lesson>,
+        section_id: string,
+        lesson_id: string,
+        updated_lesson: Partial<Lesson>,
     ): void => {
         if (!canEditCourse()) return;
 
-        setCourseSections((prevSections) =>
-            prevSections.map((section) =>
-                section.section_id === sectionId
-                    ? {
-                          ...section,
-                          lessons: section.lessons.map((lesson) =>
-                              lesson.lesson_id === lessonId
-                                  ? {...lesson, ...updatedLesson}
-                                  : lesson,
-                          ),
-                      }
-                    : section,
-            ),
-        );
+        // setCourseSections((prevSections) =>
+        //     prevSections.map((section) =>
+        //         section.section_id === sectionId
+        //             ? {
+        //                   ...section,
+        //                   lessons: section.lessons.map((lesson) =>
+        //                       lesson.lesson_id === lessonId
+        //                           ? {...lesson, ...updatedLesson}
+        //                           : lesson,
+        //                   ),
+        //               }
+        //             : section,
+        //     ),
+        // );
     };
 
     const handleDeleteLesson = (sectionId: string, lessonId: string): void => {
         if (!canEditCourse()) return;
 
-        setCourseSections((prevSections) =>
-            prevSections.map((section) =>
-                section.section_id === sectionId
-                    ? {
-                          ...section,
-                          lessons: section.lessons.filter(
-                              (lesson) => lesson.lesson_id !== lessonId,
-                          ),
-                      }
-                    : section,
-            ),
-        );
+        // setCourseSections((prevSections) =>
+        //     prevSections.map((section) =>
+        //         section.section_id === sectionId
+        //             ? {
+        //                   ...section,
+        //                   lessons: section.lessons.filter(
+        //                       (lesson) => lesson.lesson_id !== lessonId,
+        //                   ),
+        //               }
+        //             : section,
+        //     ),
+        // );
     };
-
-    if (isLoading) {
-        return (
-            <div className='flex justify-center items-center min-h-[400px]'>
-                Loading...
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className='flex justify-center items-center min-h-[400px] text-red-500'>
-                Error: {error}
-            </div>
-        );
-    }
-
-    if (!courseData || !userProfile) {
-        return (
-            <div className='flex justify-center items-center min-h-[400px]'>
-                No course data available
-            </div>
-        );
-    }
 
     return (
         <div className='w-full bg-white shadow-sm rounded-lg'>
-            <div className='p-6 border-b'>
+            <div className='p-6'>
                 <div className='flex justify-between items-center'>
                     <h2 className='text-2xl font-bold'>Course Content</h2>
                     {canEditCourse() && (
                         <button
-                            className='bg-secondary text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-secondary-dark transition-colors'
-                            onClick={openAddContentModal}
+                            type='button'
+                            className='bg-primary text-white px-4 py-2 flex items-center space-x-2 hover:bg-secondary-dark transition-colors'
+                            onClick={openCreateSectionModal}
                         >
+                            <FaPlus className='w-3 h-3' />
                             <span>New Section</span>
-                            <FaPlus className='w-4 h-4' />
                         </button>
                     )}
                 </div>
+                <hr className='mt-6'></hr>
             </div>
 
             <div className='p-6'>
                 <CourseContentView
-                    userType={userType}
-                    courseSections={courseSections}
-                    setCourseSections={setCourseSections}
+                    course_id={course_id || ''}
+                    canEdit={canEditCourse()}
+                    sectionsOrder={sectionsOrder}
+                    setSectionsOrder={setSectionsOrder}
+                    onSaveOrder={onSaveOrder}
                     onDeleteSection={handleDeleteSection}
                     onEditSectionTitle={handleEditSectionTitle}
-                    canEdit={canEditCourse()}
                     onAddLesson={handleAddLesson}
                     onEditLesson={handleEditLesson}
                     onDeleteLesson={handleDeleteLesson}
@@ -271,17 +283,17 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                 {isModalOpen && (
                     <AddSectionModal
                         isOpen={isModalOpen}
-                        onClose={closeModal}
+                        onClose={closeSectionModal}
                         onSubmit={handleAddSection}
                     />
                 )}
 
-                {isConfirmModalOpen && sectionToDelete && (
+                {isConfirmModalOpen && selectedSection && (
                     <ConfirmDeleteModal
                         isOpen={isConfirmModalOpen}
                         onClose={closeConfirmModal}
                         onConfirm={confirmDeleteSection}
-                        itemTitle={sectionToDelete.section_title}
+                        itemTitle={selectedSection.section_title || ''}
                         isSection={true}
                     />
                 )}

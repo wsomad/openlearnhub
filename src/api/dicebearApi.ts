@@ -1,5 +1,7 @@
 import {dicebearStyle} from '../types/avatar';
 
+const DICE_BEAR_BASE_URL = 'https://api.dicebear.com/9.x';
+
 /**
  * Generate DiceBear avatar URL with two params.
  * @param style
@@ -10,9 +12,9 @@ export const generatedAvatarUrl = (
     style: dicebearStyle,
     seed: string,
 ): string => {
-    return `${
-        import.meta.env.DICE_BEAR_BASE_URL
-    }/${style}/svg?seed=${encodeURIComponent(seed)}`;
+    return `${DICE_BEAR_BASE_URL}/${style}/svg?seed=${encodeURIComponent(
+        seed,
+    )}`;
 };
 
 /**

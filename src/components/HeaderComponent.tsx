@@ -3,79 +3,31 @@ import {Link, useNavigate} from 'react-router-dom';
 
 import {useAuth} from '../hooks/useAuth';
 import {useUser} from '../hooks/useUser';
-//import { ViewMode } from '../types/shared';
-import {User, UserRole} from '../types/user';
 
 interface Category {
     name: string;
     path: string;
+    onClick?: () => Promise<void>;
 }
 
 interface MenuItem {
     name: string;
     path: string;
+    onClick?: () => Promise<void>;
 }
 
-interface HeaderComponentProps {
-    //userType: ViewMode;
-    currentRole: UserRole;
-    onToggleView: () => void;
-    // userId: string;
-}
-
-const HeaderComponent: React.FC<HeaderComponentProps> = ({
-    //userType,
-    currentRole,
-    onToggleView,
-    // userId,
-}) => {
-    const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
-    const [isUserOpen, setIsUserOpen] = useState<boolean>(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(true);
-    const {user, signUserOut} = useAuth();
-    const {currentUser, fetchUserById} = useUser();
-    //const [currentUser, setCurrentUser] = useState<User | null>(null);
+const HeaderComponent: React.FC = () => {
     const navigate = useNavigate();
+    const {signUserOut} = useAuth();
+    const {currentUser, userRole, fetchUserById, toggleUserRole} = useUser();
+    const [IsCategoriesDropdownOpen, setIsCategoriesDropdownOpen] =
+        useState<boolean>(false);
+    const [IsUserDropdownOpen, setIsUserDropdownOpen] =
+        useState<boolean>(false);
+    // const currentState = useSelector((state) => state);
+    // console.log('Current State from Selector:', currentState);
 
-    useEffect(() => {
-        let isMounted = true;
-
-        const fetchUserData = async () => {
-            if (currentUser?.uid && isMounted) {
-                try {
-                    fetchUserById(currentUser?.uid);
-                    console.log(currentUser?.uid);
-                } catch (error) {
-                    console.error('Failed to fetch user:', error);
-                }
-            }
-        };
-
-        fetchUserData();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [user?.uid, fetchUserById]);
-
-    // // Fetch user data from dummyData.json
-    // useEffect(() => {
-    //     const fetchUserData = async () => {
-    //         try {
-    //             const response = await fetch('/dummyData.json');
-    //             const data = await response.json();
-    //             const user = data.users.find((u: User) => u.uid === userId);
-    //             if (user) {
-    //                 setCurrentUser(user);
-    //             }
-    //         } catch (error) {
-    //             console.error('Failed to fetch user:', error);
-    //         }
-    //     };
-
-    //     fetchUserData();
-    // }, [userId]);
-
+    // List of objects under categories.
     const categories: Category[] = [
         {name: 'Development', path: '/categories/development'},
         {name: 'Language', path: '/categories/language'},
@@ -83,55 +35,97 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
         {name: 'Science', path: '/categories/science'},
     ];
 
+    // List of student menus for student.
     const studentMenu: MenuItem[] = [
         {name: 'Profile', path: '/profile'},
-        {name: 'Enrolled Courses', path: '/courses/enrolled'},
-        ...(currentRole === 'instructor'
-            ? [{name: 'Switch to Instructor', path: '/instructor/dashboard'}]
+        {name: 'Enrolled Courses', path: '/listofenrolledcourse'},
+        ...(userRole === 'student'
+            ? [
+                  {
+                      name: 'Switch to Instructor',
+                      path: '/instructor/dashboard',
+                      onClick: async () => {
+                          await toggleUserRole();
+                      },
+                  },
+              ]
             : []),
     ];
 
+    // List of instructor menus for instructor.
     const instructorMenu: MenuItem[] = [
-        {name: 'Profile', path: '/profile'},
-        {name: 'Course Dashboard', path: '/instructor/courses'},
-        ...(currentRole === 'student'
-            ? [{name: 'Switch to Student', path: '/courses/enrolled'}]
+        ...(userRole === 'instructor'
+            ? [{name: 'Profile', path: '/profile'}]
+            : []),
+        {name: 'Course Dashboard', path: '/courses'},
+        ...(userRole === 'instructor'
+            ? [
+                  {
+                      name: 'Switch to Student',
+                      path: '/home',
+                      onClick: async () => {
+                          await toggleUserRole();
+                      },
+                  },
+              ]
             : []),
     ];
 
+    // Run this side effect to fetch current user data.
+    useEffect(() => {
+        const fetchUserData = async () => {
+            if (currentUser?.uid) {
+                try {
+                    fetchUserById(currentUser.uid);
+                } catch (error) {
+                    console.error(
+                        `Failed to fetch user ${currentUser.uid}:`,
+                        error,
+                    );
+                }
+            }
+        };
+
+        fetchUserData();
+    }, [currentUser]);
+
+    // Open categories dropdown.
+    const toggleCategoriesDropdown = () =>
+        setIsCategoriesDropdownOpen((prev) => !prev);
+
+    // Open user dropdown.
+    const toggleUserDropdown = () => setIsUserDropdownOpen((prev) => !prev);
+
+    // Set both dropdowns to be closed.
     const closeAllMenus = () => {
-        setIsDropdownOpen(false);
-        setIsUserOpen(false);
+        setIsCategoriesDropdownOpen(false);
+        setIsUserDropdownOpen(false);
     };
 
-    const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
-    const toggleUser = () => setIsUserOpen((prev) => !prev);
-
+    // Handle navigation of sign in/sign up process.
     const handleSignInAndSignUp = () => navigate('/auth');
 
-    const handleLogout = async () => {
+    // Handle navigation of sign out process.
+    const handleSignOut = async () => {
         try {
             await signUserOut();
             navigate('/auth');
         } catch (error) {
-            console.error('Logout failed:', error);
+            console.error('Failed to sign out:', error);
         }
     };
 
     const handleViewSwitch = (path: string) => {
-        if (path.includes('Switch to')) {
-            onToggleView();
-        }
+        // navigate(`/home${path}`);
         navigate(path);
         closeAllMenus();
     };
 
-    const menuItems =
-        currentRole === 'instructor' ? instructorMenu : studentMenu;
+    const menuItems = userRole === 'instructor' ? instructorMenu : studentMenu;
 
     return (
         <>
-            {(isDropdownOpen || isUserOpen) && (
+            {(IsCategoriesDropdownOpen || IsUserDropdownOpen) && (
                 <div
                     className='fixed inset-0 bg-black bg-opacity-50 z-10'
                     onClick={closeAllMenus}
@@ -140,49 +134,51 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
 
             <header className='flex items-center justify-between p-4 px-10 bg-white shadow-sm'>
                 <div className='flex items-center space-x-4'>
-                    {/* Logo */}
-                    <Link to='/' className='text-2xl font-bold no-underline'>
+                    <Link
+                        to='/home'
+                        className='text-2xl font-bold no-underline'
+                    >
                         <span className='font-abhaya text-2xl text-primary'>
-                            Learn
+                            OpenLearn
                         </span>
                         <span className='font-abhaya text-2xl text-tertiary'>
                             Hub.
                         </span>
                     </Link>
 
-                    {/* Categories Dropdown */}
-                    <div className='relative'>
-                        <button
-                            onClick={toggleDropdown}
-                            className='font-abhaya font-semibold mt-1 ml-5 text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors'
-                            aria-expanded={isDropdownOpen}
-                        >
-                            Categories
-                        </button>
-
-                        {isDropdownOpen && (
-                            <div
-                                className='absolute bg-white text-black mt-1 rounded-md shadow-lg z-20 w-48 ml-10'
-                                onClick={toggleDropdown}
+                    {userRole === 'student' && (
+                        <div className='relative'>
+                            <button
+                                onClick={toggleCategoriesDropdown}
+                                className='font-abhaya font-semibold ml-4 text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors'
+                                aria-expanded={IsCategoriesDropdownOpen}
                             >
-                                <ul className='py-1'>
-                                    {categories.map((category) => (
-                                        <li key={category.name}>
-                                            <Link
-                                                to={category.path}
-                                                className='block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-abhaya no-underline'
-                                            >
-                                                {category.name}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                    </div>
+                                Categories
+                            </button>
+
+                            {IsCategoriesDropdownOpen && (
+                                <div
+                                    className='absolute bg-white mt-2 text-black shadow-lg z-20 w-48 ml-5'
+                                    onClick={toggleCategoriesDropdown}
+                                >
+                                    <ul className='py-1'>
+                                        {categories.map((category) => (
+                                            <li key={category.name}>
+                                                <Link
+                                                    to={category.path}
+                                                    className='font-abhaya font-semibold block px-4 py-2 text-md text-gray-700 hover:bg-gray-100 font-abhaya no-underline'
+                                                >
+                                                    {category.name}
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
-                {/* Auth Buttons / User Menu */}
                 <div className='flex space-x-4'>
                     {!currentUser ? (
                         <div className='space-x-4'>
@@ -201,18 +197,14 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                         </div>
                     ) : (
                         <div className='relative'>
-                            <div className='flex items-center space-x-4'>
-                                {/* User Dropdown Button */}
+                            <div className='flex items-center'>
                                 <button
-                                    onClick={toggleUser}
-                                    className='font-abhaya font-semibold text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors flex items-center space-x-2'
-                                    aria-expanded={isUserOpen}
+                                    onClick={toggleUserDropdown}
+                                    className='font-abhaya font-semibold text-lg py-2 hover:bg-gray-100 transition-colors flex items-center space-x-2'
+                                    aria-expanded={IsUserDropdownOpen}
                                 >
                                     <img
-                                        src={
-                                            currentUser?.profile_image ||
-                                            '/path/to/default/image.jpg'
-                                        }
+                                        src={currentUser?.profile_image}
                                         alt={`${currentUser.username}'s Profile`}
                                         className='w-8 h-8 border rounded-full object-cover'
                                     />
@@ -222,19 +214,21 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                                 </button>
                             </div>
 
-                            {/* User Dropdown Menu */}
-                            {isUserOpen && (
-                                <div className='absolute right-0 mt-2 bg-white rounded-md shadow-lg z-20 w-48'>
+                            {IsUserDropdownOpen && (
+                                <div className='absolute right-0 mt-2 bg-white shadow-lg z-20 w-48'>
                                     <ul className='py-1'>
                                         {menuItems.map((item) => (
                                             <li key={item.name}>
                                                 <button
-                                                    onClick={() =>
+                                                    onClick={async () => {
+                                                        if (item.onClick) {
+                                                            await item.onClick();
+                                                        }
                                                         handleViewSwitch(
                                                             item.path,
-                                                        )
-                                                    }
-                                                    className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-abhaya'
+                                                        );
+                                                    }}
+                                                    className='font-abhaya font-semibold text-md w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100'
                                                 >
                                                     {item.name}
                                                 </button>
@@ -263,11 +257,10 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                                             </li>
                                         )} */}
 
-                                        {/* Sign Out Option */}
                                         <li>
                                             <button
-                                                onClick={handleLogout}
-                                                className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-abhaya'
+                                                onClick={handleSignOut}
+                                                className='font-abhaya font-semibold text-md w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100 font-abhaya'
                                             >
                                                 Sign Out
                                             </button>
@@ -279,7 +272,6 @@ const HeaderComponent: React.FC<HeaderComponentProps> = ({
                     )}
                 </div>
             </header>
-
             <hr className='border-t gray opacity-15' />
         </>
     );

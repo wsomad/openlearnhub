@@ -4,8 +4,8 @@ import authImage from '../assets/images/authimage.png';
 import {FaGoogle} from 'react-icons/fa';
 import {useUser} from '../hooks/useUser';
 import {User} from '../types/user';
-
-type UserRole = 'student' | 'instructor';
+import {toast} from 'react-toastify'; // Optional: Include toast notifications
+import {useSelector} from 'react-redux';
 
 const AuthComponent: React.FC = () => {
     const {signIn, signUp} = useAuth();
@@ -15,26 +15,42 @@ const AuthComponent: React.FC = () => {
     const [firstname, setFirstName] = useState('');
     const [lastname, setLastName] = useState('');
     const [isSignIn, setSignIn] = useState(true);
-    const {userRole} = useUser(); // Assuming userRole is obtained from useUser
+    const {userRole} = useUser();
+    const currentState = useSelector((state) => state);
+    console.log('Current State from Selector:', currentState);
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         if (isSignIn) {
-            await signIn(email, password, userRole);
+            try {
+                await signIn(email, password, userRole);
+                toast.success("Welcome back! You've signed in.");
+            } catch (error) {
+                toast.error(
+                    'Failed to sign in. Please check your credentials.',
+                );
+                console.error('Error during sign-in:', error);
+            }
         } else {
-            const userProfile: Omit<User, 'uid'> & {password: string} = {
+            const defaultUserProfile: Omit<User, 'uid'> & {password: string} = {
                 email,
                 password,
                 username,
                 firstname,
                 lastname,
                 role: userRole,
+                profile_image: '../assets/images/userProfile.png',
                 created_at: new Date(),
                 updated_at: new Date(),
             };
-
-            await signUp(userProfile);
+            try {
+                await signUp(defaultUserProfile);
+                toast.success('Account created successfully! Please sign in.');
+                setSignIn(true);
+            } catch (error) {
+                toast.error('Failed to create account. Please try again.');
+                console.error('Error during sign-up:', error);
+            }
         }
     };
 
@@ -44,19 +60,17 @@ const AuthComponent: React.FC = () => {
             <div className='hidden lg:flex h-full w-1/3 items-center justify-center bg-background flex-col p-8'>
                 <div className='absolute top-4 left-8 text-2xl font-bold mt-8'>
                     <span className='font-abhaya text-3xl text-primary'>
-                        Learn
+                        OpenLearn
                     </span>
                     <span className='font-abhaya text-3xl text-tertiary'>
                         Hub.
                     </span>
                 </div>
-
                 <img
                     src={authImage}
                     alt='Educational Illustration'
                     className='w-3/4 h-auto mx-auto'
                 />
-
                 <div className='text-center mb-32'>
                     <h2 className='text-5xl font-bold'>
                         <span className='font-abhaya text-7xl block text-black'>
@@ -77,7 +91,7 @@ const AuthComponent: React.FC = () => {
             {/* Main form container */}
             <div className='w-full flex items-center justify-center lg:w-1/2'>
                 <form onSubmit={handleSubmit} className='w-full max-w-xl'>
-                    <h1 className='font-abhaya text-7xl font-bold mb-6'>
+                    <h1 className='font-abhaya text-5xl font-bold mb-6'>
                         {isSignIn ? 'Sign In' : 'Sign Up'}
                     </h1>
 
@@ -89,7 +103,7 @@ const AuthComponent: React.FC = () => {
                                 </label>
                                 <input
                                     id='firstName'
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
+                                    className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                     type='text'
                                     placeholder='First Name'
                                     value={firstname}
@@ -108,7 +122,7 @@ const AuthComponent: React.FC = () => {
                                 </label>
                                 <input
                                     id='lastName'
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
+                                    className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                     type='text'
                                     placeholder='Last Name'
                                     value={lastname}
@@ -127,7 +141,7 @@ const AuthComponent: React.FC = () => {
                                 </label>
                                 <input
                                     id='username'
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
+                                    className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                     type='text'
                                     placeholder='Username'
                                     value={username}
@@ -150,7 +164,7 @@ const AuthComponent: React.FC = () => {
                             </label>
                             <input
                                 id='email'
-                                className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
+                                className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                 type='email'
                                 placeholder='Email@example.com'
                                 value={email}
@@ -167,7 +181,7 @@ const AuthComponent: React.FC = () => {
                             </label>
                             <input
                                 id='password'
-                                className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent font-abhaya'
+                                className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                 type='password'
                                 placeholder='Password'
                                 value={password}
@@ -179,18 +193,18 @@ const AuthComponent: React.FC = () => {
 
                     <div className='mt-8 flex flex-col gap-y-4'>
                         <button
-                            className='w-full py-3 rounded-3xl bg-primary text-white text-lg active:scale-[.98] font-abhaya'
+                            className='w-full py-3 bg-primary text-white text-lg active:scale-[.98] font-abhaya'
                             type='submit'
                         >
                             {isSignIn ? 'Sign In' : 'Sign Up'}
                         </button>
-                        <div className='flex justify-center items-center text-primary font-abhaya text-lg font-medium mb-1'>
+                        <div className='flex justify-center items-center text-black font-abhaya text-lg font-medium mb-1'>
                             {isSignIn ? (
                                 <>
                                     Don't have an account?{' '}
                                     <button
                                         type='button'
-                                        className='text-primary font-bold hover:underline ml-1'
+                                        className='text-secondary font-bold hover:underline ml-1'
                                         onClick={() => setSignIn(false)}
                                     >
                                         Sign Up
@@ -201,7 +215,7 @@ const AuthComponent: React.FC = () => {
                                     Already have an account?{' '}
                                     <button
                                         type='button'
-                                        className='text-primary font-bold hover:underline ml-1'
+                                        className='text-secondary font-bold hover:underline ml-1'
                                         onClick={() => setSignIn(true)}
                                     >
                                         Sign In
@@ -221,7 +235,7 @@ const AuthComponent: React.FC = () => {
 
                     <button
                         type='button'
-                        className='w-full flex items-center justify-center py-3 border-2 border-gray-300 rounded-3xl hover:bg-gray-100'
+                        className='w-full flex items-center justify-center py-3 border border-gray hover:bg-gray-100'
                         onClick={() => {
                             /* Handle Google sign-in */
                         }}

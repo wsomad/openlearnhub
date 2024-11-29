@@ -17,8 +17,18 @@ const userCollection = collection(db, 'users');
  * Add a new user to the Firestore database.
  * @param userData - The user data to add.
  */
-export const addUser = async (userData: User): Promise<void> => {
+export const addUser = async (
+    userData: User,
+    //updatedUser: Partial<User>,
+    avatarUrl?: string,
+): Promise<void> => {
     try {
+        // Define initial value for user avatar.
+        let userAvatar = userData.profile_image;
+        // If new avatar url is provided, then add it.
+        if (avatarUrl) {
+            userAvatar = await updateUserAvatar(userData.uid, avatarUrl);
+        }
         // Define a document reference for the user by passing two params: `userCollection` and uid of user.
         const userDocRef = doc(userCollection, userData.uid);
         // Set that document with data belongs to user.
@@ -64,11 +74,15 @@ export const updateUserById = async (
         if (avatarUrl) {
             userAvatar = await updateUserAvatar(uid, avatarUrl);
         }
-
         // Define the document reference for the user by passing two params: `userCollection` and uid of user.
         const userDocRef = doc(userCollection, uid);
         // Update that document with updated data of the user.
         await updateDoc(userDocRef, updatedUser);
+        console.log('Let see what is user avatar', userAvatar);
+        console.log(
+            'Let see what is profile picture:',
+            updatedUser.profile_image,
+        );
         return {
             uid,
             ...updatedUser,

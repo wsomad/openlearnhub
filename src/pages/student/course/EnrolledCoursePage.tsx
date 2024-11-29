@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import HeaderComponent from '../../../components/HeaderComponent';
 import CardCourseComponent from '../../../components/card/CardCourseComponent';
 import thumbnail from '../../../assets/images/thumbnail.png';
@@ -6,49 +6,104 @@ import {RiTimer2Line} from 'react-icons/ri';
 import {HiOutlineDocumentText} from 'react-icons/hi';
 import {MdQuiz} from 'react-icons/md';
 import CourseContentList from '../../../components/enrollment/course_list/CourseContentList';
-import CardCourseDetails from '../../../components/card/CardCourseDetails';
 import CourseRequirements from '../../../components/enrollment/CourseRequirements';
+import {Link, useParams} from 'react-router-dom';
+import {useCourses} from '../../../hooks/useCourses';
+import {useSections} from '../../../hooks/useSections';
+import {useUser} from '../../../hooks/useUser';
 
-function EnrolledCoursePage() {
+const EnrolledCoursePage: React.FC = () => {
+    const {selectedCourse, fetchCourseById} = useCourses();
+    const {allSections, fetchAllSections} = useSections();
+    const {currentUser, userRole} = useUser();
+    const {id} = useParams<{id: string}>();
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadCourse = async () => {
+            if (id && currentUser?.uid) {
+                await fetchCourseById(id, currentUser.uid, userRole);
+                console.log('Currently in selected course page.');
+                setLoading(false);
+            }
+        };
+        loadCourse();
+    }, [currentUser, userRole]);
+
+    useEffect(() => {
+        const loadSections = async () => {
+            if (id) {
+                await fetchAllSections(id);
+                console.log(
+                    `Successfully fetch all sections under ${id} course.`,
+                );
+            }
+        };
+        loadSections();
+    }, [id, currentUser, userRole]);
+
     return (
         <div>
             <HeaderComponent />
-            <div className='px-4 sm:px-6 md:px-8 lg:px-10 xl:px-10'>
+            <div>
+                {/* <div className='px-4 sm:px-6 md:px-8 lg:px-10 xl:px-10'> */}
                 <div className='w-screen-xl h-full w-full justify-between'>
-                    <div className='flex justify-between items-start mt-4'>
+                    <div className='flex justify-between items-start'>
                         <CardCourseComponent
                             thumbnail={thumbnail}
-                            title='Build Web Application with React Redux'
-                            instructor='John Doe'
-                            pricing='FREE'
-                            buttonText='Incomplete' // You can change this later based on the course status
+                            title={
+                                selectedCourse?.course_title || 'Course Title'
+                            }
+                            instructor={
+                                selectedCourse?.course_instructor ||
+                                'Course Instructor'
+                            }
+                            pricing={selectedCourse?.course_pricing || 'FREE'}
+                            buttonText='Incomplete'
                             onButtonClick={() =>
                                 console.log('Navigating to Course Details page')
                             }
                             size='big'
-                            hoursDuration='20.4'
-                            numSections='23'
-                            numLectures='120'
                         />
-                        <CourseContentList userType={'student'} />
+                        <CourseContentList
+                            role={userRole}
+                            course_id={id || ''}
+                            uid={currentUser?.uid || ''}
+                            initialSection={allSections}
+                            initialLesson={[]}
+                        />
                     </div>
                 </div>
-                <div className='flex flex-col justify-start items-start mt-10'>
+                <div className='flex flex-col justify-start items-start mt-10 px-6'>
                     <h1 className='font-abhaya font-bold text-4xl'>
-                        Build Web Application with React Redux
+                        {selectedCourse?.course_title || 'Course Title'}
                     </h1>
                     <p className='font-abhaya font-normal text-lg mt-2'>
-                        Technology and the world of work change fast — with us,
-                        you're faster. Get the skills to achieve goals and stay
-                        competitive.
+                        {selectedCourse?.course_description ||
+                            'Course Description'}
                     </p>
                 </div>
-                <div className='mt-6'>
-                    <CourseRequirements />
+                <hr className='border-t gray opacity-15 my-6 mx-6' />
+                <div className='my-6 '>
+                    <CourseRequirements
+                        course_id={selectedCourse?.course_id || ''}
+                        course_requirements={
+                            selectedCourse?.course_requirements || []
+                        }
+                    ></CourseRequirements>
+                </div>
+                <hr className='border-t gray opacity-15 my-6 mx-6' />
+                <div className='flex flex-col justify-start items-start my-6 px-6'>
+                    <div className='font-abhaya font-bold text-2xl mr-4'>
+                        Instructor Name
+                    </div>
+                    <div className='font-abhaya font-normal text-lg underline underline-offset-2 text-secondary mt-2'>
+                        <Link to={''}>{selectedCourse?.course_instructor}</Link>
+                    </div>
                 </div>
             </div>
         </div>
     );
-}
+};
 
 export default EnrolledCoursePage;

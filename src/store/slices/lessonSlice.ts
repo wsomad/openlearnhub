@@ -1,10 +1,12 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {Lesson} from '../../types/lesson';
+import {LessonBase} from '../../types/lesson';
+
+// This applicable to Document, Video, and Quiz.
 
 // Define the SectionState type.
 interface LessonState {
-    selectedLesson: Lesson | null;
-    allLessons: Lesson[];
+    selectedLesson: LessonBase | null;
+    allLessons: LessonBase[];
 }
 
 // Define the initial state of SectionState.
@@ -20,12 +22,12 @@ const lessonSlice = createSlice({
     // Reducers define how the state changes in response to specific actions.
     reducers: {
         // Action to set a lesson.
-        setLesson(state, action: PayloadAction<Lesson>) {
+        setLesson(state, action: PayloadAction<LessonBase>) {
             // `action.payload` contains data belongs to a lesson.
             state.selectedLesson = action.payload;
         },
         // Action to set all lessons.
-        setLessons(state, action: PayloadAction<Lesson[]>) {
+        setLessons(state, action: PayloadAction<LessonBase[]>) {
             // `action.payload` contains data belongs to all lessons.
             state.allLessons = action.payload;
         },
@@ -34,7 +36,7 @@ const lessonSlice = createSlice({
             state,
             action: PayloadAction<{
                 id: string;
-                updatedLessonObject: Partial<Lesson>;
+                updatedLessonObject: Partial<LessonBase>;
             }>,
         ) {
             // `action.payload` contains data belongs to a lesson.
@@ -42,7 +44,7 @@ const lessonSlice = createSlice({
             const {id, updatedLessonObject} = action.payload;
             // Since `allLessons` is a list, we are mapping that list to find matches lesson ID.
             const existingLesson = state.allLessons.find(
-                (lesson: Lesson) => lesson.lesson_id === id,
+                (lesson: LessonBase) => lesson.lesson_id === id,
             );
             // If that specific lesson exists, then merge the update data to that lesson.
             if (existingLesson) {
@@ -53,13 +55,22 @@ const lessonSlice = createSlice({
         clearLesson(state, action: PayloadAction<String>) {
             const id = action.payload;
             state.allLessons = state.allLessons.filter(
-                (lesson: Lesson) => lesson.lesson_id !== id,
+                (lesson: LessonBase) => lesson.lesson_id !== id,
             );
+        },
+
+        clearSingleLesson(state) {
+            state.selectedLesson = null;
         },
     },
 });
 
 // Export the actions and reducer.
-export const {setLesson, setLessons, modifyLesson, clearLesson} =
-    lessonSlice.actions;
+export const {
+    setLesson,
+    setLessons,
+    modifyLesson,
+    clearLesson,
+    clearSingleLesson,
+} = lessonSlice.actions;
 export default lessonSlice.reducer;

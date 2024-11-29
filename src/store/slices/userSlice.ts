@@ -3,49 +3,44 @@ import {User} from '../../types/user';
 
 // Define the UserState type.
 interface UserState {
-    currentUser: User | null;
+    user: User | null;
+    isAuthenticated: boolean;
     userRole: 'student' | 'instructor';
 }
 
 // Define the initial state of UserState.
 const initialState: UserState = {
-    currentUser: null,
+    user: null,
+    isAuthenticated: false,
     userRole: 'student',
 };
 
-// Create a slice named `users`.
+// Create a slice named `user` that combines auth and user data.
 const userSlice = createSlice({
     name: 'users',
     initialState,
-    // Reducers define how the state changes in response to specific actions.
     reducers: {
-        // Action to set the current user in the state.
+        // Action to set the user and authenticate.
         setUser(state, action: PayloadAction<User>) {
-            // `action.payload` contains data belongs to current user.
             const user = action.payload;
-            // Assigned that data to the current user.
-            state.currentUser = user;
-            // Plus, assigned the role of current user as well.
-            state.userRole = user.role;
+            state.user = user;
+            state.isAuthenticated = true;
+            state.userRole = user.role; // Set role based on the user data
         },
 
         // Action to modify specific properties of the current user.
         modifyUser(state, action: PayloadAction<Partial<User>>) {
-            // `action.payload` contains specific data belongs to user.
             const updatedUser = action.payload;
-            // If currentUser is not null & current user's uid matches the user id being updated,
-            if (
-                state.currentUser &&
-                state.currentUser.uid === updatedUser.uid
-            ) {
-                // Then, merge the updated data belongs to the current user.
-                Object.assign(state.currentUser, updatedUser);
+            if (state.user && state.user.uid === updatedUser.uid) {
+                Object.assign(state.user, updatedUser);
             }
         },
 
-        // Action to clear user from state.
+        // Action to clear the user and de-authenticate.
         clearUser(state) {
-            state.currentUser = null;
+            state.user = null;
+            state.isAuthenticated = false;
+            state.userRole = 'student'; // Reset role to default
         },
     },
 });

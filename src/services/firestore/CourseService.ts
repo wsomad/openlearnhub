@@ -8,9 +8,14 @@ import {
     collection,
     DocumentData,
     QuerySnapshot,
+    query,
+    where,
+    orderBy,
+    limit,
 } from 'firebase/firestore';
 import {db} from '../../config/FirebaseConfiguration';
 import {Course} from '../../types/course';
+import {UserRole} from '../../types/user';
 
 // Reference to `courses` collection (root reference for courses).
 const coursesCollection = collection(db, 'courses');
@@ -27,13 +32,13 @@ export const addCourse = async (course_data: Course): Promise<Course> => {
             throw new Error('A course with this title already exists.');
         }
         // Define a document reference for the course by passing two params: `coursesCollection` and title of course.
-        const courseDocRef = doc(coursesCollection, course_data.course_title);
+        const courseDocRef = doc(coursesCollection, course_data.course_id);
         // Set that document with data belongs to course.
-        await setDoc(courseDocRef, course_data);
         const course = {
             ...course_data,
             course_id: courseDocRef.id,
         } as Course;
+        await setDoc(courseDocRef, course);
         console.log(`Course ${courseDocRef.id} successfully added.`);
         return course;
     } catch (error) {
@@ -45,27 +50,43 @@ export const addCourse = async (course_data: Course): Promise<Course> => {
 /**
  * Get a course by its ID.
  * @param course_id - The ID of the course to retrieve = title of the course.
- * @returns The course data if found, otherwise `null`.
+ * @param userRole - The role of the user ('student' | 'instructor').
+ * @param uid - The ID of the user making the request (needed for instructor role).
+ * @returns The course data if found and valid, otherwise `null`.
  */
 export const getCourseById = async (
     course_id: string,
+    userRole: 'student' | 'instructor',
+    uid?: string | null,
 ): Promise<Course | null> => {
     try {
-        // Define the document reference for the course by passing two params: `coursesCollection` and id of course.
-        // Course ID = Course Title.
+        // Define the document reference for the course by its ID.
         const courseDocRef = doc(coursesCollection, course_id);
-        // Get that document with data belongs to course.
+
+        // Get the course document.
         const courseDoc = await getDoc(courseDocRef);
-        // If that document exists, returns data belongs to course.
+
         if (courseDoc.exists()) {
             const course = {
                 course_id,
                 ...courseDoc.data(),
             } as Course;
-            console.log(`Successfully get data from course ${courseDoc.id}`);
+
+            console.log(`Successfully fetched course: ${courseDoc.id}`);
+
+            // Validate based on user role.
+            if (userRole === 'instructor') {
+                // Ensure the instructor ID matches the course's instructor field.
+                if (course.instructor_id !== uid) {
+                    console.warn(
+                        `Instructor ID mismatch: course instructor is ${course.instructor_id}, but user ID is ${uid}`,
+                    );
+                    return null; // Instructor cannot edit a course they don't own.
+                }
+            }
             return course;
         } else {
-            console.log('No such course.');
+            console.log('No such course found.');
             return null;
         }
     } catch (error) {
@@ -81,23 +102,38 @@ export const getCourseById = async (
  */
 export const searchSpecificCourse = async (
     search_query: string,
+    uid?: string,
+    user_role?: 'student' | 'instructor',
 ): Promise<Course[]> => {
     try {
-        // Get whole course collection with data belongs to all courses.
+        // Fetch the entire course collection
         const querySnapshot: QuerySnapshot<DocumentData> = await getDocs(
             coursesCollection,
         );
-        // Define an empty array of course.
+
+        // Initialize an empty array for storing filtered courses
         const courses: Course[] = [];
 
-        // Iterate each course in course collection to find particular course.
-        // Then, all matched queries are pushed into the array of course.
+        // Iterate over each document in the course collection
         querySnapshot.forEach((doc) => {
-            const courseTitle = doc.data().course_title?.toLowerCase() ?? '';
+            const courseData = doc.data();
+            const courseTitle = courseData.course_title?.toLowerCase() ?? '';
+
+            // Check if the course title matches the search query
             if (courseTitle.includes(search_query.toLowerCase())) {
-                courses.push({course_id: doc.id, ...doc.data()} as Course);
+                if (user_role === 'student') {
+                    // For students, include all matching courses
+                    courses.push({course_id: doc.id, ...courseData} as Course);
+                } else if (
+                    user_role === 'instructor' &&
+                    courseData.instructor_id === uid
+                ) {
+                    // For instructors, only include courses they own
+                    courses.push({course_id: doc.id, ...courseData} as Course);
+                }
             }
         });
+
         return courses;
     } catch (error) {
         console.error('Error searching courses:', error);
@@ -109,19 +145,67 @@ export const searchSpecificCourse = async (
  * Get all courses in Firestore.
  * @returns An array of all courses.
  */
-export const getAllCourses = async (): Promise<Course[]> => {
+export const getAllCourses = async (
+    uid: string | null,
+    userRole: 'student' | 'instructor',
+    filterType: 'default' | 'enrollment' | 'creator',
+    readyForPublish?: boolean,
+    limitCount?: number,
+): Promise<Course[]> => {
     try {
-        // Get whole course collection with data belongs to all courses.
-        const querySnapshot = await getDocs(coursesCollection);
-        // Mapped that course collection and get each document within it.
+        // Query the collection.
+        let coursesQuery = query(coursesCollection);
+
+        // Apply filters based on `filterType` and `userRole`.
+        if (filterType === 'creator' && userRole === 'instructor') {
+            coursesQuery = query(
+                coursesCollection,
+                where('instructor_id', '==', uid),
+            );
+        } else if (filterType === 'default' && userRole === 'student') {
+            // if (uid && readyForPublish === true) {
+            //     coursesQuery = query(
+            //         coursesCollection,
+            //         //where('enrolled_students', 'array-contains', uid),
+            //         where('ready_for_publish', '!=', false),
+            //     );
+            // } else {
+            //     console.warn('UID is null. Courses cannot be filtered.');
+            // }
+            if (readyForPublish === true) {
+                coursesQuery = query(
+                    coursesCollection,
+                    where('ready_for_publish', '==', true), // Only fetch published courses
+                );
+            } else {
+                console.warn(
+                    'readyForPublish is undefined for student filter.',
+                );
+            }
+        }
+
+        // Order by creation date if we are fetching a limited number of courses.
+        if (limitCount) {
+            coursesQuery = query(
+                coursesQuery,
+                orderBy('course_created_at', 'desc'),
+                limit(limitCount),
+            );
+        }
+
+        // Get that documents.
+        const querySnapshot = await getDocs(coursesQuery);
+
+        // Map that documents to an array of courses.
         const courses = querySnapshot.docs.map((doc) => ({
             course_id: doc.id,
             ...doc.data(),
         })) as Course[];
-        console.log('All courses data: ', courses);
+
+        console.log('Fetched courses:', courses);
         return courses;
     } catch (error) {
-        console.error('Error getting all courses:', error);
+        console.error('Error fetching courses:', error);
         return [];
     }
 };
@@ -184,3 +268,55 @@ const checkCourseTitle = async (course_title: string): Promise<boolean> => {
     // Return if that document exists.
     return courseDoc.exists();
 };
+
+// export const getAllCourses = async (
+//     uid: string | null,
+//     userRole: 'student' | 'instructor',
+//     filterType: 'default' | 'enrolled' | 'created',
+//     limitCount?: number,
+// ): Promise<Course[]> => {
+//     try {
+//         // Fetch all documents from the courses collection.
+//         // const querySnapshot = await getDocs(coursesCollection);
+//         const querySnapshot = query(coursesCollection);
+
+//         // Map the documents to an array of courses.
+//         // const courses = querySnapshot.docs.map((doc) => ({
+//         //     course_id: doc.id,
+//         //     ...doc.data(),
+//         // })) as Course[];
+
+//         let filteredCourses: Course[];
+
+//         // Filter courses based on the filter type and user role.
+//         if (filterType === 'created' && userRole === 'instructor') {
+//             // Fetch courses where uid matches the instructor's uid.
+//             // filteredCourses = courses.filter(
+//             //     (course) => course.instructor_id === uid,
+//             // );
+//             querySnapshot = query();
+//             console.log(
+//                 'Successfully fetch all courses created by this instructor: ',
+//                 uid,
+//             );
+//         } else if (filterType === 'enrolled' && userRole === 'student') {
+//             if (uid) {
+//                 filteredCourses = courses.filter((course) =>
+//                     course.enrolled_students?.includes(uid),
+//                 );
+//             } else {
+//                 console.warn('UID is null; cannot filter enrolled courses.');
+//                 filteredCourses = []; // Return an empty array if uid is null
+//             }
+//         } else {
+//             // Default case: fetch all courses.
+//             filteredCourses = courses;
+//         }
+
+//         console.log('Filtered courses:', filteredCourses);
+//         return filteredCourses;
+//     } catch (error) {
+//         console.error('Error fetching courses:', error);
+//         return [];
+//     }
+// };

@@ -4,12 +4,14 @@ import {Course} from '../../types/course';
 // Define the CourseState type.
 interface CourseState {
     selectedCourse: Course | null;
-    allCourses: Course[];
+    searchCourseResult: Course[] | [];
+    allCourses: Course[] | [];
 }
 
 // Define the initial state of CourseState.
 const initialState: CourseState = {
     selectedCourse: null,
+    searchCourseResult: [],
     allCourses: [],
 };
 
@@ -29,6 +31,12 @@ const courseSlice = createSlice({
         setCourses(state, action: PayloadAction<Course[]>) {
             // `action.payload` contains list of data belongs to all courses.
             state.allCourses = action.payload;
+        },
+
+        // Action to set search course results.
+        setSearchCourseResult(state, action: PayloadAction<Course[]>) {
+            // `action.payload` contains data of search query results.
+            state.searchCourseResult = action.payload;
         },
 
         // Action to modify any course in the list.
@@ -52,6 +60,12 @@ const courseSlice = createSlice({
             }
         },
 
+        // Action to clear search course results.
+        clearSearchCourseResults(state) {
+            // Empty the result of search query.
+            state.searchCourseResult = [];
+        },
+
         // Action to clear any course from the list.
         clearCourse(state, action: PayloadAction<string>) {
             // `action.payload` contains data belongs to a course.
@@ -67,10 +81,26 @@ const courseSlice = createSlice({
                 (course: Course) => course.course_id !== id,
             );
         },
+
+        clearSingleCourse(state) {
+            state.selectedCourse = null;
+        },
+
+        clearCourses(state) {
+            state.allCourses = [];
+        },
     },
 });
 
 // Export the actions and reducer.
-export const {setCourse, setCourses, modifyCourse, clearCourse} =
-    courseSlice.actions;
+export const {
+    setCourse,
+    setCourses,
+    setSearchCourseResult,
+    modifyCourse,
+    clearSearchCourseResults,
+    clearCourse,
+    clearCourses,
+    clearSingleCourse,
+} = courseSlice.actions;
 export default courseSlice.reducer;

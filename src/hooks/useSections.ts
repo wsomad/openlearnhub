@@ -2,7 +2,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from '../store/store';
 import {Section} from '../types/section';
 import {
-    addSection,
+    addSections,
     deleteSectionById,
     getAllSections,
     getSectionById,
@@ -10,12 +10,13 @@ import {
 } from '../services/firestore/SectionService';
 import {
     clearSection,
+    clearSections,
     modifySection,
     setSection,
     setSections,
 } from '../store/slices/sectionSlice';
 
-export const useSection = () => {
+export const useSections = () => {
     const dispatch = useDispatch();
     const selectedSection = useSelector(
         (state: RootState) => state.sections.selectedSection,
@@ -33,12 +34,20 @@ export const useSection = () => {
         course_id: string,
         section: Section,
     ): Promise<void> => {
+        // try {
+        //     await addSection(course_id, section);
+        //     dispatch(setSections([...allSections, section]));
+        //     console.log('Section created successfully: ');
+        // } catch (error) {
+        //     console.error('Failed to create section: ', error);
+        // }
         try {
-            await addSection(course_id, section);
-            dispatch(setSections([...allSections, section]));
-            console.log('Section created successfully: ');
+            const addedSection = await addSections(course_id, section); // Assuming addSection supports arrays
+            // dispatch(setSections([...allSections, sections]));
+            dispatch(setSection(addedSection));
+            console.log('Sections created successfully:');
         } catch (error) {
-            console.error('Failed to create section: ', error);
+            console.error('Failed to create sections:', error);
         }
     };
 
@@ -89,23 +98,99 @@ export const useSection = () => {
      */
     const updateSection = async (
         course_id: string,
-        update_section: Partial<Section>,
+        section_id: string,
+        update_section: Partial<Section> | Partial<Section>[],
     ): Promise<void> => {
         try {
-            const updated = await updateSectionById(course_id, update_section);
-            if (updated) {
+            const updatedSection = Array.isArray(update_section)
+                ? update_section
+                : [update_section];
+
+            for (const updates of updatedSection) {
+                await updateSectionById(course_id, section_id, {
+                    ...updates,
+                    section_id: section_id,
+                });
+
                 dispatch(
                     modifySection({
                         id: course_id,
-                        updatedSectionObject: update_section,
+                        updatedSectionObject: updates,
                     }),
                 );
-                console.log('Section updated successfully:', updated);
             }
+
+            console.log('Sections updated successfully.');
         } catch (error) {
-            console.error('Failed to update section:', error);
+            console.error('Failed to update sections:', error);
         }
     };
+
+    // const updateSection = async (
+    //     course_id: string,
+    //     section_id: string,
+    //     update_section: Partial<Section>[],
+    // ): Promise<void> => {
+    //     try {
+    //         // Ensure update_section is always treated as an array.
+    //         if (Array.isArray(update_section)) {
+    //             await updateSectionById(course_id, section_id, update_section);
+
+    //             // Dispatch updates to Redux for each updated section.
+    //             update_section.forEach((updatedData) => {
+    //                 dispatch(
+    //                     modifySection({
+    //                         id: course_id,
+    //                         updatedSectionObject: updatedData,
+    //                     }),
+    //                 );
+    //             });
+    //         } else {
+    //             console.error(
+    //                 'Expected update_section to be an array of partial updates.',
+    //             );
+    //         }
+    //     } catch (error) {
+    //         console.error('Failed to update section:', error);
+    //     }
+    // };
+
+    // const updateSection = async (
+    //     course_id: string,
+    //     section_id: string,
+    //     update_section: Partial<Section>[],
+    // ): Promise<void> => {
+    //     try {
+    //         if (Array.isArray(update_section)) {
+    //             await updateSectionById(course_id, section_id, update_section);
+    //             update_section.forEach((updatedData) => {
+    //                 dispatch(
+    //                     modifySection({
+    //                         id: course_id,
+    //                         updatedSectionObject: updatedData || [],
+    //                     }),
+    //                 );
+    //             });
+    //         } else {
+    //             const updated = await updateSectionById(
+    //                 course_id,
+    //                 section_id,
+    //                 update_section,
+    //             );
+    //             if (updated) {
+    //                 dispatch(
+    //                     modifySection({
+    //                         id: course_id,
+    //                         updatedSectionObject: update_section,
+    //                     }),
+    //                 );
+    //                 console.log('Section updated successfully:', updated);
+    //             }
+    //         }
+    //     } catch (error) {
+    //         console.error('Failed to update section:', error);
+    //     }
+    // };
 
     /**
      * Delete section by ID.
@@ -113,10 +198,14 @@ export const useSection = () => {
      * @param section_id
      */
     const deleteSection = async (
-        course_id: string,
-        section_id: string,
+        course_id: string | null,
+        section_id: string | null,
     ): Promise<void> => {
         try {
+            if (!course_id || !section_id) {
+                console.error('Both course id and section id are required.');
+                return;
+            }
             await deleteSectionById(course_id, section_id);
             dispatch(clearSection(section_id));
             console.log('Section deleted successfully.');

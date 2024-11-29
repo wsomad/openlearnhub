@@ -34,19 +34,39 @@ const sectionSlice = createSlice({
             state,
             action: PayloadAction<{
                 id: string;
-                updatedSectionObject: Partial<Section>;
+                updatedSectionObject: Partial<Section> | Partial<Section[]>;
             }>,
         ) {
             // `action.payload` contains data belongs to a section.
             // We are accessing `id` and `updatedSectionObject` from `action.payload`.
             const {id, updatedSectionObject} = action.payload;
             // Since `allSections` is a list, we are mapping that list to find matches section ID.
-            const existingSection = state.allSections.find(
-                (section: Section) => section.section_id === id,
-            );
-            // If that specific section exists, then merge the update data to that section.
-            if (existingSection) {
-                Object.assign(existingSection, updatedSectionObject);
+            // const existingSection = state.allSections.find(
+            //     (section: Section) => section.section_id === id,
+            // );
+            // // If that specific section exists, then merge the update data to that section.
+            // if (existingSection) {
+            //     Object.assign(existingSection, updatedSectionObject);
+            // }
+
+            // If the payload is an array (batch update), update each section
+            if (Array.isArray(updatedSectionObject)) {
+                updatedSectionObject.forEach((updatedData) => {
+                    const existingSection = state.allSections.find(
+                        (section: Section) => section.section_id === id,
+                    );
+                    if (existingSection) {
+                        Object.assign(existingSection, updatedData);
+                    }
+                });
+            } else {
+                // For single section update
+                const existingSection = state.allSections.find(
+                    (section: Section) => section.section_id === id,
+                );
+                if (existingSection) {
+                    Object.assign(existingSection, updatedSectionObject);
+                }
             }
         },
         // Action to clear any section from the list.
@@ -56,10 +76,24 @@ const sectionSlice = createSlice({
                 (section: Section) => section.section_id !== id,
             );
         },
+
+        clearSingleSection(state) {
+            state.selectedSection = null;
+        },
+
+        clearSections(state) {
+            state.allSections = [];
+        },
     },
 });
 
 // Export the actions and reducer.
-export const {setSection, setSections, modifySection, clearSection} =
-    sectionSlice.actions;
+export const {
+    setSection,
+    setSections,
+    modifySection,
+    clearSection,
+    clearSingleSection,
+    clearSections,
+} = sectionSlice.actions;
 export default sectionSlice.reducer;

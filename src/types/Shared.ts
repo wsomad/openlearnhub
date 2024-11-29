@@ -1,9 +1,9 @@
-import { Dispatch, SetStateAction } from 'react';
+import {Dispatch, SetStateAction} from 'react';
 
-import { Lesson } from './lesson';
-import { UserProfile } from './profile';
-import { Section } from './section';
-import { UserRole } from './user';
+import {Lesson} from './lesson';
+//import {UserProfile} from './profile';
+import {Section} from './section';
+import {UserRole} from './user';
 
 // 1. Types
 // Used for UI/display purposes
@@ -55,25 +55,25 @@ export interface ContentHandlers
 
 // 4. User Related
 // Minimal user properties needed.
-export interface BaseUser {
-    uid: string;
-    email: string;
-    role: UserRole;
-}
+// export interface BaseUser {
+//     uid: string;
+//     email: string;
+//     role: UserRole;
+// }
 
 // Used for components that can be edited based on permissions.
 export interface EditableProps {
     canEdit: boolean;
-    userType: ViewMode;
+    //userType: ViewMode;
 }
 
-// Global application state for current user.
-export interface AppUserState {
-    currentUserId: string;
-    userType: ViewMode;
-    currentRole: UserRole;
-    isLoading: boolean;
-    error: string | null;
-    isAuthenticated: boolean;
-    userData: UserProfile | null;
-}
+// // Global application state for current user.
+// export interface AppUserState {
+//     currentUserId: string;
+//     userType: ViewMode;
+//     currentRole: UserRole;
+//     isLoading: boolean;
+//     error: string | null;
+//     isAuthenticated: boolean;
+//     userData: UserProfile | null;
+// }

@@ -1,9 +1,10 @@
-import { IoCloseOutline } from 'react-icons/io5';
+import {IoCloseOutline} from 'react-icons/io5';
+import {useSections} from '../../hooks/useSections';
 
 interface ConfirmDeleteModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: () => void;
+    onConfirm: (section_id: string) => void;
     itemTitle: string;
     isSection: boolean;
 }
@@ -15,6 +16,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
     itemTitle,
     isSection,
 }) => {
+    const {selectedSection} = useSections();
     if (!isOpen) return null;
 
     return (
@@ -55,7 +57,9 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
                         </button>
                         <button
                             className='flex-1 py-3 rounded-3xl bg-delete text-white text-lg active:scale-[.98] font-abhaya'
-                            onClick={onConfirm}
+                            onClick={() =>
+                                onConfirm(selectedSection?.section_id || '')
+                            }
                             aria-label={`Confirm delete ${
                                 isSection ? 'section' : 'lesson'
                             }`}

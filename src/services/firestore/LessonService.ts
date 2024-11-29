@@ -8,27 +8,32 @@ import {
     deleteDoc,
 } from 'firebase/firestore';
 import {db} from '../../config/FirebaseConfiguration';
-import {Lesson} from '../../types/lesson';
+import {Lesson, LessonBase} from '../../types/lesson';
 
 /**
  * Add new lesson to specific section.
  * @param courseId
  * @param sectionId
- * @param lessonData
+ * @param lesson_data
  */
 export const addLesson = async (
     courseId: string,
     sectionId: string,
-    lessonData: Lesson,
+    lesson_data: LessonBase,
 ): Promise<void> => {
     try {
         const lessonDocRef = doc(
             collection(db, `courses/${courseId}/sections/${sectionId}/lessons`),
-            lessonData.lesson_id,
+            lesson_data.lesson_id,
         );
-        await setDoc(lessonDocRef, lessonData);
+        const lesson = {
+            ...lesson_data,
+            lesson_id: lessonDocRef.id,
+        } as Lesson;
+        await setDoc(lessonDocRef, lesson);
+
         console.log(
-            `Lesson ${lessonData.lesson_id} added successfully to section ${sectionId}.`,
+            `Lesson ${lesson_data.lesson_id} added successfully to section ${sectionId}.`,
         );
     } catch (error) {
         console.error('Error adding lesson:', error);
@@ -82,7 +87,7 @@ export const getLessonById = async (
 export const getAllLessons = async (
     course_id: string,
     section_id: string,
-): Promise<Lesson[]> => {
+): Promise<LessonBase[]> => {
     try {
         const lessonDocRef = collection(
             db,
@@ -92,7 +97,7 @@ export const getAllLessons = async (
         const lessons = snapshot.docs.map((doc) => ({
             lesson_id: doc.id,
             ...doc.data(),
-        })) as Lesson[];
+        })) as LessonBase[];
         console.log(
             `Successfully get all lessons: ${lessons} under section ${section_id}`,
         );
@@ -112,7 +117,7 @@ export const getAllLessons = async (
 export const updateLessonById = async (
     course_id: string,
     section_id: string,
-    lesson: Partial<Lesson>,
+    lesson: Partial<LessonBase>,
 ): Promise<Lesson | void> => {
     try {
         const lessonDocRef = doc(

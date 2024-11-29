@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {setUser, clearUser} from '../store/slices/authSlice';
+import {setUser, clearUser} from '../store/slices/userSlice';
 import {auth} from '../config/FirebaseConfiguration';
 import {addUser, getUserById} from '../services/firestore/UserService';
 import {
@@ -13,13 +13,16 @@ import {
 import {useNavigate} from 'react-router-dom';
 import {AppDispatch, RootState} from '../store/store';
 import {User} from '../types/user'; // Assuming you have a User type here.
+import {dicebearStyle} from '../types/avatar';
+import {generatedAvatarUrl} from '../api/dicebearApi';
+import {clearCourses} from '../store/slices/courseSlice';
 
 export const useAuth = () => {
     const dispatch = useDispatch<AppDispatch>();
     const navigate = useNavigate();
-    const user = useSelector((state: RootState) => state.auth.user);
+    const currentUser = useSelector((state: RootState) => state.user.user);
     const isAuthenticated = useSelector(
-        (state: RootState) => state.auth.isAuthenticated,
+        (state: RootState) => state.user.isAuthenticated,
     );
 
     /**
@@ -58,6 +61,40 @@ export const useAuth = () => {
         }
     };
 
+    const generateRandomProfilePicture = async (): Promise<string> => {
+        const styles: dicebearStyle[] = [
+            'adventurer',
+            'adventurer-neutral',
+            'avataaars',
+            'avataaars-neutral',
+            'big-ears',
+            'big-smile',
+            'bottts',
+            'bottts-neutral',
+            'croodles',
+            'croodles-neutral',
+            'dylan',
+            'fun-emoji',
+            'lorelei',
+            'lorelei-neutral',
+            'micah',
+            'miniavs',
+            'notionists',
+            'notionists-neutral',
+            'open-peeps',
+            'personas',
+            'pixel-art',
+            'pixel-art-neutral',
+            'rings',
+            'shapes',
+            'thumbs',
+        ];
+
+        const randomStyle = styles[Math.floor(Math.random() * styles.length)];
+        const randomSeed = Math.random().toString(36).substring(2, 15);
+        return generatedAvatarUrl(randomStyle, randomSeed);
+    };
+
     /**
      * SignUp function
      */
@@ -71,10 +108,19 @@ export const useAuth = () => {
                 email,
                 password,
             );
+            const randomProfilePicture = await generateRandomProfilePicture();
+
             const newUser: User = {
                 ...userProfile,
                 uid: userCredential.user.uid, // Add UID from Firebase
+                profile_image: randomProfilePicture,
             };
+
+            if (newUser.profile_image) {
+                console.log(
+                    '[USEAUTH] - Successfully generate random profile image for user.',
+                );
+            }
 
             await addUser(newUser); // Save user to Firestore
             console.log(
@@ -98,6 +144,7 @@ export const useAuth = () => {
         try {
             await signOut(auth);
             dispatch(clearUser());
+            dispatch(clearCourses());
             navigate('/auth');
         } catch (error: unknown) {
             console.error('Sign Out Error:', (error as Error).message);
@@ -123,5 +170,5 @@ export const useAuth = () => {
         return unsubscribe; // Cleanup the listener when the component unmounts
     }, [dispatch]);
 
-    return {user, isAuthenticated, signIn, signUp, signUserOut};
+    return {currentUser, isAuthenticated, signIn, signUp, signUserOut};
 };

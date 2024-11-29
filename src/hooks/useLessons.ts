@@ -31,10 +31,16 @@ export const useLessons = () => {
      * @param lesson
      */
     const createLessons = async (
-        courseId: string,
-        sectionId: string,
-        lesson: Lesson,
-    ) => {
+        courseId: string | null,
+        sectionId: string | null,
+        lesson: Lesson | null,
+    ): Promise<void> => {
+        if (!courseId || !sectionId || !lesson) {
+            console.error(
+                'Invalid arguments: courseId, sectionId, or lesson is null.',
+            );
+            return;
+        }
         try {
             await addLesson(courseId, sectionId, lesson);
             dispatch(setLessons([...allLessons, lesson]));
@@ -130,7 +136,7 @@ export const useLessons = () => {
      * @param section_id
      * @param lesson_id
      */
-    const deleteSection = async (
+    const deleteLesson = async (
         course_id: string,
         section_id: string,
         lesson_id: string,
@@ -147,10 +153,10 @@ export const useLessons = () => {
     return {
         selectedLesson,
         allLessons,
-        addLesson,
+        createLessons,
         fetchLessonById,
         fetchAllLessons,
         updateLesson,
-        deleteLessonById,
+        deleteLesson,
     };
 };

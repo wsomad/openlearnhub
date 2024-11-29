@@ -5,12 +5,14 @@ import {
     getCourseById,
     updateCourseById,
     deleteCourseById,
+    searchSpecificCourse,
 } from '../services/firestore/CourseService';
 import {
     setCourse,
     setCourses,
     modifyCourse,
     clearCourse,
+    setSearchCourseResult,
 } from '../store/slices/courseSlice';
 import {RootState} from '../store/store';
 import {Course} from '../types/course'; // Import the Course type
@@ -23,7 +25,8 @@ export const useCourses = () => {
     const allCourses = useSelector(
         (state: RootState) => state.courses.allCourses,
     );
-    const userRole = useSelector((state: RootState) => state.users.userRole);
+    const currentUser = useSelector((state: RootState) => state.user.user);
+    const userRole = useSelector((state: RootState) => state.user.userRole);
     const isInstructor = userRole === 'instructor';
 
     /**
@@ -49,9 +52,13 @@ export const useCourses = () => {
      * Fetch course by ID.
      * @param course_id
      */
-    const fetchCourseById = async (course_id: string): Promise<void> => {
+    const fetchCourseById = async (
+        course_id: string,
+        uid: string | null,
+        userRole: 'student' | 'instructor',
+    ): Promise<void> => {
         try {
-            const course = await getCourseById(course_id);
+            const course = await getCourseById(course_id, userRole, uid);
             if (course) {
                 dispatch(setCourse(course));
                 console.log('Course fetched successfully:', course);
@@ -65,19 +72,73 @@ export const useCourses = () => {
      * Fetch all courses.
      * @returns
      */
-    const fetchAllCourses = async (): Promise<void> => {
-        if (allCourses.length > 0) {
+    const fetchAllCourses = async (
+        uid: string | null,
+        userRole: 'student' | 'instructor',
+        filterType: 'default' | 'enrollment' | 'creator',
+        readyForPublish?: boolean,
+        limitCount?: number,
+    ): Promise<Course[]> => {
+        if (allCourses.length > 0 && filterType === 'default') {
             console.log('Courses already in Redux, skipping fetch.');
-            return;
+            return allCourses;
         }
         try {
-            const courses = await getAllCourses();
-            if (courses) {
-                dispatch(setCourses(courses));
-                console.log('All courses fetched successfully:', courses);
+            let coursesQuery = null;
+
+            if (limitCount && readyForPublish) {
+                coursesQuery = await getAllCourses(
+                    uid,
+                    userRole,
+                    filterType,
+                    readyForPublish,
+                    limitCount,
+                );
+            } else {
+                coursesQuery = await getAllCourses(uid, userRole, filterType);
+            }
+
+            if (coursesQuery) {
+                dispatch(setCourses(coursesQuery));
+                console.log('Courses fetched successfully:', coursesQuery);
+                return coursesQuery;
+            } else {
+                console.log('No courses found for the given filter.');
             }
         } catch (error) {
             console.error('Failed to fetch all courses:', error);
+        }
+        return [];
+    };
+
+    /**
+     * Search specific course with query.
+     * @param search_query
+     */
+    const searchCourse = async (
+        search_query: string,
+        uid: string,
+        user_role: 'student' | 'instructor',
+    ): Promise<Course[]> => {
+        try {
+            const resultSearch = await searchSpecificCourse(
+                search_query,
+                uid,
+                user_role,
+            );
+            if (resultSearch) {
+                dispatch(setSearchCourseResult(resultSearch));
+                console.log('Search courses found:', resultSearch);
+                return resultSearch;
+            } else {
+                return [];
+            }
+        } catch (error) {
+            console.error(
+                'Failed to search any courses with this query:',
+                error,
+            );
+            return [];
         }
     };
 
@@ -133,10 +194,12 @@ export const useCourses = () => {
     return {
         selectedCourse,
         allCourses,
+        currentUser,
         userRole,
         createCourse,
         fetchCourseById,
         fetchAllCourses,
+        searchCourse,
         updateCourse,
         deleteCourse,
     };
