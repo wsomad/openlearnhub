@@ -26,6 +26,9 @@ const ProfileComponent: React.FC<ProfileComponentProps> = ({
     const [username, setUsername] = useState<string>(userProfile.username);
     const [firstName, setFirstName] = useState<string>(userProfile.firstname);
     const [lastName, setLastName] = useState<string>(userProfile.lastname);
+    const [imageProfile, setImageProfile] = useState<string | null>(
+        userProfile.profile_image ?? null,
+    );
 
     // Student-specific fields
     const [studentType, setStudentType] = useState<StudentType>(
@@ -87,6 +90,7 @@ const ProfileComponent: React.FC<ProfileComponentProps> = ({
             username,
             firstname: firstName,
             lastname: lastName,
+            profile_image: imageProfile || '',
             student: {
                 ...userProfile.student,
                 student_type: studentType,
@@ -176,6 +180,19 @@ const ProfileComponent: React.FC<ProfileComponentProps> = ({
                                     }
                                     className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
                                     required
+                                />
+                            </div>
+                            <div className='col-span-2'>
+                                <label className='block text-lg font-medium text-gray-700'>
+                                    Profile Image
+                                </label>
+                                <input
+                                    type='text'
+                                    value={imageProfile || ''}
+                                    onChange={(e) =>
+                                        setImageProfile(e.target.value)
+                                    }
+                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
                                 />
                             </div>
                         </div>

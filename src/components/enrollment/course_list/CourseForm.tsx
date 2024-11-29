@@ -38,7 +38,7 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
         course_description: '',
         course_pricing: 0,
         course_requirements: [],
-        course_type: '',
+        course_type: 'Web Development',
         course_thumbnail_url: '',
         course_enrollment_number: 0,
         course_number_of_section: 0,

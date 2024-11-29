@@ -1,4 +1,5 @@
-import {LessonBase} from './lesson';
+import {Lesson, LessonBase} from './lesson';
+import {Quiz} from './quiz';
 
 export interface Section {
     section_id: string;

@@ -6,8 +6,10 @@ interface CardProps {
     thumbnailUrl: string;
     title: string;
     description: string;
-    pricing: number;
+    pricing?: number;
+    sectionsNumber: number;
     enrollmentNumber: number;
+    editMode?: boolean; // Determines if the card shows an "Edit" button for instructors
 }
 
 const CardDashboard: React.FC<CardProps> = ({
@@ -16,33 +18,94 @@ const CardDashboard: React.FC<CardProps> = ({
     title,
     description,
     pricing,
+    sectionsNumber,
     enrollmentNumber,
+    editMode = false,
 }) => {
     return (
-        <Link
-            to={`/course/${courseId}`}
-            className='block hover:shadow-lg transition-shadow'
+        <div
+            className={`bg-white border border-gray rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow ${
+                editMode
+                    ? 'min-h-[400px] w-full sm:w-[300px]'
+                    : 'min-h-[300px] w-full sm:w-[400px]'
+            } flex flex-col`}
         >
-            <div className='bg-white rounded-lg overflow-hidden shadow'>
-                <img
-                    src={thumbnailUrl}
-                    alt={title}
-                    className='w-full h-[200px] object-cover'
-                />
-                <div className='p-4'>
-                    <h4 className='text-xl font-semibold mb-2'>{title}</h4>
-                    <p className='text-gray-600 text-sm mb-2'>{description}</p>
-                    <div className='flex justify-between items-center'>
-                        <span className='text-primary font-semibold'>
-                            RM {pricing}
-                        </span>
-                        <span className='text-gray-500 text-sm'>
-                            {enrollmentNumber} students
-                        </span>
-                    </div>
+            {/* Course Image */}
+            <img
+                src={thumbnailUrl}
+                alt={title}
+                className={`w-full object-cover transition-all ${
+                    editMode
+                        ? 'h-[150px] sm:h-[150px]'
+                        : 'h-[200px] sm:h-[200px]'
+                }`}
+            />
+
+            {/* Course Info */}
+            <div className='p-4 flex flex-col h-full'>
+                {/* Title */}
+                <div className='mb-2 flex-grow-0' style={{minHeight: '50px'}}>
+                    <h4
+                        className={`font-semibold mb-2 ${
+                            editMode
+                                ? 'text-lg sm:text-xl'
+                                : 'text-lg sm:text-xl'
+                        }`}
+                    >
+                        {title}
+                    </h4>
                 </div>
+
+                {/* Description */}
+                <div
+                    className='flex-grow mb-4'
+                    style={{display: 'flex', alignItems: 'flex-start'}}
+                >
+                    <p
+                        className={`text-sm sm:text-base mb-2 ${
+                            editMode ? 'text-gray-700' : 'text-gray-600'
+                        }`}
+                        style={{
+                            flex: 1,
+                            wordBreak: 'break-word',
+                            minHeight: '40px',
+                        }}
+                    >
+                        {description}
+                    </p>
+                </div>
+
+                {/* Course Details */}
+                <div className='flex justify-between items-center mb-4'>
+                    {editMode ? (
+                        <span className='text-gray-500 text-sm sm:text-base'>
+                            {sectionsNumber} Sections
+                        </span>
+                    ) : (
+                        pricing && (
+                            <span className='text-primary font-semibold text-sm sm:text-base'>
+                                RM {pricing}
+                            </span>
+                        )
+                    )}
+                    <span className='text-gray-500 text-sm sm:text-base'>
+                        {enrollmentNumber} students
+                    </span>
+                </div>
+
+                {/* Edit Button Only Visible When editMode */}
+                {editMode && (
+                    <div className='mt-auto'>
+                        <Link
+                            to={`/instructor/courses/${courseId}/edit`}
+                            className='block text-center bg-primary text-white py-2 rounded-full hover:bg-primary-dark transition-colors'
+                        >
+                            Edit
+                        </Link>
+                    </div>
+                )}
             </div>
-        </Link>
+        </div>
     );
 };
 

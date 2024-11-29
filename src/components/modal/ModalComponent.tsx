@@ -149,6 +149,7 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
         }
         return url;
     };
+
     useEffect(() => {
         if (initialData) {
             setLessonTitle(initialData.lesson_title);

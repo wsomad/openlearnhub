@@ -1,8 +1,9 @@
+// CreateCoursePage.tsx
 import React from 'react';
 import HeaderComponent from '../../../components/HeaderComponent';
 import CourseForm from '../../../components/enrollment/course_list/CourseForm';
 
-const CreateCoursePage: React.FC = ({}) => {
+const CreateCoursePage: React.FC = () => {
     return (
         <div>
             <HeaderComponent></HeaderComponent>

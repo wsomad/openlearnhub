@@ -212,6 +212,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                             thumbnailUrl={course.course_thumbnail_url}
                             title={course.course_title}
                             description={course.course_description}
+                            sectionsNumber={course.course_number_of_section}
                             pricing={course.course_pricing}
                             enrollmentNumber={course.course_enrollment_number}
                         />

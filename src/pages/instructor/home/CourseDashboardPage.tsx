@@ -4,10 +4,14 @@ import {Link} from 'react-router-dom';
 import {User} from '../../../types/user';
 import {useCourses} from '../../../hooks/useCourses';
 import {useUser} from '../../../hooks/useUser';
-import HeaderComponent from '../../../components/HeaderComponent';
 import {useDispatch, useSelector} from 'react-redux';
-import SearchComponent from '../../../components/SearchComponent';
+import HeaderComponent from '../../../components/HeaderComponent';
 import {clearCourses} from '../../../store/slices/courseSlice';
+import SearchComponent from '../../../components/SearchComponent';
+
+interface CourseDashboardProps {
+    userId: string;
+}
 
 const CourseDashboardPage: React.FC = () => {
     const {allCourses, fetchAllCourses} = useCourses();

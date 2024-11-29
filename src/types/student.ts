@@ -3,7 +3,7 @@ import { User } from './user';
 
 export interface Student extends Omit<User, 'role'> {
     student_type: StudentType;
-    enrollment_date: Date;
+    enrollment_date: Date; //after signing up
     completed_courses: number;
     courses_enrolled: number;
     completion_status: boolean;

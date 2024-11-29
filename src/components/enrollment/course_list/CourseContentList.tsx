@@ -1,7 +1,5 @@
 import {useEffect, useState} from 'react';
 import {FaPlus} from 'react-icons/fa';
-import {useCourses} from '../../../hooks/useCourses';
-import {useSections} from '../../../hooks/useSections';
 import {Lesson} from '../../../types/lesson';
 import {Section} from '../../../types/section';
 import AddSectionModal from '../../modal/AddSectionModal';
@@ -9,6 +7,8 @@ import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 import CourseContentView from './CourseContentView';
 import {useUser} from '../../../hooks/useUser';
 import {clearSingleSection} from '../../../store/slices/sectionSlice';
+import {useCourses} from '../../../hooks/useCourses';
+import {useSections} from '../../../hooks/useSections';
 
 interface CourseContentListProps {
     course_id: string;
@@ -23,13 +23,11 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     setSectionsOrder,
     onSaveOrder,
 }) => {
-    const {selectedCourse, createCourse, fetchCourseById} = useCourses();
+    const {selectedCourse} = useCourses();
     const {
         allSections,
         selectedSection,
         createSections,
-        fetchSectionById,
-        fetchAllSections,
         updateSection,
         deleteSection,
     } = useSections();
@@ -37,7 +35,6 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] =
         useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
 
     // Initialize local state management for section.
     const [sectionData, setSectionData] = useState<Section[]>([
@@ -88,7 +85,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
 
     // Handle add function to add section.
     const handleAddSection = async (
-        newSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
+        newSection: Omit<Section, 'section_id' | 'lessons'>,
     ): Promise<void> => {
         if (!canEditCourse()) return;
 

@@ -3,6 +3,8 @@ import {IoCloseOutline} from 'react-icons/io5';
 import {useDispatch} from 'react-redux';
 import {clearSingleSection} from '../../store/slices/sectionSlice';
 
+import { Section } from '../../types/section';
+
 interface EditSectionModalProps {
     isOpen: boolean;
     onClose: () => void;

@@ -67,14 +67,10 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
     const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
     const [isEditTitleModalOpen, setIsEditTitleModalOpen] =
         useState<boolean>(false);
+    const {userRole} = useUser();
     const {selectedCourse} = useCourses();
     const {selectedSection} = useSections();
     const {selectedLesson, createLessons} = useLessons();
-    const {userRole} = useUser();
-
-    //const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
-    // const currentState = useSelector((state) => state);
-    // console.log('Current State from Selector:', currentState);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -92,7 +88,7 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
         if (over && active.id !== over.id) {
             onEditLesson(section.section_id, active.id as string, {
                 lesson_order:
-                    section?.lessons?.findIndex(
+                    section.lessons.findIndex(
                         (lesson) => lesson.lesson_id === over.id,
                     ) + 1,
             });
@@ -140,47 +136,61 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
     const handleModalSubmit = (
         lessonData: Partial<DocumentLesson | VideoLesson | QuizLesson>,
     ): void => {
-        if (!canEdit) return;
-        if (modalType === 'edit' && selectedLesson) {
-            onEditLesson(
-                section.section_id,
-                selectedLesson.lesson_id,
-                lessonData,
-            );
-        } else if (modalType === 'add' && lessonData.lesson_type) {
-            const baseLesson = {
-                lesson_title: lessonData.lesson_title || '',
-                section_id: section.section_id,
-                lesson_order: section.lessons.length + 1,
-            };
+        interface NewDocumentLesson extends Omit<DocumentLesson, 'lesson_id'> {}
+        interface NewVideoLesson extends Omit<VideoLesson, 'lesson_id'> {}
+        interface NewQuizLesson extends Omit<QuizLesson, 'lesson_id'> {}
 
-            let newLesson: NewDocumentLesson | NewVideoLesson | NewQuizLesson;
+        const handleModalSubmit = (
+            lessonData: Partial<DocumentLesson | VideoLesson | QuizLesson>,
+        ): void => {
+            if (!canEdit) return;
+            if (modalType === 'edit' && selectedLesson) {
+                onEditLesson(
+                    section.section_id,
+                    selectedLesson.lesson_id,
+                    lessonData,
+                );
+            } else if (modalType === 'add' && lessonData.lesson_type) {
+                const baseLesson = {
+                    lesson_title: lessonData.lesson_title || '',
+                    section_id: section.section_id,
+                    lesson_order: section.lessons.length + 1,
+                };
 
-            if (lessonData.lesson_type === 'document') {
-                newLesson = {
-                    ...baseLesson,
-                    lesson_type: 'document',
-                    document_url: (lessonData as DocumentLesson).document_url,
-                };
-            } else if (lessonData.lesson_type === 'video') {
-                newLesson = {
-                    ...baseLesson,
-                    lesson_type: 'video',
-                    video_url: (lessonData as VideoLesson).video_url,
-                    video_duration: (lessonData as VideoLesson).video_duration,
-                };
-            } else if (lessonData.lesson_type === 'quiz') {
-                newLesson = {
-                    ...baseLesson,
-                    lesson_type: 'quiz',
-                    quiz: (lessonData as QuizLesson).quiz,
-                };
-            } else {
-                throw new Error('Invalid lesson type');
+                let newLesson:
+                    | NewDocumentLesson
+                    | NewVideoLesson
+                    | NewQuizLesson;
+
+                if (lessonData.lesson_type === 'document') {
+                    newLesson = {
+                        ...baseLesson,
+                        lesson_type: 'document',
+                        document_url: (lessonData as DocumentLesson)
+                            .document_url,
+                    };
+                } else if (lessonData.lesson_type === 'video') {
+                    newLesson = {
+                        ...baseLesson,
+                        lesson_type: 'video',
+                        video_url: (lessonData as VideoLesson).video_url,
+                        video_duration: (lessonData as VideoLesson)
+                            .video_duration,
+                    };
+                } else if (lessonData.lesson_type === 'quiz') {
+                    newLesson = {
+                        ...baseLesson,
+                        lesson_type: 'quiz',
+                        quiz: (lessonData as QuizLesson).quiz,
+                    };
+                } else {
+                    throw new Error('Invalid lesson type');
+                }
+                onAddLesson(section.section_id, newLesson);
             }
-            onAddLesson(section.section_id, newLesson);
-        }
-        closeModal();
+
+            closeModal();
+        };
     };
 
     const openDeleteModal = (lessonId: string, e: React.MouseEvent): void => {
