@@ -1,20 +1,27 @@
-import {useDispatch, useSelector} from 'react-redux';
-import {RootState} from '../store/store';
-import {Section} from '../types/section';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
-    addSections,
-    deleteSectionById,
-    getAllSections,
-    getSectionById,
-    updateSectionById,
+	deleteLessonById,
+	getAllLessons,
+} from '../services/firestore/LessonService';
+import {
+	addSections,
+	deleteSectionById,
+	getAllSections,
+	getSectionById,
+	updateSectionById,
 } from '../services/firestore/SectionService';
 import {
-    clearSection,
-    clearSections,
-    modifySection,
-    setSection,
-    setSections,
+	clearSection,
+	clearSections,
+	clearSingleSection,
+	modifySection,
+	resetSectionState,
+	setSection,
+	setSections,
 } from '../store/slices/sectionSlice';
+import { RootState } from '../store/store';
+import { Section } from '../types/section';
 
 export const useSections = () => {
     const dispatch = useDispatch();
@@ -32,7 +39,7 @@ export const useSections = () => {
      */
     const createSections = async (
         course_id: string,
-        section: Section,
+        section: Omit<Section, 'section_id'>,
     ): Promise<void> => {
         // try {
         //     await addSection(course_id, section);
@@ -42,7 +49,11 @@ export const useSections = () => {
         //     console.error('Failed to create section: ', error);
         // }
         try {
-            const addedSection = await addSections(course_id, section); // Assuming addSection supports arrays
+            const newSection = {
+                ...section,
+                section_id: '', // This will be set by Firebase
+            };
+            const addedSection = await addSections(course_id, newSection);
             // dispatch(setSections([...allSections, sections]));
             dispatch(setSection(addedSection));
             console.log('Sections created successfully:');
@@ -76,10 +87,6 @@ export const useSections = () => {
      * @param course_id
      */
     const fetchAllSections = async (course_id: string): Promise<void> => {
-        if (allSections.length > 0) {
-            console.log('Sections already in Redux, skipping fetch.');
-            return;
-        }
         try {
             const sections = await getAllSections(course_id);
             if (sections) {
@@ -114,7 +121,7 @@ export const useSections = () => {
 
                 dispatch(
                     modifySection({
-                        id: course_id,
+                        id: section_id,
                         updatedSectionObject: updates,
                     }),
                 );
@@ -202,16 +209,61 @@ export const useSections = () => {
         section_id: string | null,
     ): Promise<void> => {
         try {
+            // Validate input
             if (!course_id || !section_id) {
                 console.error('Both course id and section id are required.');
                 return;
             }
+
+            // First delete all lessons in the section
+            const sectionLessons = await getAllLessons(course_id, section_id);
+            await Promise.all(
+                sectionLessons.map((lesson) =>
+                    deleteLessonById(course_id, section_id, lesson.lesson_id),
+                ),
+            );
+
+            // Delete the section itself
             await deleteSectionById(course_id, section_id);
+
+            // Get remaining sections and reorder them
+            const sections = await getAllSections(course_id);
+            const remainingSections = sections
+                .filter((s) => s.section_id !== section_id)
+                .sort((a, b) => a.section_order - b.section_order)
+                .map((s, idx) => ({
+                    ...s,
+                    section_order: idx + 1,
+                }));
+
+            // Update each section's order in Firebase
+            await updateSectionById(course_id, section_id, remainingSections);
+
+            // Update Redux store
+            dispatch(setSections(remainingSections));
             dispatch(clearSection(section_id));
+
             console.log('Section deleted successfully.');
         } catch (error) {
             console.error('Failed to delete section:', error);
+            throw error;
         }
+    };
+
+    const setSelectedSection = (section: Section) => {
+        dispatch(setSection(section));
+    };
+
+    const clearSelectedSection = () => {
+        dispatch(clearSingleSection());
+    };
+
+    const clearAllSections = () => {
+        dispatch(clearSections());
+    };
+
+    const resetSectionsState = () => {
+        dispatch(resetSectionState());
     };
 
     return {
@@ -222,5 +274,9 @@ export const useSections = () => {
         fetchAllSections,
         updateSection,
         deleteSection,
+        setSelectedSection,
+        clearSelectedSection,
+        clearAllSections,
+        resetSectionsState,
     };
 };

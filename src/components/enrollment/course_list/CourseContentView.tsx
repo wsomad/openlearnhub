@@ -569,26 +569,28 @@
 
 // export default CourseContentView;
 
-import React, {useEffect, useState} from 'react';
+import React from 'react';
+
 import {
-    closestCenter,
-    DndContext,
-    DragEndEvent,
-    KeyboardSensor,
-    PointerSensor,
-    useSensor,
-    useSensors,
+	closestCenter,
+	DndContext,
+	DragEndEvent,
+	KeyboardSensor,
+	PointerSensor,
+	useSensor,
+	useSensors,
 } from '@dnd-kit/core';
 import {
-    arrayMove,
-    SortableContext,
-    sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
+	arrayMove,
+	SortableContext,
+	sortableKeyboardCoordinates,
+	verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import {Section} from '../../../types/section';
-import {useSections} from '../../../hooks/useSections';
-import {useUser} from '../../../hooks/useUser';
-import {Lesson} from '../../../types/lesson';
+
+import { useSections } from '../../../hooks/useSections';
+import { useUser } from '../../../hooks/useUser';
+import { Lesson, LessonBase } from '../../../types/lesson';
+import { Section } from '../../../types/section';
 import SortableCourseSection from './SortableCourseSection';
 
 interface CourseContentViewProps {
@@ -598,17 +600,14 @@ interface CourseContentViewProps {
     setSectionsOrder: React.Dispatch<React.SetStateAction<Section[]>>; // Receive state updater
     onSaveOrder: () => void;
     onDeleteSection: (section_id: string) => void;
-    onEditSectionTitle: (section_id: string, new_title: string) => void;
-    onAddLesson: (
+    onEditSectionTitle: (
         section_id: string,
-        lesson: Omit<Lesson, 'lesson_id'>,
+        updatedSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
     ) => void;
-    onEditLesson: (
-        section_id: string,
-        lesson_id: string,
-        updatedLesson: Partial<Lesson>,
-    ) => void;
-    onDeleteLesson: (section_id: string, lesson_id: string) => void;
+    onAddLesson: (section_id: string, lesson: LessonBase) => Promise<void>;
+    onEditLesson: (section_id: string, lesson: LessonBase) => Promise<void>;
+    onDeleteLesson: (section_id: string, lesson_id: string) => Promise<void>;
+    onLessonSelect?: (lesson: LessonBase) => void;
 }
 
 const CourseContentView: React.FC<CourseContentViewProps> = ({
@@ -622,6 +621,7 @@ const CourseContentView: React.FC<CourseContentViewProps> = ({
     onAddLesson,
     onEditLesson,
     onDeleteLesson,
+    onLessonSelect,
 }) => {
     const sensors = useSensors(
         useSensor(PointerSensor, {activationConstraint: {distance: 8}}),
@@ -753,6 +753,7 @@ const CourseContentView: React.FC<CourseContentViewProps> = ({
                             onAddLesson={onAddLesson}
                             onEditLesson={onEditLesson}
                             onDeleteLesson={onDeleteLesson}
+                            onLessonSelect={onLessonSelect}
                         />
                     ))}
                 </SortableContext>

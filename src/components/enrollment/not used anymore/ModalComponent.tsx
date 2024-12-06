@@ -1,14 +1,15 @@
-import {useEffect, useRef, useState} from 'react';
-import {FiUploadCloud} from 'react-icons/fi';
-import {IoCloseOutline} from 'react-icons/io5';
+import { useEffect, useRef, useState } from 'react';
+import { FiUploadCloud } from 'react-icons/fi';
+import { IoCloseOutline } from 'react-icons/io5';
 
 import {
-    DocumentLesson,
-    LessonBase,
-    QuizLesson,
-    VideoLesson,
-} from '../../types/lesson';
-import {Quiz} from '../../types/quiz';
+	DocumentLesson,
+	LessonBase,
+	QuizLesson,
+	VideoLesson,
+} from '../../../types/lesson';
+import { Quiz } from '../../../types/quiz';
+import QuizPanel from './QuizPanel';
 
 interface ModalComponentProps {
     isOpen: boolean;
@@ -198,22 +199,29 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
     };
 
     const PreviewPanel = () => {
-        if (lessonType === 'video' && videoUrl) {
-            const processedVideoUrl = processVideoUrl(videoUrl);
+        if (lessonType === 'video') {
             return (
                 <div className='h-full'>
                     <h3 className='font-abhaya text-lg font-medium mb-2'>
                         Video Preview
                     </h3>
-                    <div className='bg-black overflow-hidden aspect-video'>
-                        <iframe
-                            src={processedVideoUrl}
-                            className='w-full h-full'
-                            allowFullScreen
-                            allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
-                            title='Video preview'
-                        />
-                    </div>
+                    {videoUrl ? (
+                        <div className='bg-black overflow-hidden aspect-video'>
+                            <iframe
+                                src={processVideoUrl(videoUrl)}
+                                className='w-full h-full'
+                                allowFullScreen
+                                allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+                                title='Video preview'
+                            />
+                        </div>
+                    ) : (
+                        <div className='flex items-center justify-center h-64 bg-gray-100 rounded-lg'>
+                            <p className='text-gray-500'>
+                                Enter a video URL to see preview
+                            </p>
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -239,7 +247,7 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
                         <button
                             type='button'
                             onClick={triggerFileUpload}
-                            className='px-4 py-2 bg-secondary flex items-center gap-2 hover:bg-gray-300 transition-colors  text-white'
+                            className='px-4 py-2 bg-secondary flex items-center gap-2 hover:bg-gray-300 transition-colors text-white'
                         >
                             <FiUploadCloud className='text-xl' />
                             Upload File
@@ -270,11 +278,13 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
                     <div className='bg-white rounded-xl overflow-hidden h-[500px] relative'>
                         {uploadedFile ? (
                             uploadedFile.type === 'application/pdf' ? (
-                                <iframe
-                                    src={filePreviewUrl}
+                                <object
+                                    data={filePreviewUrl}
+                                    type='application/pdf'
                                     className='w-full h-full'
-                                    title='PDF preview'
-                                />
+                                >
+                                    <p>PDF preview not available</p>
+                                </object>
                             ) : (
                                 <div className='flex flex-col items-center justify-center h-full p-4'>
                                     <div className='p-6 bg-gray-50 rounded-xl text-center'>
@@ -293,11 +303,13 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
                                 </div>
                             )
                         ) : documentUrl ? (
-                            <iframe
-                                src={documentUrl}
+                            <object
+                                data={documentUrl}
+                                type='application/pdf'
                                 className='w-full h-full'
-                                title='Document preview'
-                            />
+                            >
+                                <p>Document preview not available</p>
+                            </object>
                         ) : null}
                     </div>
                 </div>
@@ -311,53 +323,73 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
         );
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
+    const handleSubmit = async (
+        e: React.FormEvent<HTMLFormElement>,
+    ): Promise<void> => {
+        // Important: Prevent form submission first thing
         e.preventDefault();
+        e.stopPropagation();
 
         if (!lessonTitle) {
             alert('Title is required.');
             return;
         }
 
-        let lessonData: NewDocumentLesson | NewVideoLesson | NewQuizLesson;
+        try {
+            let lessonData: NewDocumentLesson | NewVideoLesson | NewQuizLesson;
 
-        switch (lessonType) {
-            case 'document':
-                if (!documentUrl && !uploadedFile) {
-                    alert('Please provide a document URL or upload a file.');
-                    return;
-                }
-                lessonData = {
-                    lesson_title: lessonTitle,
-                    lesson_type: 'document',
-                    document_url: documentUrl,
-                };
-                break;
-            case 'video':
-                if (!videoUrl) {
-                    alert('Video URL is required.');
-                    return;
-                }
-                lessonData = {
-                    lesson_title: lessonTitle,
-                    lesson_type: 'video',
-                    video_url: videoUrl,
-                    video_duration: videoDuration,
-                };
-                break;
-            case 'quiz':
-                lessonData = {
-                    lesson_title: lessonTitle,
-                    lesson_type: 'quiz',
-                    quiz: quiz,
-                };
-                break;
-            default:
-                throw new Error('Invalid lesson type');
+            switch (lessonType) {
+                case 'video':
+                    if (!videoUrl) {
+                        alert('Video URL is required.');
+                        return;
+                    }
+                    lessonData = {
+                        lesson_title: lessonTitle,
+                        lesson_type: 'video',
+                        video_url: processVideoUrl(videoUrl),
+                        video_duration: videoDuration,
+                    };
+                    break;
+
+                case 'document':
+                    if (!documentUrl && !uploadedFile) {
+                        alert(
+                            'Please provide a document URL or upload a file.',
+                        );
+                        return;
+                    }
+                    lessonData = {
+                        lesson_title: lessonTitle,
+                        lesson_type: 'document',
+                        document_url: documentUrl,
+                    };
+                    break;
+
+                case 'quiz':
+                    lessonData = {
+                        lesson_title: lessonTitle,
+                        lesson_type: 'quiz',
+                        quiz: quiz,
+                    };
+                    break;
+
+                default:
+                    throw new Error('Invalid lesson type');
+            }
+
+            console.log('Submitting lesson:', lessonData);
+
+            // Call onSubmit and wait for it to complete
+            await onSubmit(lessonData);
+
+            console.log('Lesson submitted successfully');
+            handleClose();
+        } catch (error) {
+            console.error('Error submitting lesson:', error);
+            // Handle the error, e.g., show an error message in the UI
+            alert('Failed to create lesson. Please try again.');
         }
-
-        onSubmit(lessonData);
-        handleClose();
     };
 
     if (!isOpen) return null;
@@ -384,8 +416,8 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
                             </button>
                         </div>
 
-                        <form className='w-full' onSubmit={handleSubmit}>
-                            <div className='space-y-4'>
+                        <div className='w-full'>
+                            <form onSubmit={handleSubmit} className='space-y-4'>
                                 <div>
                                     <label className='font-abhaya text-lg font-medium mb-1 block'>
                                         Lesson Title *
@@ -501,14 +533,7 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
                                     </>
                                 )}
 
-                                {lessonType === 'quiz' && (
-                                    <div>
-                                        <p className='text-gray-500 italic'>
-                                            Quiz configuration will be handled
-                                            in a separate interface.
-                                        </p>
-                                    </div>
-                                )}
+                                {lessonType === 'quiz' && <div></div>}
 
                                 <div className='mt-8'>
                                     <button
@@ -520,13 +545,15 @@ const ModalComponent: React.FC<ModalComponentProps> = ({
                                             : 'Add Lesson'}
                                     </button>
                                 </div>
-                            </div>
-                        </form>
+                            </form>
+                        </div>
                     </div>
 
                     {/* Preview Section */}
                     <div className='w-1/2 bg-gray-50 p-6'>
-                        <PreviewPanel />
+                        {lessonType === 'quiz' && (
+                            <QuizPanel quiz={quiz} setQuiz={setQuiz} />
+                        )}
                     </div>
                 </div>
             </div>

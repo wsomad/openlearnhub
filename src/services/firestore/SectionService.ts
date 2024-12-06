@@ -1,15 +1,16 @@
 import {
-    collection,
-    deleteDoc,
-    doc,
-    getDoc,
-    getDocs,
-    setDoc,
-    updateDoc,
-    writeBatch,
+	collection,
+	deleteDoc,
+	doc,
+	getDoc,
+	getDocs,
+	setDoc,
+	updateDoc,
+	writeBatch,
 } from 'firebase/firestore';
-import {Section} from '../../types/section';
-import {db} from '../../config/FirebaseConfiguration';
+
+import { db } from '../../config/FirebaseConfiguration';
+import { Section } from '../../types/section';
 
 /**
  * Add new section to specific course.
@@ -162,7 +163,10 @@ export const updateSectionById = async (
                         db,
                         `courses/${course_id}/sections/${updatedData.section_id}`,
                     );
-                    batch.update(sectionDocRef, {...updatedData});
+                    batch.update(sectionDocRef, {
+                        ...updatedData,
+                        section_order: updatedData.section_order,
+                    });
                 } else {
                     console.warn(
                         'Skipping update for a section without an ID.',

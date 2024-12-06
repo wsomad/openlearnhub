@@ -1,51 +1,39 @@
-import {useState} from 'react';
-import {FaAngleDown, FaAngleRight} from 'react-icons/fa';
-import {FaPlus} from 'react-icons/fa6';
-import {MdDeleteOutline, MdEditNote} from 'react-icons/md';
+import { useState } from 'react';
+import { FaAngleDown, FaAngleRight } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa6';
+import { MdDeleteOutline, MdEditNote } from 'react-icons/md';
+import { useDispatch } from 'react-redux';
 
+import { useCourses } from '../../../hooks/useCourses';
+import { useLessons } from '../../../hooks/useLessons';
+import { useUser } from '../../../hooks/useUser';
+import { clearSingleLesson } from '../../../store/slices/lessonSlice';
 import {
-    DocumentLesson,
-    LessonBase,
-    QuizLesson,
-    VideoLesson,
+	DocumentLesson,
+	LessonBase,
+	QuizLesson,
+	VideoLesson,
 } from '../../../types/lesson';
-import {Section} from '../../../types/section';
-import {
-    BaseLessonHandlers,
-    BaseSectionHandlers,
-    EditableProps,
-} from '../../../types/Shared';
-import {useCourses} from '../../../hooks/useCourses';
-import {useSections} from '../../../hooks/useSections';
-import {useLessons} from '../../../hooks/useLessons';
-import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
-import EditSectionModal from '../../modal/EditSectionModal';
-import ModalComponent from '../../modal/ModalComponent';
-import {
-    closestCenter,
-    DndContext,
-    DragEndEvent,
-    KeyboardSensor,
-    PointerSensor,
-    useSensor,
-    useSensors,
-} from '@dnd-kit/core';
-import {
-    SortableContext,
-    sortableKeyboardCoordinates,
-    verticalListSortingStrategy,
-} from '@dnd-kit/sortable';
-import SortableLesson from './SortableLesson';
-import {useUser} from '../../../hooks/useUser';
+import { Section } from '../../../types/section';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
+import EditSectionModal from './EditSectionModal';
+import ModalComponent from './ModalComponent';
 
-interface CourseLessonProps
-    extends EditableProps,
-        BaseLessonHandlers,
-        BaseSectionHandlers {
+interface CourseLessonProps {
     section: Section;
     index: number;
     lessonCount: number;
     totalDuration: number;
+    canEdit: boolean;
+    onDeleteSection: (sectionId: string) => void;
+    onEditSectionTitle: (sectionId: string, newTitle: string) => void;
+    onAddLesson: (sectionId: string, lesson: LessonBase) => Promise<void>;
+    onEditLesson: (
+        sectionId: string,
+        lessonId: string,
+        updatedLesson: Partial<LessonBase>,
+    ) => void;
+    onDeleteLesson: (sectionId: string, lessonId: string) => void;
 }
 
 const CourseLesson: React.FC<CourseLessonProps> = ({
@@ -60,6 +48,7 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
     onEditLesson,
     onDeleteLesson,
 }) => {
+    const dispatch = useDispatch();
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -69,128 +58,88 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
         useState<boolean>(false);
     const {userRole} = useUser();
     const {selectedCourse} = useCourses();
-    const {selectedSection} = useSections();
     const {selectedLesson, createLessons} = useLessons();
 
-    const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
-        }),
-    );
+    // Ensure section.lessons is initialized as an array
+    const lessons = section.lessons || [];
 
-    const handleDragEnd = (event: DragEndEvent) => {
-        const {active, over} = event;
-        if (over && active.id !== over.id) {
-            onEditLesson(section.section_id, active.id as string, {
-                lesson_order:
-                    section.lessons.findIndex(
-                        (lesson) => lesson.lesson_id === over.id,
-                    ) + 1,
-            });
-        }
-    };
-
-    const toggleSection = (
-        e: React.MouseEvent<HTMLDivElement | HTMLButtonElement>,
-        isEditButton: boolean = false,
-    ): void => {
-        if (!isEditButton && userRole === 'instructor' && !canEdit) return;
+    const toggleSection = (e: React.MouseEvent): void => {
+        e.preventDefault();
         e.stopPropagation();
+        if (userRole === 'instructor' && !canEdit) return;
         setIsOpen(!isOpen);
     };
 
     const openModal = (lesson: LessonBase): void => {
         if (!canEdit) return;
-        createLessons(
-            selectedCourse?.course_id || null,
-            selectedSection?.section_id || null,
-            lesson || null,
-        );
         setModalType('edit');
         setIsModalOpen(true);
+        if (selectedCourse?.course_id) {
+            createLessons(selectedCourse.course_id, section.section_id, lesson);
+        }
     };
 
     const openAddModal = (e: React.MouseEvent): void => {
-        if (!canEdit) return;
-        e.stopPropagation();
         e.preventDefault();
-        createLessons(null, null, null);
+        e.stopPropagation();
+        if (!canEdit) return;
+
         setModalType('add');
         setIsModalOpen(true);
+        dispatch(clearSingleLesson());
     };
 
     const closeModal = (): void => {
         setIsModalOpen(false);
-        createLessons(null, null, null);
+        dispatch(clearSingleLesson());
     };
 
-    interface NewDocumentLesson extends Omit<DocumentLesson, 'lesson_id'> {}
-    interface NewVideoLesson extends Omit<VideoLesson, 'lesson_id'> {}
-    interface NewQuizLesson extends Omit<QuizLesson, 'lesson_id'> {}
-
-    const handleModalSubmit = (
+    const handleModalSubmit = async (
         lessonData: Partial<DocumentLesson | VideoLesson | QuizLesson>,
-    ): void => {
-        interface NewDocumentLesson extends Omit<DocumentLesson, 'lesson_id'> {}
-        interface NewVideoLesson extends Omit<VideoLesson, 'lesson_id'> {}
-        interface NewQuizLesson extends Omit<QuizLesson, 'lesson_id'> {}
+    ): Promise<void> => {
+        if (!canEdit || !selectedCourse?.course_id) {
+            console.error('Cannot add lesson: No course ID or edit permission');
+            return;
+        }
 
-        const handleModalSubmit = (
-            lessonData: Partial<DocumentLesson | VideoLesson | QuizLesson>,
-        ): void => {
-            if (!canEdit) return;
-            if (modalType === 'edit' && selectedLesson) {
-                onEditLesson(
-                    section.section_id,
-                    selectedLesson.lesson_id,
-                    lessonData,
-                );
-            } else if (modalType === 'add' && lessonData.lesson_type) {
-                const baseLesson = {
-                    lesson_title: lessonData.lesson_title || '',
-                    section_id: section.section_id,
-                    lesson_order: section.lessons.length + 1,
-                };
-
-                let newLesson:
-                    | NewDocumentLesson
-                    | NewVideoLesson
-                    | NewQuizLesson;
-
-                if (lessonData.lesson_type === 'document') {
-                    newLesson = {
-                        ...baseLesson,
-                        lesson_type: 'document',
-                        document_url: (lessonData as DocumentLesson)
-                            .document_url,
-                    };
-                } else if (lessonData.lesson_type === 'video') {
-                    newLesson = {
-                        ...baseLesson,
-                        lesson_type: 'video',
-                        video_url: (lessonData as VideoLesson).video_url,
-                        video_duration: (lessonData as VideoLesson)
-                            .video_duration,
-                    };
-                } else if (lessonData.lesson_type === 'quiz') {
-                    newLesson = {
-                        ...baseLesson,
-                        lesson_type: 'quiz',
-                        quiz: (lessonData as QuizLesson).quiz,
-                    };
-                } else {
-                    throw new Error('Invalid lesson type');
-                }
-                onAddLesson(section.section_id, newLesson);
-            }
-
+        try {
+            const newLesson = createLessonFromData(
+                lessonData,
+                section.section_id,
+            );
+            await onAddLesson(section.section_id, newLesson);
+            console.log('Lesson added successfully');
+            setIsOpen(true); // Open the section to show the new lesson
             closeModal();
-        };
+        } catch (error) {
+            console.error('Error adding lesson:', error);
+            // Handle the error, e.g., show an error message in the UI
+            throw error;
+        }
+    };
+
+    const createLessonFromData = (
+        lessonData: Partial<DocumentLesson | VideoLesson | QuizLesson>,
+        sectionId: string,
+    ): LessonBase => {
+        // Create the base lesson object with required fields
+        return {
+            lesson_id: lessonData.lesson_title || '',
+            lesson_title: lessonData.lesson_title || '',
+            section_id: sectionId,
+            lesson_order: (section.lessons?.length || 0) + 1,
+            lesson_type: lessonData.lesson_type,
+            ...(lessonData.lesson_type === 'video' && {
+                video_url: (lessonData as VideoLesson).video_url,
+                video_duration: (lessonData as VideoLesson).video_duration,
+            }),
+            ...(lessonData.lesson_type === 'document' && {
+                document_url: (lessonData as DocumentLesson).document_url,
+            }),
+            ...(lessonData.lesson_type === 'quiz' && {
+                quiz: (lessonData as QuizLesson).quiz,
+            }),
+        } as LessonBase;
     };
 
     const openDeleteModal = (lessonId: string, e: React.MouseEvent): void => {
@@ -236,7 +185,7 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
     return (
         <div className='mb-1'>
             <div
-                onClick={(e) => userRole === 'student' && toggleSection(e)}
+                onClick={toggleSection}
                 className='cursor-pointer py-2 px-3 bg-gray-100 hover:bg-gray-200 rounded-md flex items-start justify-between'
                 role='button'
                 aria-expanded={isOpen}
@@ -286,7 +235,7 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
                             <MdDeleteOutline />
                         </button>
                         <button
-                            onClick={(e) => toggleSection(e, true)}
+                            onClick={(e) => toggleSection(e)}
                             className='text-gray flex items-center justify-center'
                             aria-label={
                                 isOpen ? 'Collapse section' : 'Expand section'
@@ -318,29 +267,41 @@ const CourseLesson: React.FC<CourseLessonProps> = ({
                     role='region'
                     aria-label='Lesson list'
                 >
-                    <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleDragEnd}
-                    >
-                        <SortableContext
-                            items={section.lessons.map(
-                                (lesson) => lesson.lesson_id,
-                            )}
-                            strategy={verticalListSortingStrategy}
+                    {lessons.map((lesson, lessonIndex) => (
+                        <div
+                            key={lesson.lesson_id}
+                            className='p-3 bg-white rounded-md shadow-md flex items-start justify-between'
                         >
-                            {section.lessons.map((lesson, lessonIndex) => (
-                                <SortableLesson
-                                    key={lesson.lesson_id}
-                                    lesson={lesson}
-                                    lessonIndex={lessonIndex}
-                                    canEdit={canEdit}
-                                    onOpenModal={openModal}
-                                    onDeleteModal={openDeleteModal}
-                                />
-                            ))}
-                        </SortableContext>
-                    </DndContext>
+                            <div>
+                                <h3 className='font-bold'>
+                                    {lesson.lesson_title}
+                                </h3>
+                                <p className='text-gray-500'>
+                                    {lesson.lesson_type}
+                                </p>
+                            </div>
+                            {canEdit && (
+                                <div className='flex space-x-2'>
+                                    <button
+                                        onClick={() => openModal(lesson)}
+                                        className='text-blue-600'
+                                        aria-label='Edit lesson'
+                                    >
+                                        <MdEditNote />
+                                    </button>
+                                    <button
+                                        onClick={(e) =>
+                                            openDeleteModal(lesson.lesson_id, e)
+                                        }
+                                        className='text-red-600'
+                                        aria-label='Delete lesson'
+                                    >
+                                        <MdDeleteOutline />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ))}
                 </div>
             )}
 

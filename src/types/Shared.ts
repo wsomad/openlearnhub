@@ -1,9 +1,9 @@
-import {Dispatch, SetStateAction} from 'react';
+import { Dispatch, SetStateAction } from 'react';
 
-import {Lesson} from './lesson';
+import { Lesson, LessonBase } from './lesson';
 //import {UserProfile} from './profile';
-import {Section} from './section';
-import {UserRole} from './user';
+import { Section } from './section';
+import { UserRole } from './user';
 
 // 1. Types
 // Used for UI/display purposes
@@ -32,7 +32,11 @@ export interface ModalState {
 // Define common handlers for lesson and section operations.
 // Used across multiple components that need to manipulate lessons/sections.
 export interface BaseLessonHandlers {
-    onAddLesson: (sectionId: string, lesson: Omit<Lesson, 'lesson_id'>) => void;
+    onAddLesson: (
+        courseId: string,
+        sectionId: string,
+        lesson: LessonBase,
+    ) => void;
     onEditLesson: (
         sectionId: string,
         lessonId: string,

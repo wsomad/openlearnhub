@@ -1,28 +1,28 @@
-import {GripVertical} from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import React from 'react';
-import {useSortable} from '@dnd-kit/sortable';
-import {CSS} from '@dnd-kit/utilities';
-import {Section} from '../../../types/section';
-import {Lesson} from '../../../types/lesson';
-import CourseLesson from './CourseLesson';
-import {useUser} from '../../../hooks/useUser';
+
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+import { useUser } from '../../../hooks/useUser';
+import { LessonBase } from '../../../types/lesson';
+import { Section } from '../../../types/section';
+import Lesson from '../testingLesson/Lesson';
 
 interface SortableCourseSectionProps {
     section: Section;
     index: number;
     canEdit: boolean;
     onDeleteSection: (section_id: string) => void;
-    onEditSectionTitle: (section_id: string, new_title: string) => void;
-    onAddLesson: (
+    onEditSectionTitle: (
         section_id: string,
-        lesson: Omit<Lesson, 'lesson_id'>,
+        updatedSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
     ) => void;
-    onEditLesson: (
-        section_id: string,
-        lesson_id: string,
-        updatedLesson: Partial<Lesson>,
-    ) => void;
-    onDeleteLesson: (section_id: string, lesson_id: string) => void;
+    onAddLesson: (section_id: string, lesson: LessonBase) => Promise<void>;
+    onEditLesson: (section_id: string, lesson: LessonBase) => Promise<void>;
+
+    onDeleteLesson: (section_id: string, lesson_id: string) => Promise<void>;
+    onLessonSelect?: (lesson: LessonBase) => void;
 }
 
 const SortableCourseSection: React.FC<SortableCourseSectionProps> = ({
@@ -34,6 +34,7 @@ const SortableCourseSection: React.FC<SortableCourseSectionProps> = ({
     onAddLesson,
     onEditLesson,
     onDeleteLesson,
+    onLessonSelect,
 }) => {
     const {
         attributes,
@@ -69,7 +70,7 @@ const SortableCourseSection: React.FC<SortableCourseSectionProps> = ({
         <div ref={setNodeRef} style={style}>
             <div className='relative'>
                 {canEdit && userRole === 'instructor' && <DragHandle />}
-                <CourseLesson
+                {/* <CourseLesson
                     section={section}
                     index={index}
                     lessonCount={section.lessons?.length || 0}
@@ -77,6 +78,18 @@ const SortableCourseSection: React.FC<SortableCourseSectionProps> = ({
                     canEdit={canEdit}
                     onDeleteSection={onDeleteSection}
                     onEditSectionTitle={onEditSectionTitle}
+                    onAddLesson={onAddLesson}
+                    onEditLesson={onEditLesson}
+                    onDeleteLesson={onDeleteLesson}
+                /> */}
+                <Lesson
+                    key={section.section_id}
+                    section={section}
+                    index={index}
+                    canEdit={userRole === 'instructor'}
+                    onLessonSelect={onLessonSelect}
+                    onEditSectionTitle={onEditSectionTitle}
+                    onDeleteSection={onDeleteSection}
                     onAddLesson={onAddLesson}
                     onEditLesson={onEditLesson}
                     onDeleteLesson={onDeleteLesson}

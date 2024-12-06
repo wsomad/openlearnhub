@@ -1,15 +1,24 @@
-import React, {useEffect, useState} from 'react';
-import {useParams} from 'react-router-dom';
-import {useCourses} from '../../../hooks/useCourses';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+
 import CourseForm from '../../../components/enrollment/course_list/CourseForm';
 import HeaderComponent from '../../../components/HeaderComponent';
-import {useSelector} from 'react-redux';
+import { useCourses } from '../../../hooks/useCourses';
 
 const EditCoursePage: React.FC = () => {
     const {courseId} = useParams<{courseId: string}>();
-    const {selectedCourse} = useCourses();
+    const {selectedCourse, fetchCourseById, currentUser, userRole} =
+        useCourses();
     const currentState = useSelector((state) => state);
     console.log('Current State from Selector:', currentState);
+
+    // To prevent after pressing extend for lessons, it doesn't refresh the page and show an empty course page.
+    useEffect(() => {
+        if (courseId && userRole) {
+            fetchCourseById(courseId, currentUser?.uid || null, userRole);
+        }
+    }, [courseId, currentUser, userRole]);
 
     if (!courseId) {
         return <div>Course not found</div>;

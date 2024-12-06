@@ -1,27 +1,33 @@
-import {useEffect, useState} from 'react';
-import {FaPlus} from 'react-icons/fa';
-import {Lesson} from '../../../types/lesson';
-import {Section} from '../../../types/section';
+import { useEffect, useState } from 'react';
+import { FaPlus } from 'react-icons/fa';
+
+import { useCourses } from '../../../hooks/useCourses';
+import { useLessons } from '../../../hooks/useLessons';
+import { useSections } from '../../../hooks/useSections';
+import { useUser } from '../../../hooks/useUser';
+import { clearSingleSection } from '../../../store/slices/sectionSlice';
+import { LessonBase } from '../../../types/lesson';
+import { Section } from '../../../types/section';
 import AddSectionModal from '../../modal/AddSectionModal';
-import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
+// import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 import CourseContentView from './CourseContentView';
-import {useUser} from '../../../hooks/useUser';
-import {clearSingleSection} from '../../../store/slices/sectionSlice';
-import {useCourses} from '../../../hooks/useCourses';
-import {useSections} from '../../../hooks/useSections';
 
 interface CourseContentListProps {
     course_id: string;
     sectionsOrder: Section[];
     setSectionsOrder: React.Dispatch<React.SetStateAction<Section[]>>;
+    onLessonSelect?: (lesson: LessonBase) => void;
     onSaveOrder: () => void;
+    selectedLessonId?: string;
 }
 
 const CourseContentList: React.FC<CourseContentListProps> = ({
     course_id,
     sectionsOrder,
     setSectionsOrder,
+    onLessonSelect,
     onSaveOrder,
+    selectedLessonId,
 }) => {
     const {selectedCourse} = useCourses();
     const {
@@ -30,7 +36,10 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         createSections,
         updateSection,
         deleteSection,
+        fetchAllSections,
     } = useSections();
+    const {createLessons, fetchAllLessons, updateLesson, deleteLesson} =
+        useLessons();
     const {currentUser, userRole} = useUser();
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] =
@@ -59,12 +68,8 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
 
     // Edit function based on role and uid.
     const canEditCourse = (): boolean => {
-        if (!course_id || !userRole) return false;
-
-        return (
-            userRole === 'instructor' &&
-            currentUser?.uid === selectedCourse?.instructor_id
-        );
+        if (!userRole || !currentUser?.uid) return false;
+        return userRole === 'instructor';
     };
 
     // Open modal function for modal of content to add section and lesson.
@@ -78,20 +83,16 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     const closeSectionModal = (): void => setIsModalOpen(false);
 
     // Close confirmation function to close modal of content.
-    const closeConfirmModal = (): void => {
-        setIsConfirmModalOpen(false);
-        clearSingleSection();
-    };
+    // const closeConfirmModal = (): void => {
+    //     setIsConfirmModalOpen(false);
+    //     clearSingleSection();
+    // };
 
     // Handle add function to add section.
     const handleAddSection = async (
         newSection: Omit<Section, 'section_id' | 'lessons'>,
     ): Promise<void> => {
         if (!canEditCourse()) return;
-
-        if (!course_id) {
-            return;
-        }
 
         try {
             const section: Section = {
@@ -100,7 +101,21 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                 section_order: newSection.section_order,
                 lessons: [],
             };
-            await createSections(course_id, section);
+
+            // For new courses, we'll just update the local state
+            if (!course_id) {
+                setSectionsOrder((prev) =>
+                    [...prev, section].sort(
+                        (a, b) =>
+                            (a.section_order || 0) - (b.section_order || 0),
+                    ),
+                );
+            } else {
+                // For existing courses, update Firebase
+                await createSections(course_id, section);
+                await fetchAllSections(course_id);
+            }
+
             closeSectionModal();
             console.log('Section created successfully.');
         } catch (error) {
@@ -109,139 +124,119 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     };
 
     // Handle delete function to delete section.
-    const handleDeleteSection = (section_id: string): void => {
-        if (!canEditCourse()) return;
+    const handleDeleteSection = async (section_id: string) => {
+        if (!course_id) return;
 
-        if (!course_id || !selectedSection?.section_id) {
-            return;
+        try {
+            await deleteSection(course_id, section_id);
+        } catch (error) {
+            console.error('Failed to delete section:', error);
         }
-
-        setIsConfirmModalOpen(true);
-        // const checkSection = selectedSection?.section_id === section_id;
-        // if (checkSection) {
-        //     setIsConfirmModalOpen(true);
-        //     deleteSection(selectedCourse.course_id, selectedSection.section_id);
-        // }
     };
 
     // Delete confirmation function to delete section.
-    const confirmDeleteSection = (section_id: string): void => {
-        if (selectedSection && canEditCourse()) {
-            if (!selectedCourse?.course_id || !selectedSection?.section_id) {
-                return;
-            }
+    // const confirmDeleteSection = (section_id: string): void => {
+    //     if (selectedSection && canEditCourse()) {
+    //         if (!selectedCourse?.course_id || !selectedSection?.section_id) {
+    //             return;
+    //         }
 
-            const checkSection = selectedSection?.section_id === section_id;
+    //         const checkSection = selectedSection?.section_id === section_id;
 
-            if (checkSection) {
-                setIsConfirmModalOpen(true);
-                deleteSection(
-                    selectedCourse.course_id,
-                    selectedSection.section_id,
-                );
-            }
+    //         if (checkSection) {
+    //             setIsConfirmModalOpen(true);
+    //             deleteSection(
+    //                 selectedCourse.course_id,
+    //                 selectedSection.section_id,
+    //             );
+    //         }
 
-            closeConfirmModal();
-        }
-    };
+    //         closeConfirmModal();
+    //     }
+    // };
 
     // Handle edit function to edit section title.
     const handleEditSectionTitle = async (
         section_id: string,
-        new_title: string,
-    ): Promise<void> => {
-        if (!canEditCourse()) return;
+        updatedSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
+    ) => {
+        if (!course_id) return;
 
-        const checkSection = selectedSection?.section_id === section_id;
-
-        if (checkSection) {
-            const updatedSection: Partial<Section> = {
-                section_title: new_title,
-            };
-            await updateSection(course_id, section_id, updatedSection);
+        try {
+            await updateSection(course_id, section_id, {
+                ...updatedSection,
+                section_id: section_id,
+            });
+        } catch (error) {
+            console.error('Error updating section:', error);
         }
-        // setCourseSections((prevSections) =>
-        //     prevSections.map((section) =>
-        //         section.section_id === sectionId
-        //             ? {...section, section_title: newTitle}
-        //             : section,
-        //     ),
-        // );
     };
 
     // Handle add function to add lesson.
-    const handleAddLesson = (
-        //course_id: string,
+    const handleAddLesson = async (
         section_id: string,
-        //lesson: Lesson,
-        lesson: Omit<Lesson, 'lesson_id'>,
-    ): void => {
-        if (!canEditCourse()) return;
-        // const lessonData: Lesson = {
-        //     lesson_id: lesson?.lesson_id || '',
-        //     lesson_title: lesson?.lesson_title || '',
-        //     lesson_content: '',
-        //     section_id: section_id,
+        lesson: LessonBase,
+    ): Promise<void> => {
+        if (!course_id) {
+            console.error('Cannot add lesson: No course ID');
+            return;
+        }
 
-        // };
-
-        // setCourseSections((prevSections) =>
-        //     prevSections.map((section) =>
-        //         section.section_id === sectionId
-        //             ? {
-        //                   ...section,
-        //                   lessons: [
-        //                       ...section.lessons,
-        //                       {
-        //                           ...newLesson,
-        //                           lesson_id: `l${section.lessons.length + 1}`,
-        //                           section_id: sectionId,
-        //                       },
-        //                   ],
-        //               }
-        //             : section,
-        //     ),
-        // );
+        try {
+            await createLessons(course_id, section_id, lesson);
+            console.log('Lesson added successfully:', lesson);
+        } catch (error) {
+            console.error('Failed to add lesson:', error);
+            throw error;
+        }
     };
 
-    const handleEditLesson = (
+    //     lesson_id: string,
+    //     updated_lesson: Partial<LessonBase>,
+    // ): void => {
+    //     if (!canEditCourse()) return;
+
+    //     // setCourseSections((prevSections) =>
+    //     //     prevSections.map((section) =>
+    //     //         section.section_id === sectionId
+    //     //             ? {
+    //     //                   ...section,
+    //     //                   lessons: section.lessons.map((lesson) =>
+    //     //                       lesson.lesson_id === lessonId
+    //     //                           ? {...lesson, ...updatedLesson}
+    //     //                           : lesson,
+    //     //                   ),
+    //     //               }
+    //     //             : section,
+    //     //     ),
+    //     // );
+    // };
+    const handleEditLesson = async (
+        section_id: string,
+        lesson: LessonBase,
+    ): Promise<void> => {
+        if (!course_id) return;
+
+        try {
+            await updateLesson(course_id, section_id, lesson);
+        } catch (error) {
+            console.error('Failed to edit lesson:', error);
+            throw error;
+        }
+    };
+
+    const handleDeleteLesson = async (
         section_id: string,
         lesson_id: string,
-        updated_lesson: Partial<Lesson>,
-    ): void => {
-        if (!canEditCourse()) return;
+    ): Promise<void> => {
+        if (!course_id) return;
 
-        // setCourseSections((prevSections) =>
-        //     prevSections.map((section) =>
-        //         section.section_id === sectionId
-        //             ? {
-        //                   ...section,
-        //                   lessons: section.lessons.map((lesson) =>
-        //                       lesson.lesson_id === lessonId
-        //                           ? {...lesson, ...updatedLesson}
-        //                           : lesson,
-        //                   ),
-        //               }
-        //             : section,
-        //     ),
-        // );
-    };
-
-    const handleDeleteLesson = (sectionId: string, lessonId: string): void => {
-        if (!canEditCourse()) return;
-
-        // setCourseSections((prevSections) =>
-        //     prevSections.map((section) =>
-        //         section.section_id === sectionId
-        //             ? {
-        //                   ...section,
-        //                   lessons: section.lessons.filter(
-        //                       (lesson) => lesson.lesson_id !== lessonId,
-        //                   ),
-        //               }
-        //             : section,
-        //     ),
-        // );
+        try {
+            await deleteLesson(course_id, section_id, lesson_id);
+        } catch (error) {
+            console.error('Failed to delete lesson:', error);
+            throw error;
+        }
     };
 
     return (
@@ -275,6 +270,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                     onAddLesson={handleAddLesson}
                     onEditLesson={handleEditLesson}
                     onDeleteLesson={handleDeleteLesson}
+                    onLessonSelect={onLessonSelect}
                 />
 
                 {isModalOpen && (
@@ -285,7 +281,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                     />
                 )}
 
-                {isConfirmModalOpen && selectedSection && (
+                {/* {isConfirmModalOpen && selectedSection && (
                     <ConfirmDeleteModal
                         isOpen={isConfirmModalOpen}
                         onClose={closeConfirmModal}
@@ -293,7 +289,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                         itemTitle={selectedSection.section_title || ''}
                         isSection={true}
                     />
-                )}
+                )} */}
             </div>
         </div>
     );

@@ -1,17 +1,17 @@
-import {GripVertical} from 'lucide-react';
+import { GripVertical } from 'lucide-react';
 import React from 'react';
-import {MdDeleteOutline, MdEditNote} from 'react-icons/md';
+import { MdDeleteOutline, MdEditNote } from 'react-icons/md';
 
-import {useSortable} from '@dnd-kit/sortable';
-import {CSS} from '@dnd-kit/utilities';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
+import { useUser } from '../../../hooks/useUser';
 import {
-    DocumentLesson,
-    LessonBase,
-    QuizLesson,
-    VideoLesson,
+	DocumentLesson,
+	LessonBase,
+	QuizLesson,
+	VideoLesson,
 } from '../../../types/lesson';
-import {useUser} from '../../../hooks/useUser';
 
 interface SortableLessonProps {
     lesson: LessonBase;

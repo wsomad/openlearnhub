@@ -1,16 +1,17 @@
-import {useNavigate} from 'react-router-dom';
-import {useUser} from '../../../hooks/useUser';
-import {useEffect, useState} from 'react';
-import {useCourses} from '../../../hooks/useCourses';
-import {useSections} from '../../../hooks/useSections';
-import {useLessons} from '../../../hooks/useLessons';
-import {Course} from '../../../types/course';
+import { useEffect, useState } from 'react';
+import { FaPlus } from 'react-icons/fa';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+
+import { useCourses } from '../../../hooks/useCourses';
+import { useLessons } from '../../../hooks/useLessons';
+import { useSections } from '../../../hooks/useSections';
+import { useUser } from '../../../hooks/useUser';
+import { clearSingleCourse } from '../../../store/slices/courseSlice';
+import { clearSections } from '../../../store/slices/sectionSlice';
+import { Course } from '../../../types/course';
+import { Section } from '../../../types/section';
 import CourseContentList from './CourseContentList';
-import {FaPlus} from 'react-icons/fa';
-import {useDispatch} from 'react-redux';
-import {clearSingleCourse} from '../../../store/slices/courseSlice';
-import {clearSections} from '../../../store/slices/sectionSlice';
-import {Section} from '../../../types/section';
 
 interface CourseFormProps {
     courseId?: string;
@@ -22,13 +23,16 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
     const {currentUser, userRole} = useUser();
     const {selectedCourse, createCourse, fetchCourseById, updateCourse} =
         useCourses();
-    const {selectedSection, allSections, fetchAllSections, updateSection} =
-        useSections();
-    const {allLessons, fetchAllLessons} = useLessons();
+    const {
+        selectedSection,
+        allSections,
+        fetchAllSections,
+        updateSection,
+        resetSectionsState,
+    } = useSections();
+    const {fetchAllLessons, resetLessonsState} = useLessons();
     const [sectionsOrder, setSectionsOrder] = useState<Section[]>([]);
     const [error, setError] = useState<string | null>(null);
-    console.log('Current course: ', selectedCourse);
-    console.log('Section available:', allSections);
 
     // Declare initial state to create a new course.
     const [courseData, setCourseData] = useState<Course>({
@@ -45,6 +49,7 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
         course_created_at: new Date(),
         course_updated_at: new Date(),
         course_instructor: currentUser?.username || '',
+        sections: [],
         ready_for_publish: false,
     });
 
@@ -57,7 +62,6 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
                 if (courseId) {
                     await fetchCourseById(courseId, currentUser.uid, userRole);
                 }
-                console.log('Selected course to edit:', courseId);
             } catch (error) {
                 setError('Failed to fetch selected course.');
             }
@@ -74,16 +78,30 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
             try {
                 if (courseId) {
                     await fetchAllSections(courseId);
-                    console.log(`Yes! Sections available for ${courseId}`);
                 }
-                console.log('List of sections to fetch:', allSections);
             } catch (error) {
                 console.error('Failed to fetch a list of sections:', error);
             }
         };
 
         loadSection();
-    }, [courseId]);
+
+        // Clear sections only when component unmounts or courseId changes
+        return () => {
+            if (courseId !== undefined) {
+                dispatch(clearSections());
+                resetSectionsState();
+                resetLessonsState();
+            }
+        };
+    }, [courseId, currentUser, userRole]);
+
+    // Separate cleanup for course when component unmounts completely
+    useEffect(() => {
+        return () => {
+            dispatch(clearSingleCourse());
+        };
+    }, []);
 
     // Run side effect to fetch all lessons based on `courseId` and `section_id`.
     useEffect(() => {
@@ -100,7 +118,6 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
                 if (courseId && selectedSection.section_id) {
                     await fetchAllLessons(courseId, selectedSection.section_id);
                 }
-                console.log('List of lessons to edit:', allLessons);
             } catch (error) {
                 console.error('Failed to fetch a list of lessons:', error);
             }
@@ -121,6 +138,8 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
         return () => {
             dispatch(clearSingleCourse());
             dispatch(clearSections());
+            resetSectionsState();
+            resetLessonsState();
         };
     }, [dispatch]);
 
@@ -380,11 +399,20 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
                 </div>
 
                 <div>
-                    <h2 className='text-2xl font-bold font-abhaya mb-4'>
-                        Course Thumbnail
-                    </h2>
-
                     <div>
+                        {courseData.course_thumbnail_url && (
+                            <div className='mb-4'>
+                                <p className='text-gray-600 mb-2'>
+                                    Thumbnail Preview:
+                                </p>
+                                <img
+                                    src={courseData.course_thumbnail_url}
+                                    alt='Thumbnail Preview'
+                                    className='w-full max-h-64 object-cover border border-gray'
+                                />
+                            </div>
+                        )}
+
                         <label
                             htmlFor='course_thumbnail_url'
                             className='block text-lg font-medium text-gray-700 mb-1'

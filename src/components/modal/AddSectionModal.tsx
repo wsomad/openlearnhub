@@ -1,11 +1,9 @@
-// AddSectionModal.tsx
-import React, {useState} from 'react';
-import {IoCloseOutline} from 'react-icons/io5';
-import {useSections} from '../../hooks/useSections';
-import {Section} from '../../types/section';
-import {useCourses} from '../../hooks/useCourses';
-import {clearSingleSection} from '../../store/slices/sectionSlice';
-import {useDispatch} from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { IoCloseOutline } from 'react-icons/io5';
+
+import { useCourses } from '../../hooks/useCourses';
+import { useSections } from '../../hooks/useSections';
+import { Section } from '../../types/section';
 
 interface AddSectionModalProps {
     isOpen: boolean;
@@ -13,17 +11,24 @@ interface AddSectionModalProps {
     onSubmit: (
         newSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
     ) => void;
+    sectionToEdit?: Section;
 }
 
 const AddSectionModal: React.FC<AddSectionModalProps> = ({
     isOpen,
     onClose,
     onSubmit,
+    sectionToEdit,
 }) => {
     const [sectionTitle, setSectionTitle] = useState<string>('');
-    const {allSections} = useSections();
+    const {allSections, clearSelectedSection} = useSections();
     const {selectedCourse} = useCourses();
-    const dispatch = useDispatch();
+
+    useEffect(() => {
+        if (sectionToEdit) {
+            setSectionTitle(sectionToEdit.section_title);
+        }
+    }, [sectionToEdit]);
 
     const handleSubmit = (): void => {
         if (!sectionTitle.trim()) {
@@ -31,18 +36,17 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
             return;
         }
 
-        const lengthOfSections = allSections.length;
-
         const newSection = {
             section_title: sectionTitle,
-            section_order: lengthOfSections + 1,
+            section_order:
+                sectionToEdit?.section_order || allSections.length + 1,
             course_id: selectedCourse?.course_id || '',
         };
 
         onSubmit(newSection);
         onClose();
-        dispatch(clearSingleSection());
-        setSectionTitle(''); // Reset form
+        clearSelectedSection();
+        setSectionTitle('');
     };
 
     if (!isOpen) return null;
@@ -50,11 +54,12 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
     return (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
             <div className='w-full max-w-lg p-6 bg-white'>
-                {/* Replaced form with div and handled the logic manually */}
                 <div className='w-full'>
                     <div className='flex items-start justify-between'>
                         <h1 className='font-abhaya text-3xl font-bold'>
-                            Create New Section
+                            {sectionToEdit
+                                ? 'Edit Section'
+                                : 'Create New Section'}
                         </h1>
                         <button
                             type='button'
@@ -67,7 +72,7 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
 
                     <div>
                         <label className='font-abhaya text-lg font-medium mb-1 block'>
-                            Create Section Title
+                            Section Title
                         </label>
                         <input
                             className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
@@ -82,10 +87,12 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
                     <div className='mt-8'>
                         <button
                             className='w-full py-3 bg-primary text-white text-lg active:scale-[.98] font-abhaya'
-                            type='button' // Change button type to 'button'
+                            type='button'
                             onClick={handleSubmit}
                         >
-                            Create Section
+                            {sectionToEdit
+                                ? 'Update Section'
+                                : 'Create Section'}
                         </button>
                     </div>
                 </div>

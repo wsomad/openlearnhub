@@ -1,9 +1,9 @@
-import {useEffect, useState} from 'react';
-import {IoCloseOutline} from 'react-icons/io5';
-import {useDispatch} from 'react-redux';
-import {clearSingleSection} from '../../store/slices/sectionSlice';
+import { useEffect, useState } from 'react';
+import { IoCloseOutline } from 'react-icons/io5';
+import { useDispatch } from 'react-redux';
 
-import { Section } from '../../types/section';
+import { clearSingleSection } from '../../../store/slices/sectionSlice';
+import { Section } from '../../../types/section';
 
 interface EditSectionModalProps {
     isOpen: boolean;
