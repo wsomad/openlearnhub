@@ -70,18 +70,6 @@ const SortableCourseSection: React.FC<SortableCourseSectionProps> = ({
         <div ref={setNodeRef} style={style}>
             <div className='relative'>
                 {canEdit && userRole === 'instructor' && <DragHandle />}
-                {/* <CourseLesson
-                    section={section}
-                    index={index}
-                    lessonCount={section.lessons?.length || 0}
-                    totalDuration={0}
-                    canEdit={canEdit}
-                    onDeleteSection={onDeleteSection}
-                    onEditSectionTitle={onEditSectionTitle}
-                    onAddLesson={onAddLesson}
-                    onEditLesson={onEditLesson}
-                    onDeleteLesson={onDeleteLesson}
-                /> */}
                 <Lesson
                     key={section.section_id}
                     section={section}

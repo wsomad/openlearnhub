@@ -5,26 +5,18 @@ import { useCourses } from '../../../hooks/useCourses';
 import { useLessons } from '../../../hooks/useLessons';
 import { useSections } from '../../../hooks/useSections';
 import { useUser } from '../../../hooks/useUser';
-import { clearSingleSection } from '../../../store/slices/sectionSlice';
 import { LessonBase } from '../../../types/lesson';
 import { Section } from '../../../types/section';
 import AddSectionModal from '../../modal/AddSectionModal';
-// import ConfirmDeleteModal from '../../modal/ConfirmDeleteModal';
 import CourseContentView from './CourseContentView';
 
 interface CourseContentListProps {
     course_id: string;
-<<<<<<< HEAD
     sectionsOrder: Section[];
     setSectionsOrder: React.Dispatch<React.SetStateAction<Section[]>>;
     onLessonSelect?: (lesson: LessonBase) => void;
     onSaveOrder: () => void;
     selectedLessonId?: string;
-=======
-    sectionsOrder?: Section[];
-    setSectionsOrder?: React.Dispatch<React.SetStateAction<Section[]>>;
-    onSaveOrder?: () => void;
->>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 }
 
 const CourseContentList: React.FC<CourseContentListProps> = ({
@@ -38,15 +30,11 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     const {selectedCourse} = useCourses();
     const {
         allSections,
-        selectedSection,
         createSections,
         updateSection,
         deleteSection,
-<<<<<<< HEAD
         fetchAllSections,
-=======
-        deleteSingleSection,
->>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
+        deleteSelectedSection,
     } = useSections();
     const {createLessons, fetchAllLessons, updateLesson, deleteLesson} =
         useLessons();
@@ -93,17 +81,14 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     const closeSectionModal = (): void => setIsModalOpen(false);
 
     // Close confirmation function to close modal of content.
-<<<<<<< HEAD
     // const closeConfirmModal = (): void => {
     //     setIsConfirmModalOpen(false);
     //     clearSingleSection();
     // };
-=======
     const closeConfirmModal = (): void => {
         setIsConfirmModalOpen(false);
-        deleteSingleSection()
+        deleteSelectedSection();
     };
->>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 
     // Handle add function to add section.
     const handleAddSection = async (
@@ -151,27 +136,6 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         }
     };
 
-    // Delete confirmation function to delete section.
-    // const confirmDeleteSection = (section_id: string): void => {
-    //     if (selectedSection && canEditCourse()) {
-    //         if (!selectedCourse?.course_id || !selectedSection?.section_id) {
-    //             return;
-    //         }
-
-    //         const checkSection = selectedSection?.section_id === section_id;
-
-    //         if (checkSection) {
-    //             setIsConfirmModalOpen(true);
-    //             deleteSection(
-    //                 selectedCourse.course_id,
-    //                 selectedSection.section_id,
-    //             );
-    //         }
-
-    //         closeConfirmModal();
-    //     }
-    // };
-
     // Handle edit function to edit section title.
     const handleEditSectionTitle = async (
         section_id: string,
@@ -208,26 +172,6 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         }
     };
 
-    //     lesson_id: string,
-    //     updated_lesson: Partial<LessonBase>,
-    // ): void => {
-    //     if (!canEditCourse()) return;
-
-    //     // setCourseSections((prevSections) =>
-    //     //     prevSections.map((section) =>
-    //     //         section.section_id === sectionId
-    //     //             ? {
-    //     //                   ...section,
-    //     //                   lessons: section.lessons.map((lesson) =>
-    //     //                       lesson.lesson_id === lessonId
-    //     //                           ? {...lesson, ...updatedLesson}
-    //     //                           : lesson,
-    //     //                   ),
-    //     //               }
-    //     //             : section,
-    //     //     ),
-    //     // );
-    // };
     const handleEditLesson = async (
         section_id: string,
         lesson: LessonBase,
@@ -297,16 +241,6 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                         onSubmit={handleAddSection}
                     />
                 )}
-
-                {/* {isConfirmModalOpen && selectedSection && (
-                    <ConfirmDeleteModal
-                        isOpen={isConfirmModalOpen}
-                        onClose={closeConfirmModal}
-                        onConfirm={confirmDeleteSection}
-                        itemTitle={selectedSection.section_title || ''}
-                        isSection={true}
-                    />
-                )} */}
             </div>
         </div>
     );

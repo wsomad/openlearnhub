@@ -1,189 +1,9 @@
-// import React, { useEffect, useState } from 'react';
-// import { HiOutlineDocumentText } from 'react-icons/hi';
-// import { MdQuiz } from 'react-icons/md';
-// import { RiTimer2Line } from 'react-icons/ri';
-// import { Link, useParams } from 'react-router-dom';
-
-// import CourseContentList from '../../../components/enrollment/course_list/CourseContentList';
-// import CourseRequirements from '../../../components/enrollment/CourseRequirements';
-// import DocumentPreview from '../../../components/enrollment/testingLesson/DocumentPreview';
-// import QuizPreview from '../../../components/enrollment/testingLesson/QuizPanel';
-// import VideoPreview from '../../../components/enrollment/testingLesson/VideoPreview';
-// import HeaderComponent from '../../../components/HeaderComponent';
-// import { useCourses } from '../../../hooks/useCourses';
-// import { useSections } from '../../../hooks/useSections';
-// import { useUser } from '../../../hooks/useUser';
-// import {
-// 	DocumentLesson,
-// 	Lesson,
-// 	LessonBase,
-// 	QuizLesson,
-// 	VideoLesson,
-// } from '../../../types/lesson';
-
-// const EnrolledCoursePage: React.FC = () => {
-//     const {selectedCourse, fetchCourseById} = useCourses();
-//     const {allSections, fetchAllSections} = useSections();
-//     const {currentUser, userRole} = useUser();
-//     const {id} = useParams<{id: string}>();
-//     const [loading, setLoading] = useState(true);
-
-//     const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
-//     const [selectedLessonType, setSelectedLessonType] = useState<
-//         'video' | 'document' | 'quiz' | null
-//     >(null);
-
-//     useEffect(() => {
-//         const loadCourse = async () => {
-//             if (id && currentUser?.uid) {
-//                 await fetchCourseById(id, currentUser.uid, userRole);
-//                 console.log('Currently in selected course page.');
-//                 setLoading(false);
-//             }
-//         };
-//         loadCourse();
-//     }, [currentUser, userRole]);
-
-//     useEffect(() => {
-//         const loadSections = async () => {
-//             if (id) {
-//                 await fetchAllSections(id);
-//                 console.log(
-//                     `Successfully fetch all sections under ${id} course.`,
-//                 );
-//             }
-//         };
-//         loadSections();
-//     }, [id, currentUser, userRole]);
-
-//     // A handler for lesson selection
-//     const handleLessonSelect = (lesson: LessonBase) => {
-//         setSelectedLesson(lesson);
-//         // Type guard to determine lesson type
-//         switch (lesson.lesson_type) {
-//             case 'video':
-//                 setSelectedLessonType('video');
-//                 break;
-//             case 'document':
-//                 setSelectedLessonType('document');
-//                 break;
-//             case 'quiz':
-//                 setSelectedLessonType('quiz');
-//                 break;
-//             default:
-//                 setSelectedLessonType(null);
-//         }
-//     };
-
-//     return (
-//         <div>
-//             <HeaderComponent />
-//             <div>
-//                 {/* <div className='px-4 sm:px-6 md:px-8 lg:px-10 xl:px-10'> */}
-//                 <div className='w-screen-xl h-full w-full justify-between'>
-//                     <div className='flex justify-between items-start gap-6'>
-//                         {/* Left side: Course Info and Content List */}
-//                         <div className='w-1/3'>
-//                             <CourseContentList
-//                                 course_id={id || ''}
-//                                 sectionsOrder={allSections}
-//                                 setSectionsOrder={(sections) => {
-//                                     // Handle section order updates if needed
-//                                 }}
-//                                 onSaveOrder={() => {
-//                                     // Handle save order if needed
-//                                 }}
-//                                 onLessonSelect={handleLessonSelect}
-//                                 selectedLessonId={selectedLesson?.lesson_id}
-//                             />
-//                         </div>
-
-//                         {/* Right side: Lesson Preview Panel */}
-//                         <div className='w-2/3'>
-//                             {selectedLesson ? (
-//                                 <div className='bg-white rounded-lg shadow-sm p-6'>
-//                                     <h2 className='text-2xl font-bold mb-4'>
-//                                         {selectedLesson.lesson_title}
-//                                     </h2>
-
-//                                     {selectedLessonType === 'video' && (
-//                                         <VideoPreview
-//                                             url={
-//                                                 (selectedLesson as VideoLesson)
-//                                                     .video_url
-//                                             }
-//                                             onDurationChange={() => {}}
-//                                         />
-//                                     )}
-
-//                                     {selectedLessonType === 'document' && (
-//                                         <DocumentPreview
-//                                             url={
-//                                                 (
-//                                                     selectedLesson as DocumentLesson
-//                                                 ).document_url
-//                                             }
-//                                         />
-//                                     )}
-
-//                                     {selectedLessonType === 'quiz' && (
-//                                         <QuizPreview
-//                                             quizData={
-//                                                 (selectedLesson as QuizLesson)
-//                                                     .quiz
-//                                             }
-//                                             lessonId={selectedLesson.lesson_id}
-//                                         />
-//                                     )}
-//                                 </div>
-//                             ) : (
-//                                 <div className='bg-white rounded-lg shadow-sm p-6 text-center text-gray-500'>
-//                                     Select a lesson to start learning
-//                                 </div>
-//                             )}
-//                         </div>
-//                     </div>
-//                 </div>
-//                 <div className='flex flex-col justify-start items-start mt-10 px-6'>
-//                     <h1 className='font-abhaya font-bold text-4xl'>
-//                         {selectedCourse?.course_title || 'Course Title'}
-//                     </h1>
-//                     <p className='font-abhaya font-normal text-lg mt-2'>
-//                         {selectedCourse?.course_description ||
-//                             'Course Description'}
-//                     </p>
-//                 </div>
-//                 <hr className='border-t gray opacity-15 my-6 mx-6' />
-//                 <div className='my-6 '>
-//                     <CourseRequirements
-//                         course_id={selectedCourse?.course_id || ''}
-//                         course_requirements={
-//                             selectedCourse?.course_requirements || []
-//                         }
-//                     ></CourseRequirements>
-//                 </div>
-//                 <hr className='border-t gray opacity-15 my-6 mx-6' />
-//                 <div className='flex flex-col justify-start items-start my-6 px-6'>
-//                     <div className='font-abhaya font-bold text-2xl mr-4'>
-//                         Instructor Name
-//                     </div>
-//                     <div className='font-abhaya font-normal text-lg underline underline-offset-2 text-secondary mt-2'>
-//                         <Link to={''}>{selectedCourse?.course_instructor}</Link>
-//                     </div>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default EnrolledCoursePage;
-
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 
 import CourseContentList from '../../../components/enrollment/course_list/CourseContentList';
 import CourseRequirements from '../../../components/enrollment/CourseRequirements';
-<<<<<<< HEAD
 import DocumentPreview from '../../../components/enrollment/testingLesson/DocumentPreview';
 import QuizPreview from '../../../components/enrollment/testingLesson/QuizPanel';
 import VideoPreview from '../../../components/enrollment/testingLesson/VideoPreview';
@@ -198,14 +18,6 @@ import {
 	QuizLesson,
 	VideoLesson,
 } from '../../../types/lesson';
-=======
-import {Link, useParams} from 'react-router-dom';
-import {useCourses} from '../../../hooks/useCourses';
-import {useSections} from '../../../hooks/useSections';
-import {useUser} from '../../../hooks/useUser';
-import {clearSections} from '../../../store/slices/sectionSlice';
-import {useDispatch} from 'react-redux';
->>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 
 const EnrolledCoursePage = () => {
     const {selectedCourse, fetchCourseById} = useCourses();
@@ -213,15 +25,13 @@ const EnrolledCoursePage = () => {
     const {currentUser, userRole} = useUser();
     const {id} = useParams();
     const [loading, setLoading] = useState(true);
-<<<<<<< HEAD
     const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+    const currentState = useSelector((state) => state);
+    console.log('[Enrolled Page] Current State from Selector:', currentState);
 
     const [selectedLessonType, setSelectedLessonType] = useState<
         'video' | 'document' | 'quiz' | null
     >(null);
-=======
-    const dispatch = useDispatch();
->>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 
     useEffect(() => {
         const loadCourse = async () => {
@@ -237,24 +47,14 @@ const EnrolledCoursePage = () => {
         const loadSections = async () => {
             if (id) {
                 await fetchAllSections(id);
-<<<<<<< HEAD
-=======
                 console.log(
                     `Successfully fetch all sections under ${id} course.`,
                     allSections,
                 );
->>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
             }
         };
         loadSections();
-
-        // Cleanup function to reset sections when unmounting or changing courses
-        return () => {
-            clearAllSections();
-            setSelectedLesson(null);
-            setSelectedLessonType(null);
-        };
-    }, [id]);
+    }, [currentUser, userRole]);
 
     const handleLessonSelect = (lesson: LessonBase) => {
         setSelectedLesson(lesson);
@@ -281,17 +81,9 @@ const EnrolledCoursePage = () => {
         );
     }
 
-    // Run side effect to clear state management.
-    useEffect(() => {
-        return () => {
-            dispatch(clearSections());
-        };
-    }, [dispatch]);
-
     return (
         <div className='font-abhaya min-h-screen bg-gray-50'>
             <HeaderComponent />
-<<<<<<< HEAD
 
             {/* Main Content */}
             <div className='max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
@@ -396,31 +188,6 @@ const EnrolledCoursePage = () => {
                             onSaveOrder={() => {}}
                             onLessonSelect={handleLessonSelect}
                             selectedLessonId={selectedLesson?.lesson_id}
-=======
-            <div>
-                {/* <div className='px-4 sm:px-6 md:px-8 lg:px-10 xl:px-10'> */}
-                <div className='w-screen-xl h-full w-full justify-between'>
-                    <div className='flex justify-between items-start'>
-                        <CardCourseComponent
-                            thumbnail={thumbnail}
-                            title={
-                                selectedCourse?.course_title || 'Course Title'
-                            }
-                            instructor={
-                                selectedCourse?.course_instructor ||
-                                'Course Instructor'
-                            }
-                            pricing={selectedCourse?.course_pricing || 'FREE'}
-                            buttonText='Incomplete'
-                            onButtonClick={() =>
-                                console.log('Navigating to Course Details page')
-                            }
-                            size='lg'
-                        />
-                        <CourseContentList
-                            course_id={id || ''}
-                            sectionsOrder={allSections}
->>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
                         />
                     </div>
                 </div>
@@ -453,23 +220,10 @@ const EnrolledCoursePage = () => {
                             Instructor
                         </h2>
                         <Link
-                            to={''}
+                            to={`/instructor/${selectedCourse?.instructor_id}/profile`}
                             className='font-abhaya inline-flex items-center text-lg text-blue-600 hover:text-blue-800 transition-colors'
                         >
                             {selectedCourse?.course_instructor}
-                            <svg
-                                className='w-5 h-5 ml-2'
-                                fill='none'
-                                stroke='currentColor'
-                                viewBox='0 0 24 24'
-                            >
-                                <path
-                                    strokeLinecap='round'
-                                    strokeLinejoin='round'
-                                    strokeWidth='2'
-                                    d='M9 5l7 7-7 7'
-                                />
-                            </svg>
                         </Link>
                     </div>
                 </div>

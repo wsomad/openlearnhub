@@ -1,38 +1,21 @@
 import 'react-toastify/dist/ReactToastify.css';
-import {BrowserRouter as Navigate, Route, Routes} from 'react-router-dom';
+
+import { BrowserRouter as Navigate, Route, Routes } from 'react-router-dom';
+
 import AuthPage from './pages/auth/AuthPage';
+import InstructorAuthPage from './pages/auth/InstructorAuthPage';
+import CreateCoursePage from './pages/instructor/course/CreateCoursePage';
+import EditCoursePage from './pages/instructor/course/EditCoursePage';
+import CourseDashboardPage from './pages/instructor/home/CourseDashboardPage';
+import ProfilePage from './pages/profile/ProfilePage';
+import CourseCategoriesPage from './pages/student/course/CourseCategoriesPage';
 import EnrolledCoursePage from './pages/student/course/EnrolledCoursePage';
 import ListEnrolledCoursePage from './pages/student/course/ListEnrolledCoursePage';
 import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
 import HomePage from './pages/student/home/HomePage';
-import CourseDashboardPage from './pages/instructor/home/CourseDashboardPage';
-import CreateCoursePage from './pages/instructor/course/CreateCoursePage';
 import ProtectedRoute from './routes/ProtectedRoute/ProtectedRoute';
-import EditCoursePage from './pages/instructor/course/EditCoursePage';
-import ProfilePage from './pages/profile/ProfilePage';
-import CourseCategoriesPage from './pages/student/course/CourseCategoriesPage';
-import InstructorAuthPage from './pages/auth/InstructorAuthPage';
 
 const App: React.FC = () => {
-    // Destucturing properties from `useAuth`.
-    // const {user, isAuthenticated, signUserOut} = useAuth();
-    //const {currentUser} = useUser();
-
-    // Differentiate user type to render components with appropriate design and functionality.
-    // const userType: 'student' | 'instructor' = user?.role || 'student';
-
-    // State for testing - you might want to replace this with Redux later
-    // const [defaultUserId] = useState<string>('u3');
-    // const [userType, setUserType] = useState<ViewMode>('instructor');
-    // const [currentRole, setCurrentRole] = useState<UserRole>('instructor');
-
-    // const toggleViewMode = () => {
-    //     setUserType((prev) => (prev === 'student' ? 'instructor' : 'student'));
-    //     setCurrentRole((prev) =>
-    //         prev === 'student' ? 'instructor' : 'student',
-    //     );
-    // };
-
     return (
         <>
             {/* Later, update each path to have authentication condition */}
@@ -53,7 +36,11 @@ const App: React.FC = () => {
                 {/* Authentication path */}
                 <Route path='/auth' element={<AuthPage />} />
                 <Route path='/home' element={<HomePage />} />
-                <Route path='/categories' element={<CourseCategoriesPage/>} />
+                <Route path='/categories' element={<CourseCategoriesPage />} />
+                <Route
+                    path='/instructor/:id/profile'
+                    element={<ProfilePage />}
+                />
                 {/* Course Enrolled Routes */}
                 <Route
                     path='/listofenrolledcourse'
@@ -71,14 +58,6 @@ const App: React.FC = () => {
                     <Route
                         path='dashboard/course/create'
                         element={<CreateCoursePage />}
-                        /* // <Layout>
-                            //     <div className='container mx-auto px-4 py-8'>
-                            //         <h1 className='text-3xl font-bold font-abhaya mb-8'>
-                            //             Create New Course
-                            //         </h1>
-
-                            //     </div>
-                            // </Layout> */
                     />
                     {/* Edit Course */}
                     <Route

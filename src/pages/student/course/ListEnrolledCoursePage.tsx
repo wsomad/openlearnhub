@@ -1,7 +1,8 @@
 import React from 'react';
-import HeaderComponent from '../../../components/HeaderComponent';
-import CardCourseComponent from '../../../components/card/CardCourseComponent';
+
 import thumbnail from '../../../assets/images/thumbnail.png';
+import CardCourseComponent from '../../../components/card/CardCourseComponent';
+import HeaderComponent from '../../../components/HeaderComponent';
 
 function ListEnrolledCoursePage() {
     const dummyCourses = [
@@ -75,7 +76,7 @@ function ListEnrolledCoursePage() {
                                         'Navigating to Course Details page',
                                     )
                                 }
-                                size='small'
+                                size='sm'
                             />
                         ))}
                     </div>

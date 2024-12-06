@@ -1,11 +1,15 @@
 import React from 'react';
-import HeaderComponent from '../../../components/HeaderComponent';
-import SearchComponent from '../../../components/SearchComponent';
+import { useSelector } from 'react-redux';
+
 import CardInstructorInvitationComponent from '../../../components/card/CardInstructorInvitationComponent';
 import CardLatestCoursesComponent from '../../../components/card/CardLatestCoursesComponent';
 import CardPopularCoursesComponent from '../../../components/card/CardPopularCoursesComponent';
+import HeaderComponent from '../../../components/HeaderComponent';
+import SearchComponent from '../../../components/SearchComponent';
 
 const HomePage: React.FC = () => {
+    const currentState = useSelector((state) => state);
+    console.log('[Home Page] Current State from Selector:', currentState);
     return (
         <div>
             <HeaderComponent />

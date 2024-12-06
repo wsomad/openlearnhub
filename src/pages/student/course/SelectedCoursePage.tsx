@@ -1,26 +1,35 @@
-import React, {useEffect, useState} from 'react';
-import HeaderComponent from '../../../components/HeaderComponent';
-import CardCourseComponent from '../../../components/card/CardCourseComponent';
+import React, { useEffect, useState } from 'react';
+import { HiOutlineDocumentText } from 'react-icons/hi';
+import { MdQuiz } from 'react-icons/md';
+import { RiTimer2Line } from 'react-icons/ri';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate, useParams } from 'react-router-dom';
+
 import thumbnail from '../../../assets/images/thumbnail.png';
-import {RiTimer2Line} from 'react-icons/ri';
-import {HiOutlineDocumentText} from 'react-icons/hi';
-import {MdQuiz} from 'react-icons/md';
-import {useCourses} from '../../../hooks/useCourses';
-import {useNavigate, useParams} from 'react-router-dom';
-import {useUser} from '../../../hooks/useUser';
+import CardCourseComponent from '../../../components/card/CardCourseComponent';
 import CardDashboard from '../../../components/CardInstructor';
-import {useSelector} from 'react-redux';
 import CourseRequirements from '../../../components/enrollment/CourseRequirements';
-import {Course} from '../../../types/course';
+import HeaderComponent from '../../../components/HeaderComponent';
+import { useCourses } from '../../../hooks/useCourses';
+import { useSections } from '../../../hooks/useSections';
+import { useUser } from '../../../hooks/useUser';
+import { clearSingleCourse } from '../../../store/slices/courseSlice';
+import { Course } from '../../../types/course';
 
 const SelectedCoursePage: React.FC = () => {
-    const {selectedCourse, fetchCourseById, updateCourse} = useCourses();
+    const {selectedCourse, fetchCourseById, updateCourse, deleteSingleCourse} =
+        useCourses();
     const {currentUser, userRole} = useUser();
+    const {resetSectionsState} = useSections();
     const {id} = useParams<{id: string}>();
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const currentState = useSelector((state) => state);
-    console.log('Current State from Selector:', currentState);
+    console.log(
+        '[Selected Course Page] Current State from Selector:',
+        currentState,
+    );
 
     useEffect(() => {
         const loadCourse = async () => {
@@ -32,6 +41,13 @@ const SelectedCoursePage: React.FC = () => {
         };
         loadCourse();
     }, [currentUser, userRole]);
+
+    useEffect(() => {
+        return () => {
+            deleteSingleCourse();
+            resetSectionsState();
+        };
+    }, [dispatch]);
 
     const handleEnrollementClick = async (
         e: React.MouseEvent<HTMLButtonElement>,
@@ -78,7 +94,9 @@ const SelectedCoursePage: React.FC = () => {
                     {/* Course Card and Requirements Section */}
                     <div className='flex justify-between items-start mt-6 gap-6'>
                         <CardCourseComponent
-                            thumbnail={selectedCourse?.course_thumbnail_url || ''}
+                            thumbnail={
+                                selectedCourse?.course_thumbnail_url || ''
+                            }
                             title={
                                 selectedCourse?.course_title || 'Course Title'
                             }

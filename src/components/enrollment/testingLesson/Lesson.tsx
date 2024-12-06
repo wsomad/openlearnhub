@@ -13,9 +13,9 @@ import DeleteModal from './DeleteModal';
 import LessonModal from './LessonModal';
 
 interface LessonProps {
-    section: Section; // The section object containing lesson details
-    index: number; // Position of the lesson in the section
-    canEdit: boolean; // Position/order of the section
+    section: Section;
+    index: number;
+    canEdit: boolean;
     onLessonSelect?: (lesson: LessonBase) => void;
     onEditSectionTitle: (
         section_id: string,
@@ -38,7 +38,6 @@ const Lesson: React.FC<LessonProps> = ({
     onEditLesson,
     onDeleteLesson,
 }) => {
-    // Custom hooks for managing course, lesson, and section data
     const {selectedCourse} = useCourses();
     const {userRole} = useUser();
     const isInstructor = userRole === 'instructor';
@@ -49,14 +48,9 @@ const Lesson: React.FC<LessonProps> = ({
         getLessonsForSection,
         setSelectedLesson,
         clearSelectedLesson,
-        deleteLesson,
     } = useLessons();
-    const {
-        updateSection,
-        deleteSection,
-        setSelectedSection,
-        clearSelectedSection,
-    } = useSections();
+    const {deleteSection, setSelectedSection, deleteSelectedSection} =
+        useSections();
 
     // State for managing UI elements visibility and modal states
     const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
@@ -129,7 +123,7 @@ const Lesson: React.FC<LessonProps> = ({
     // Cleanup and refresh data after closing lesson modal
     const closeAddLessonModal = async () => {
         setIsAddLessonOpen(false);
-        clearSelectedSection();
+        deleteSelectedSection();
         clearSelectedLesson();
         await fetchSectionLessonsData();
     };

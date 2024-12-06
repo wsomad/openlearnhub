@@ -21,7 +21,7 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
     sectionToEdit,
 }) => {
     const [sectionTitle, setSectionTitle] = useState<string>('');
-    const {allSections, clearSelectedSection} = useSections();
+    const {allSections, deleteSelectedSection} = useSections();
     const {selectedCourse} = useCourses();
 
     useEffect(() => {
@@ -45,7 +45,7 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
 
         onSubmit(newSection);
         onClose();
-        clearSelectedSection();
+        deleteSelectedSection();
         setSectionTitle('');
     };
 

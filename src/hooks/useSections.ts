@@ -12,7 +12,6 @@ import {
 	updateSectionById,
 } from '../services/firestore/SectionService';
 import {
-<<<<<<< HEAD
 	clearSection,
 	clearSections,
 	clearSingleSection,
@@ -20,14 +19,6 @@ import {
 	resetSectionState,
 	setSection,
 	setSections,
-=======
-    modifySection,
-    setSection,
-    setSections,
-    clearSection,
-    clearSections,
-    clearSingleSection,
->>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 } from '../store/slices/sectionSlice';
 import { RootState } from '../store/store';
 import { Section } from '../types/section';
@@ -51,16 +42,11 @@ export const useSections = () => {
         section: Omit<Section, 'section_id'>,
     ): Promise<void> => {
         try {
-<<<<<<< HEAD
             const newSection = {
                 ...section,
-                section_id: '', // This will be set by Firebase
+                section_id: '',
             };
             const addedSection = await addSections(course_id, newSection);
-            // dispatch(setSections([...allSections, sections]));
-=======
-            const addedSection = await addSections(course_id, section);
->>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
             dispatch(setSection(addedSection));
             console.log('Sections created successfully:');
         } catch (error) {
@@ -139,72 +125,6 @@ export const useSections = () => {
         }
     };
 
-    // const updateSection = async (
-    //     course_id: string,
-    //     section_id: string,
-    //     update_section: Partial<Section>[],
-    // ): Promise<void> => {
-    //     try {
-    //         // Ensure update_section is always treated as an array.
-    //         if (Array.isArray(update_section)) {
-    //             await updateSectionById(course_id, section_id, update_section);
-
-    //             // Dispatch updates to Redux for each updated section.
-    //             update_section.forEach((updatedData) => {
-    //                 dispatch(
-    //                     modifySection({
-    //                         id: course_id,
-    //                         updatedSectionObject: updatedData,
-    //                     }),
-    //                 );
-    //             });
-    //         } else {
-    //             console.error(
-    //                 'Expected update_section to be an array of partial updates.',
-    //             );
-    //         }
-    //     } catch (error) {
-    //         console.error('Failed to update section:', error);
-    //     }
-    // };
-
-    // const updateSection = async (
-    //     course_id: string,
-    //     section_id: string,
-    //     update_section: Partial<Section>[],
-    // ): Promise<void> => {
-    //     try {
-    //         if (Array.isArray(update_section)) {
-    //             await updateSectionById(course_id, section_id, update_section);
-    //             update_section.forEach((updatedData) => {
-    //                 dispatch(
-    //                     modifySection({
-    //                         id: course_id,
-    //                         updatedSectionObject: updatedData || [],
-    //                     }),
-    //                 );
-    //             });
-    //         } else {
-    //             const updated = await updateSectionById(
-    //                 course_id,
-    //                 section_id,
-    //                 update_section,
-    //             );
-    //             if (updated) {
-    //                 dispatch(
-    //                     modifySection({
-    //                         id: course_id,
-    //                         updatedSectionObject: update_section,
-    //                     }),
-    //                 );
-    //                 console.log('Section updated successfully:', updated);
-    //             }
-    //         }
-    //     } catch (error) {
-    //         console.error('Failed to update section:', error);
-    //     }
-    // };
-
     /**
      * Delete section by ID.
      * @param course_id
@@ -221,13 +141,13 @@ export const useSections = () => {
                 return;
             }
 
-            // First delete all lessons in the section
-            const sectionLessons = await getAllLessons(course_id, section_id);
-            await Promise.all(
-                sectionLessons.map((lesson) =>
-                    deleteLessonById(course_id, section_id, lesson.lesson_id),
-                ),
-            );
+            // // First delete all lessons in the section
+            // const sectionLessons = await getAllLessons(course_id, section_id);
+            // await Promise.all(
+            //     sectionLessons.map((lesson) =>
+            //         deleteLessonById(course_id, section_id, lesson.lesson_id),
+            //     ),
+            // );
 
             // Delete the section itself
             await deleteSectionById(course_id, section_id);
@@ -256,12 +176,11 @@ export const useSections = () => {
         }
     };
 
-<<<<<<< HEAD
     const setSelectedSection = (section: Section) => {
         dispatch(setSection(section));
     };
 
-    const clearSelectedSection = () => {
+    const deleteSelectedSection = () => {
         dispatch(clearSingleSection());
     };
 
@@ -272,15 +191,6 @@ export const useSections = () => {
     const resetSectionsState = () => {
         dispatch(resetSectionState());
     };
-=======
-    const deleteAllSections = () => {
-        clearSections();
-    }
-
-    const deleteSingleSection = () => {
-        clearSingleSection();
-    }
->>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 
     return {
         selectedSection,
@@ -290,14 +200,9 @@ export const useSections = () => {
         fetchAllSections,
         updateSection,
         deleteSection,
-<<<<<<< HEAD
         setSelectedSection,
-        clearSelectedSection,
+        deleteSelectedSection,
         clearAllSections,
         resetSectionsState,
-=======
-        deleteAllSections,
-        deleteSingleSection,
->>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
     };
 };
