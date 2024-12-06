@@ -8,12 +8,13 @@ import {MdQuiz} from 'react-icons/md';
 import {useCourses} from '../../../hooks/useCourses';
 import {useNavigate, useParams} from 'react-router-dom';
 import {useUser} from '../../../hooks/useUser';
-import CardDashboard from '../../../components/CardDashboard';
+import CardDashboard from '../../../components/CardInstructor';
 import {useSelector} from 'react-redux';
 import CourseRequirements from '../../../components/enrollment/CourseRequirements';
+import {Course} from '../../../types/course';
 
 const SelectedCoursePage: React.FC = () => {
-    const {selectedCourse, fetchCourseById} = useCourses();
+    const {selectedCourse, fetchCourseById, updateCourse} = useCourses();
     const {currentUser, userRole} = useUser();
     const {id} = useParams<{id: string}>();
     const [loading, setLoading] = useState(true);
@@ -31,6 +32,32 @@ const SelectedCoursePage: React.FC = () => {
         };
         loadCourse();
     }, [currentUser, userRole]);
+
+    const handleEnrollementClick = async (
+        e: React.MouseEvent<HTMLButtonElement>,
+    ) => {
+        e.preventDefault();
+
+        const enrollmentNumber =
+            (selectedCourse?.course_enrollment_number || 0) + 1;
+
+        const updatedCourse = {
+            ...selectedCourse,
+            course_enrollment_number: enrollmentNumber,
+        } as Course;
+
+        try {
+            const response = await updateCourse(id || '', updatedCourse);
+
+            console.log(
+                'Successfully update number of enrollment for this course',
+                response,
+            );
+            navigate(`/enrolledcourse/${selectedCourse?.course_id}`);
+        } catch (error) {
+            console.error('Failed to update course enrollment number', error);
+        }
+    };
 
     return (
         <div>
@@ -51,7 +78,7 @@ const SelectedCoursePage: React.FC = () => {
                     {/* Course Card and Requirements Section */}
                     <div className='flex justify-between items-start mt-6 gap-6'>
                         <CardCourseComponent
-                            thumbnail={thumbnail}
+                            thumbnail={selectedCourse?.course_thumbnail_url || ''}
                             title={
                                 selectedCourse?.course_title || 'Course Title'
                             }
@@ -64,7 +91,7 @@ const SelectedCoursePage: React.FC = () => {
                             onButtonClick={() =>
                                 console.log('Navigating to Course Details page')
                             }
-                            size='medium'
+                            size='lg'
                         />
                         <div className='flex flex-col'>
                             <div className='py-4 border border-gray max-w-lg max-h-[550px] overflow-y-auto'>
@@ -89,11 +116,7 @@ const SelectedCoursePage: React.FC = () => {
                                 ></CourseRequirements>
                             </div>
                             <button
-                                onClick={() =>
-                                    navigate(
-                                        `/enrolledcourse/${selectedCourse?.course_id}`,
-                                    )
-                                }
+                                onClick={handleEnrollementClick}
                                 className='bg-secondary font-abhaya font-semibold text-white py-2 px-4 mt-6'
                             >
                                 Enroll Now

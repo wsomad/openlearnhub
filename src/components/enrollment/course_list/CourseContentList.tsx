@@ -14,11 +14,17 @@ import CourseContentView from './CourseContentView';
 
 interface CourseContentListProps {
     course_id: string;
+<<<<<<< HEAD
     sectionsOrder: Section[];
     setSectionsOrder: React.Dispatch<React.SetStateAction<Section[]>>;
     onLessonSelect?: (lesson: LessonBase) => void;
     onSaveOrder: () => void;
     selectedLessonId?: string;
+=======
+    sectionsOrder?: Section[];
+    setSectionsOrder?: React.Dispatch<React.SetStateAction<Section[]>>;
+    onSaveOrder?: () => void;
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 }
 
 const CourseContentList: React.FC<CourseContentListProps> = ({
@@ -36,7 +42,11 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         createSections,
         updateSection,
         deleteSection,
+<<<<<<< HEAD
         fetchAllSections,
+=======
+        deleteSingleSection,
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
     } = useSections();
     const {createLessons, fetchAllLessons, updateLesson, deleteLesson} =
         useLessons();
@@ -83,10 +93,17 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     const closeSectionModal = (): void => setIsModalOpen(false);
 
     // Close confirmation function to close modal of content.
+<<<<<<< HEAD
     // const closeConfirmModal = (): void => {
     //     setIsConfirmModalOpen(false);
     //     clearSingleSection();
     // };
+=======
+    const closeConfirmModal = (): void => {
+        setIsConfirmModalOpen(false);
+        deleteSingleSection()
+    };
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 
     // Handle add function to add section.
     const handleAddSection = async (
@@ -262,9 +279,9 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                 <CourseContentView
                     course_id={course_id || ''}
                     canEdit={canEditCourse()}
-                    sectionsOrder={sectionsOrder}
-                    setSectionsOrder={setSectionsOrder}
-                    onSaveOrder={onSaveOrder}
+                    sectionsOrder={sectionsOrder || []}
+                    setSectionsOrder={setSectionsOrder || (() => {})}
+                    onSaveOrder={onSaveOrder || (() => {})}
                     onDeleteSection={handleDeleteSection}
                     onEditSectionTitle={handleEditSectionTitle}
                     onAddLesson={handleAddLesson}

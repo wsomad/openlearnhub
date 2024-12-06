@@ -80,7 +80,14 @@ const SearchComponent: React.FC = () => {
                                     className='px-4 py-2 cursor-pointer hover:bg-gray-100 font-abhaya text-lg'
                                     onClick={() => handleSelect(course)}
                                 >
-                                    {course.course_title}
+                                    <div className='flex flex-row items-center gap-4'>
+                                        <img
+                                            src={course.course_thumbnail_url}
+                                            alt={course.course_title}
+                                            className={`w-15 h-8 object-cover `}
+                                        />
+                                        {course.course_title}
+                                    </div>
                                 </li>
                             ))}
                         </ul>

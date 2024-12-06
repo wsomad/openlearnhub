@@ -12,7 +12,7 @@ import {
 } from 'firebase/auth';
 import {useNavigate} from 'react-router-dom';
 import {AppDispatch, RootState} from '../store/store';
-import {User} from '../types/user'; // Assuming you have a User type here.
+import {User} from '../types/user';
 import {dicebearStyle} from '../types/avatar';
 import {generatedAvatarUrl} from '../api/dicebearApi';
 import {clearCourses} from '../store/slices/courseSlice';
@@ -25,20 +25,14 @@ export const useAuth = () => {
         (state: RootState) => state.user.isAuthenticated,
     );
 
-    /**
-     * SignIn function
-     */
-    const signIn = async (
-        email: string,
-        password: string,
-        role: 'student' | 'instructor',
-    ): Promise<void> => {
+    const signIn = async (email: string, password: string, role: 'student' | 'instructor'): Promise<void> => {
         try {
             const userCredential = await signInWithEmailAndPassword(
                 auth,
                 email,
                 password,
             );
+
             const currentUser = userCredential.user;
 
             if (currentUser) {
@@ -46,18 +40,48 @@ export const useAuth = () => {
                     currentUser.uid,
                 )) as User;
                 dispatch(setUser({...userProfile, role}));
-                console.log(
-                    'Successfully signed in as',
-                    currentUser.uid,
-                    'and user role is',
-                    role,
-                );
                 navigate('/home');
             } else {
                 dispatch(clearUser());
             }
-        } catch (error: unknown) {
+        } catch (error) {
             console.error('Sign In Error:', (error as Error).message);
+        }
+    };
+
+    const signUp = async (userProfile: Omit<User, 'uid'> & {password: string}): Promise<void> => {
+        const {email, password} = userProfile;
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(
+                auth,
+                email,
+                password,
+            );
+            const randomProfilePicture = await generateRandomProfilePicture();
+
+            const newUser: User = {
+                ...userProfile,
+                uid: userCredential.user.uid,
+                profile_image: randomProfilePicture,
+            };
+
+            await addUser(newUser);
+            dispatch(setUser(newUser));
+            navigate('/auth');
+        } catch (error: unknown) {
+            console.error('Sign Up Error:', (error as Error).message);
+        }
+    };
+
+    const signUserOut = async (): Promise<void> => {
+        try {
+            dispatch(clearUser());
+            dispatch(clearCourses());
+            await signOut(auth);
+            navigate('/auth');
+        } catch (error: unknown) {
+            console.error('Sign Out Error:', (error as Error).message);
         }
     };
 
@@ -95,79 +119,21 @@ export const useAuth = () => {
         return generatedAvatarUrl(randomStyle, randomSeed);
     };
 
-    /**
-     * SignUp function
-     */
-    const signUp = async (
-        userProfile: Omit<User, 'uid'> & {password: string},
-    ): Promise<void> => {
-        const {email, password} = userProfile;
-        try {
-            const userCredential = await createUserWithEmailAndPassword(
-                auth,
-                email,
-                password,
-            );
-            const randomProfilePicture = await generateRandomProfilePicture();
-
-            const newUser: User = {
-                ...userProfile,
-                uid: userCredential.user.uid, // Add UID from Firebase
-                profile_image: randomProfilePicture,
-            };
-
-            if (newUser.profile_image) {
-                console.log(
-                    '[USEAUTH] - Successfully generate random profile image for user.',
-                );
-            }
-
-            await addUser(newUser); // Save user to Firestore
-            console.log(
-                'Successfully signed up as',
-                newUser.uid,
-                'and user role is',
-                userProfile.role,
-            );
-
-            dispatch(setUser(newUser));
-            navigate('/auth');
-        } catch (error: unknown) {
-            console.error('Sign Up Error:', (error as Error).message);
-        }
-    };
-
-    /**
-     * SignOut function
-     */
-    const signUserOut = async (): Promise<void> => {
-        try {
-            await signOut(auth);
-            dispatch(clearUser());
-            dispatch(clearCourses());
-            navigate('/auth');
-        } catch (error: unknown) {
-            console.error('Sign Out Error:', (error as Error).message);
-        }
-    };
-
-    // Listen for auth state changes and fetch user data on login
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(
             auth,
             async (firebaseUser: FirebaseUser | null) => {
                 if (firebaseUser) {
-                    const userProfile = (await getUserById(
-                        firebaseUser.uid,
-                    )) as User;
+                    const userProfile = (
+                        await getUserById(firebaseUser.uid)
+                    ) as User;
                     dispatch(setUser(userProfile));
                 } else {
                     dispatch(clearUser());
                 }
             },
         );
-
-        return unsubscribe; // Cleanup the listener when the component unmounts
+        return unsubscribe;
     }, [dispatch]);
 
     return {currentUser, isAuthenticated, signIn, signUp, signUserOut};

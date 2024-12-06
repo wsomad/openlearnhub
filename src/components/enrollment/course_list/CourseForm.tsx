@@ -12,6 +12,14 @@ import { clearSections } from '../../../store/slices/sectionSlice';
 import { Course } from '../../../types/course';
 import { Section } from '../../../types/section';
 import CourseContentList from './CourseContentList';
+<<<<<<< HEAD
+=======
+import {FaPlus} from 'react-icons/fa';
+import {useDispatch} from 'react-redux';
+import {clearSections} from '../../../store/slices/sectionSlice';
+import {Section} from '../../../types/section';
+import { SpecializationArea } from '../../../types/instructor';
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 
 interface CourseFormProps {
     courseId?: string;
@@ -21,7 +29,7 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const {currentUser, userRole} = useUser();
-    const {selectedCourse, createCourse, fetchCourseById, updateCourse} =
+    const {selectedCourse, createCourse, fetchCourseById, updateCourse, deleteSingleCourse} =
         useCourses();
     const {
         selectedSection,
@@ -52,6 +60,13 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
         sections: [],
         ready_for_publish: false,
     });
+
+    const specializationOptions: SpecializationArea[] = [
+        'Web Development',
+        'Machine Learning',
+        'Mobile Development',
+        'Cybersecurity',
+    ];
 
     // Run side effect to fetch course with `courseId`.
     useEffect(() => {
@@ -136,7 +151,8 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
     // Run side effect to clear state management.
     useEffect(() => {
         return () => {
-            dispatch(clearSingleCourse());
+            deleteSingleCourse();
+            // dispatch(clearSingleCourse());
             dispatch(clearSections());
             resetSectionsState();
             resetLessonsState();
@@ -320,38 +336,38 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
                             <input
                                 id='course_pricing'
                                 name='course_pricing'
-                                type='number'
-                                min='0'
-                                step='0.01'
-                                value={courseData.course_pricing}
+                                type='text'
+                                // min='0'
+                                // step='0.01'
+                                // value={courseData.course_pricing}
+                                value='FREE'
                                 onChange={handleInputChange}
                                 className='w-full px-4 py-2 border border-gray focus:outline-none focus:ring-2 focus:ring-primary'
                                 required
+                                disabled
                             />
                         </div>
 
                         <div>
                             <label
-                                htmlFor='course_type'
-                                className='block text-lg font-medium text-gray-700 mb-1'
+                                htmlFor="course_type"
+                                className="block text-lg font-medium text-gray-700 mb-1"
                             >
                                 Course Type *
                             </label>
                             <select
-                                id='course_type'
-                                name='course_type'
+                                id="course_type"
+                                name="course_type"
                                 value={courseData.course_type}
                                 onChange={handleInputChange}
-                                className='w-full px-4 py-2 border border-gray focus:outline-none focus:ring-2 focus:ring-primary appearance-none'
+                                className="w-full px-4 py-2 border border-gray focus:outline-none focus:ring-2 focus:ring-primary appearance-none"
                                 required
                             >
-                                <option value='Web Development'>
-                                    Web Development
-                                </option>
-                                <option value='App Development'>
-                                    App Development
-                                </option>
-                                <option value='UI/UX'>UI/UX</option>
+                                {specializationOptions.map((option) => (
+                                    <option key={option} value={option}>
+                                        {option}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>

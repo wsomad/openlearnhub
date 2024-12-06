@@ -183,6 +183,7 @@ import { Link, useParams } from 'react-router-dom';
 
 import CourseContentList from '../../../components/enrollment/course_list/CourseContentList';
 import CourseRequirements from '../../../components/enrollment/CourseRequirements';
+<<<<<<< HEAD
 import DocumentPreview from '../../../components/enrollment/testingLesson/DocumentPreview';
 import QuizPreview from '../../../components/enrollment/testingLesson/QuizPanel';
 import VideoPreview from '../../../components/enrollment/testingLesson/VideoPreview';
@@ -197,6 +198,14 @@ import {
 	QuizLesson,
 	VideoLesson,
 } from '../../../types/lesson';
+=======
+import {Link, useParams} from 'react-router-dom';
+import {useCourses} from '../../../hooks/useCourses';
+import {useSections} from '../../../hooks/useSections';
+import {useUser} from '../../../hooks/useUser';
+import {clearSections} from '../../../store/slices/sectionSlice';
+import {useDispatch} from 'react-redux';
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 
 const EnrolledCoursePage = () => {
     const {selectedCourse, fetchCourseById} = useCourses();
@@ -204,11 +213,15 @@ const EnrolledCoursePage = () => {
     const {currentUser, userRole} = useUser();
     const {id} = useParams();
     const [loading, setLoading] = useState(true);
+<<<<<<< HEAD
     const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
     const [selectedLessonType, setSelectedLessonType] = useState<
         'video' | 'document' | 'quiz' | null
     >(null);
+=======
+    const dispatch = useDispatch();
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 
     useEffect(() => {
         const loadCourse = async () => {
@@ -224,6 +237,13 @@ const EnrolledCoursePage = () => {
         const loadSections = async () => {
             if (id) {
                 await fetchAllSections(id);
+<<<<<<< HEAD
+=======
+                console.log(
+                    `Successfully fetch all sections under ${id} course.`,
+                    allSections,
+                );
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
             }
         };
         loadSections();
@@ -261,9 +281,17 @@ const EnrolledCoursePage = () => {
         );
     }
 
+    // Run side effect to clear state management.
+    useEffect(() => {
+        return () => {
+            dispatch(clearSections());
+        };
+    }, [dispatch]);
+
     return (
         <div className='font-abhaya min-h-screen bg-gray-50'>
             <HeaderComponent />
+<<<<<<< HEAD
 
             {/* Main Content */}
             <div className='max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
@@ -368,6 +396,31 @@ const EnrolledCoursePage = () => {
                             onSaveOrder={() => {}}
                             onLessonSelect={handleLessonSelect}
                             selectedLessonId={selectedLesson?.lesson_id}
+=======
+            <div>
+                {/* <div className='px-4 sm:px-6 md:px-8 lg:px-10 xl:px-10'> */}
+                <div className='w-screen-xl h-full w-full justify-between'>
+                    <div className='flex justify-between items-start'>
+                        <CardCourseComponent
+                            thumbnail={thumbnail}
+                            title={
+                                selectedCourse?.course_title || 'Course Title'
+                            }
+                            instructor={
+                                selectedCourse?.course_instructor ||
+                                'Course Instructor'
+                            }
+                            pricing={selectedCourse?.course_pricing || 'FREE'}
+                            buttonText='Incomplete'
+                            onButtonClick={() =>
+                                console.log('Navigating to Course Details page')
+                            }
+                            size='lg'
+                        />
+                        <CourseContentList
+                            course_id={id || ''}
+                            sectionsOrder={allSections}
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
                         />
                     </div>
                 </div>

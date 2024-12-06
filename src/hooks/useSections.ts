@@ -12,6 +12,7 @@ import {
 	updateSectionById,
 } from '../services/firestore/SectionService';
 import {
+<<<<<<< HEAD
 	clearSection,
 	clearSections,
 	clearSingleSection,
@@ -19,6 +20,14 @@ import {
 	resetSectionState,
 	setSection,
 	setSections,
+=======
+    modifySection,
+    setSection,
+    setSections,
+    clearSection,
+    clearSections,
+    clearSingleSection,
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 } from '../store/slices/sectionSlice';
 import { RootState } from '../store/store';
 import { Section } from '../types/section';
@@ -41,20 +50,17 @@ export const useSections = () => {
         course_id: string,
         section: Omit<Section, 'section_id'>,
     ): Promise<void> => {
-        // try {
-        //     await addSection(course_id, section);
-        //     dispatch(setSections([...allSections, section]));
-        //     console.log('Section created successfully: ');
-        // } catch (error) {
-        //     console.error('Failed to create section: ', error);
-        // }
         try {
+<<<<<<< HEAD
             const newSection = {
                 ...section,
                 section_id: '', // This will be set by Firebase
             };
             const addedSection = await addSections(course_id, newSection);
             // dispatch(setSections([...allSections, sections]));
+=======
+            const addedSection = await addSections(course_id, section);
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
             dispatch(setSection(addedSection));
             console.log('Sections created successfully:');
         } catch (error) {
@@ -250,6 +256,7 @@ export const useSections = () => {
         }
     };
 
+<<<<<<< HEAD
     const setSelectedSection = (section: Section) => {
         dispatch(setSection(section));
     };
@@ -265,6 +272,15 @@ export const useSections = () => {
     const resetSectionsState = () => {
         dispatch(resetSectionState());
     };
+=======
+    const deleteAllSections = () => {
+        clearSections();
+    }
+
+    const deleteSingleSection = () => {
+        clearSingleSection();
+    }
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
 
     return {
         selectedSection,
@@ -274,9 +290,14 @@ export const useSections = () => {
         fetchAllSections,
         updateSection,
         deleteSection,
+<<<<<<< HEAD
         setSelectedSection,
         clearSelectedSection,
         clearAllSections,
         resetSectionsState,
+=======
+        deleteAllSections,
+        deleteSingleSection,
+>>>>>>> 94bc1c8a0abf751b72e56c1d52f2cde76ff522ba
     };
 };
