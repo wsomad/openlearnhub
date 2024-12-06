@@ -8,13 +8,14 @@ interface CardCourseComponentProps {
     thumbnail: string;
     title: string;
     instructor: string;
-    pricing: number | string;
-    buttonText?: string;
-    onButtonClick?: () => void;
-    size: 'small' | 'medium' | 'big' | 'default'; // Assuming size can be these values
+    pricing?: number | string;
+    enrolledStudents?: number;
+    size: 'sm' | 'md' | 'lg' | 'xl' | 'default';
     hoursDuration?: number | string;
     numSections?: number | string;
     numLectures?: number | string;
+    buttonText?: string;
+    onButtonClick?: () => void;
 }
 
 const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
@@ -22,27 +23,31 @@ const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
     title,
     instructor,
     pricing,
-    buttonText,
-    onButtonClick,
+    enrolledStudents,
     size,
     hoursDuration,
     numSections,
     numLectures,
+    buttonText,
+    onButtonClick,
 }) => {
     let cardSizeClass = '';
     let imageSizeClass = '';
 
-    // Set the correct class based on the `size` prop
     switch (size) {
-        case 'small':
-            cardSizeClass = 'w-[280px] h-[300px]';
+        case 'sm':
+            cardSizeClass = 'w-[290px] h-[300px]';
             imageSizeClass = 'h-[250px]';
             break;
-        case 'medium':
+        case 'md':
+            cardSizeClass = 'w-[380px] h-[300px]';
+            imageSizeClass = 'h-[200px]';
+            break;
+        case 'lg':
             cardSizeClass = 'w-[750px] h-[550px]';
             imageSizeClass = 'h-[500px]';
             break;
-        case 'big':
+        case 'xl':
             cardSizeClass = 'w-[full] h-[600px]';
             imageSizeClass = 'h-[500px]';
             break;
@@ -55,7 +60,7 @@ const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
     return (
         <div className={`card ${cardSizeClass} flex flex-col shadow-sm`}>
             <img
-                src={thumbnail} // Use properties from the course object
+                src={thumbnail}
                 alt={title}
                 className={`w-full ${imageSizeClass} object-cover `}
             />
@@ -81,8 +86,8 @@ const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
                     {instructor}
                 </p>
 
-                <div className='flex items-center justify-between w-full'>
-                    {size === 'big' && (
+                <div className='flex items-end justify-between w-full'>
+                    {size === 'xl' && (
                         <div className='flex flex-row gap-6 justify-between mt-2'>
                             <div className='flex flex-row items-center mr-4'>
                                 <RiTimer2Line className='mr-2' />
@@ -104,22 +109,27 @@ const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
                             </div>
                         </div>
                     )}
-                    {size !== 'big' && (
-                        <p className='font-abhaya font-bold text-lg text-black'>
-                            {pricing}
-                        </p>
-                    )}
-                    {size !== 'big' ? (
+                    {size !== 'xl' &&
+                        (enrolledStudents ? (
+                            <p className='font-abhaya font-bold text-lg text-black'>
+                                {enrolledStudents} {enrolledStudents! > 1 ? "Enrollments" : "Enrollment"}
+                            </p>
+                        ) : (
+                            <p className='font-abhaya font-bold text-lg text-black'>
+                                MYR {pricing}
+                            </p>
+                        ))}
+                    {size !== 'xl' ? (
                         <button
                             onClick={onButtonClick}
-                            className='bg-secondary font-abhaya font-semibold text-white py-1 px-5'
+                            className='bg-primary font-abhaya text-white py-1 px-5'
                         >
                             {buttonText}
                         </button>
                     ) : (
                         <button
                             onClick={onButtonClick}
-                            className='bg-secondary font-abhaya font-semibold text-white py-1 px-5'
+                            className='bg-primary font-abhaya text-white py-1 px-5'
                         >
                             'Incomplete'
                         </button>

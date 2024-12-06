@@ -8,19 +8,18 @@ import {
 import {setUser, modifyUser, clearUser} from '../store/slices/userSlice';
 import {User} from '../types/user';
 import {RootState} from '../store/store';
-import {useEffect} from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import {
-    clearCourse,
     clearCourses,
     clearSearchCourseResults,
     clearSingleCourse,
 } from '../store/slices/courseSlice';
-import {clearSections} from '../store/slices/sectionSlice';
 
 export const useUser = () => {
     const dispatch = useDispatch();
     const currentUser = useSelector((state: RootState) => state.user.user);
     const userRole = useSelector((state: RootState) => state.user.userRole);
+    const navigate = useNavigate();
 
     // Function to create a new user as 'student' (default role)
     const createUser = async (
@@ -38,37 +37,6 @@ export const useUser = () => {
         } catch (error) {
             console.error('Failed to create user: ', error);
         }
-    };
-
-    // Function to toggle user role between 'student' and 'instructor'
-    const toggleUserRole = async (): Promise<User | null> => {
-        if (!currentUser) {
-            console.log('No current user found.');
-            return null;
-        }
-        const newRole =
-            currentUser.role === 'student' ? 'instructor' : 'student';
-
-        try {
-            if (currentUser.role !== newRole) {
-                const updatedUser = await updateUserById(currentUser.uid, {
-                    role: newRole,
-                });
-                if (updatedUser) {
-                    dispatch(modifyUser(updatedUser));
-                    dispatch(clearSingleCourse());
-                    dispatch(clearCourses());
-                    dispatch(clearSearchCourseResults());
-                    return updatedUser;
-                }
-                console.log('Current user role:', newRole);
-            } else {
-                console.log(`User is already a ${newRole}`);
-            }
-        } catch (error) {
-            console.error(`Failed to change role to ${newRole}: `, error);
-        }
-        return null;
     };
 
     // Fetch user by ID and update Redux state
@@ -103,7 +71,6 @@ export const useUser = () => {
             const updatedUser = await updateUserById(uid, updatedFields);
 
             if (updatedUser) {
-                // Update the Redux store with the new user data
                 dispatch(modifyUser(updatedUser));
                 console.log('User updated successfully:', updatedUser);
                 return updatedUser;
@@ -113,7 +80,7 @@ export const useUser = () => {
         } catch (error) {
             console.error('Failed to update user:', error);
         }
-        return null; // Return null in case of failure
+        return null;
     };
 
     // Delete user by ID
@@ -124,10 +91,7 @@ export const useUser = () => {
         }
 
         try {
-            // Perform the delete operation
             await deleteUserById(uid);
-
-            // Clear the Redux user state
             dispatch(clearUser());
             console.log('User deleted successfully');
         } catch (error) {
@@ -135,11 +99,93 @@ export const useUser = () => {
         }
     };
 
+    // Function to toggle user role between 'student' and 'instructor'
+    const toggleUserRole = async (): Promise<void> => {
+        if (!currentUser) {
+            console.error('No current user.');
+            return;
+        }
+
+        const newRole = currentUser.role === 'student' ? 'instructor' : 'student';
+
+        try {
+            if (userRole === 'student') {
+                if (currentUser.instructor?.hasRegister === true) {
+                    const updatedUser = await updateUserById(currentUser.uid, { role: newRole });
+
+                    if (updatedUser) {
+                        dispatch(modifyUser(updatedUser));
+                        console.log('User successfully switched back to student role.');
+                    }
+                    console.log('User is already registered as an instructor. Redirecting to dashboard...');
+                    navigate('/instructor/dashboard'); // Redirect to dashboard
+                    return;
+                } else {
+                    console.log('User is not registered as an instructor. Redirecting to registration...');
+                    navigate('/instructor/auth');
+                    return;
+                    // // Update `hasRegister` to true after successful registration
+                    // const updatedUser = await updateUserById(currentUser.uid, {
+                    //     role: 'instructor',
+                    //     'instructor.hasRegister': true
+                    // } as Partial<User>);
+
+                    // if (updatedUser) {
+                    //     dispatch(modifyUser(updatedUser));
+                    //     navigate('/instructor/dashboard'); // Redirect to dashboard after successful registration
+                    //     console.log('User successfully registered as instructor.');
+                    // }
+                    // return;
+                }
+            } else {
+                // Handle switching back to student role
+                //const newRole = 'student';
+                const updatedUser = await updateUserById(currentUser.uid, { role: newRole });
+
+                if (updatedUser) {
+                    dispatch(modifyUser(updatedUser));
+                    console.log('User successfully switched back to student role.');
+                }
+            }
+        } catch (error) {
+            console.error('Failed to toggle user role:', error);
+        }
+    };
+
+
+    // const toggleUserRole = async (): Promise<User | null> => {
+    //     if (!currentUser) {
+    //         return null;
+    //     }
+    //     const newRole = currentUser.role === 'student' ? 'instructor' : 'student';
+
+    //     try {
+    //         if (currentUser.role !== newRole) {
+    //             const updatedUser = await updateUserById(currentUser.uid, {
+    //                 role: newRole,
+    //             });
+    //             if (updatedUser) {
+    //                 dispatch(modifyUser(updatedUser));
+    //                 dispatch(clearSingleCourse());
+    //                 dispatch(clearCourses());
+    //                 dispatch(clearSearchCourseResults());
+    //                 return updatedUser;
+    //             }
+    //             console.log('Current user role:', newRole);
+    //         } else {
+    //             console.log(`User is already a ${newRole}`);
+    //         }
+    //     } catch (error) {
+    //         console.error(`Failed to change role to ${newRole}: `, error);
+    //     }
+    //     return null;
+    // };
+
     return {
         currentUser,
         userRole,
         createUser,
-        toggleUserRole, // Combined role toggle function
+        toggleUserRole,
         fetchUserById,
         updateUser,
         deleteUser,

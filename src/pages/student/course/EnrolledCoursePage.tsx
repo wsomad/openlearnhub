@@ -11,6 +11,8 @@ import {Link, useParams} from 'react-router-dom';
 import {useCourses} from '../../../hooks/useCourses';
 import {useSections} from '../../../hooks/useSections';
 import {useUser} from '../../../hooks/useUser';
+import {clearSections} from '../../../store/slices/sectionSlice';
+import {useDispatch} from 'react-redux';
 
 const EnrolledCoursePage: React.FC = () => {
     const {selectedCourse, fetchCourseById} = useCourses();
@@ -18,6 +20,7 @@ const EnrolledCoursePage: React.FC = () => {
     const {currentUser, userRole} = useUser();
     const {id} = useParams<{id: string}>();
     const [loading, setLoading] = useState(true);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const loadCourse = async () => {
@@ -36,11 +39,19 @@ const EnrolledCoursePage: React.FC = () => {
                 await fetchAllSections(id);
                 console.log(
                     `Successfully fetch all sections under ${id} course.`,
+                    allSections,
                 );
             }
         };
         loadSections();
     }, [id, currentUser, userRole]);
+
+    // Run side effect to clear state management.
+    useEffect(() => {
+        return () => {
+            dispatch(clearSections());
+        };
+    }, [dispatch]);
 
     return (
         <div>
@@ -63,14 +74,11 @@ const EnrolledCoursePage: React.FC = () => {
                             onButtonClick={() =>
                                 console.log('Navigating to Course Details page')
                             }
-                            size='big'
+                            size='lg'
                         />
                         <CourseContentList
-                            role={userRole}
                             course_id={id || ''}
-                            uid={currentUser?.uid || ''}
-                            initialSection={allSections}
-                            initialLesson={[]}
+                            sectionsOrder={allSections}
                         />
                     </div>
                 </div>

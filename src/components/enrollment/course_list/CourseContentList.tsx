@@ -12,9 +12,9 @@ import {useSections} from '../../../hooks/useSections';
 
 interface CourseContentListProps {
     course_id: string;
-    sectionsOrder: Section[];
-    setSectionsOrder: React.Dispatch<React.SetStateAction<Section[]>>;
-    onSaveOrder: () => void;
+    sectionsOrder?: Section[];
+    setSectionsOrder?: React.Dispatch<React.SetStateAction<Section[]>>;
+    onSaveOrder?: () => void;
 }
 
 const CourseContentList: React.FC<CourseContentListProps> = ({
@@ -30,6 +30,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         createSections,
         updateSection,
         deleteSection,
+        deleteSingleSection,
     } = useSections();
     const {currentUser, userRole} = useUser();
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -80,7 +81,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     // Close confirmation function to close modal of content.
     const closeConfirmModal = (): void => {
         setIsConfirmModalOpen(false);
-        clearSingleSection();
+        deleteSingleSection()
     };
 
     // Handle add function to add section.
@@ -267,9 +268,9 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                 <CourseContentView
                     course_id={course_id || ''}
                     canEdit={canEditCourse()}
-                    sectionsOrder={sectionsOrder}
-                    setSectionsOrder={setSectionsOrder}
-                    onSaveOrder={onSaveOrder}
+                    sectionsOrder={sectionsOrder || []}
+                    setSectionsOrder={setSectionsOrder || (() => {})}
+                    onSaveOrder={onSaveOrder || (() => {})}
                     onDeleteSection={handleDeleteSection}
                     onEditSectionTitle={handleEditSectionTitle}
                     onAddLesson={handleAddLesson}

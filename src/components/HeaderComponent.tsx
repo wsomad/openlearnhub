@@ -6,13 +6,13 @@ import {useUser} from '../hooks/useUser';
 
 interface Category {
     name: string;
-    path: string;
+    path?: string;
     onClick?: () => Promise<void>;
 }
 
 interface MenuItem {
     name: string;
-    path: string;
+    path?: string;
     onClick?: () => Promise<void>;
 }
 
@@ -29,21 +29,22 @@ const HeaderComponent: React.FC = () => {
 
     // List of objects under categories.
     const categories: Category[] = [
-        {name: 'Development', path: '/categories/development'},
-        {name: 'Language', path: '/categories/language'},
-        {name: 'Nature', path: '/categories/nature'},
-        {name: 'Science', path: '/categories/science'},
+        {name: 'Cybersecurity', path: '/categories/cybersecurity'},
+        {name: 'Machine Learning', path: '/categories/machine-learning'},
+        {name: 'Mobile Development', path: '/categories/mobile-development'},
+        {name: 'Web Development', path: '/categories/web-development'},
     ];
 
     // List of student menus for student.
     const studentMenu: MenuItem[] = [
-        {name: 'Profile', path: '/profile'},
-        {name: 'Enrolled Courses', path: '/listofenrolledcourse'},
+        {name: 'Home', path: '/home'},
+        //{name: 'Enrolled Courses', path: '/listofenrolledcourse'},
+        {name: 'Student Profile', path: '/profile'},
         ...(userRole === 'student'
             ? [
                   {
                       name: 'Switch to Instructor',
-                      path: '/instructor/dashboard',
+                      path: currentUser?.instructor?.hasRegister ? '/instructor/dashboard' : '/instructor/auth',
                       onClick: async () => {
                           await toggleUserRole();
                       },
@@ -54,10 +55,10 @@ const HeaderComponent: React.FC = () => {
 
     // List of instructor menus for instructor.
     const instructorMenu: MenuItem[] = [
+        {name: 'Instructor Dashboard', path: '/instructor/dashboard'},
         ...(userRole === 'instructor'
-            ? [{name: 'Profile', path: '/profile'}]
+            ? [{name: 'Instructor Profile', path: '/instructor/profile'}]
             : []),
-        {name: 'Course Dashboard', path: '/courses'},
         ...(userRole === 'instructor'
             ? [
                   {
@@ -153,7 +154,7 @@ const HeaderComponent: React.FC = () => {
                                 className='font-abhaya font-semibold ml-4 text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors'
                                 aria-expanded={IsCategoriesDropdownOpen}
                             >
-                                Categories
+                                Courses
                             </button>
 
                             {IsCategoriesDropdownOpen && (
@@ -162,16 +163,21 @@ const HeaderComponent: React.FC = () => {
                                     onClick={toggleCategoriesDropdown}
                                 >
                                     <ul className='py-1'>
-                                        {categories.map((category) => (
+                                        {/* {categories.map((category) => (
                                             <li key={category.name}>
                                                 <Link
                                                     to={category.path}
-                                                    className='font-abhaya font-semibold block px-4 py-2 text-md text-gray-700 hover:bg-gray-100 font-abhaya no-underline'
+                                                    className='font-abhaya font-semibold block px-4 py-2 text-md text-black hover:bg-gray-100 underline'
                                                 >
                                                     {category.name}
                                                 </Link>
                                             </li>
-                                        ))}
+                                        ))} */}
+                                        <li>
+                                            <Link to="/categories" className="font-abhaya font-semibold px-4 py-2 text-md text-black hover:bg-gray-100">
+                                                Browse Categories
+                                            </Link>
+                                        </li>
                                     </ul>
                                 </div>
                             )}
@@ -225,7 +231,7 @@ const HeaderComponent: React.FC = () => {
                                                             await item.onClick();
                                                         }
                                                         handleViewSwitch(
-                                                            item.path,
+                                                            item.path || '',
                                                         );
                                                     }}
                                                     className='font-abhaya font-semibold text-md w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100'

@@ -595,7 +595,7 @@ interface CourseContentViewProps {
     course_id: string;
     canEdit: boolean;
     sectionsOrder: Section[]; // Receive state
-    setSectionsOrder: React.Dispatch<React.SetStateAction<Section[]>>; // Receive state updater
+    setSectionsOrder: React.Dispatch<React.SetStateAction<Section[]> | []>; // Receive state updater
     onSaveOrder: () => void;
     onDeleteSection: (section_id: string) => void;
     onEditSectionTitle: (section_id: string, new_title: string) => void;
@@ -701,13 +701,17 @@ const CourseContentView: React.FC<CourseContentViewProps> = ({
         //     }
         // }
         if (active.id !== over?.id) {
-            const oldIndex = sectionsOrder.findIndex(
+            const oldIndex = sectionsOrder?.findIndex(
                 (item) => item.section_id === active.id,
             );
-            const newIndex = sectionsOrder.findIndex(
+            const newIndex = sectionsOrder?.findIndex(
                 (item) => item.section_id === over?.id,
             );
-            const newOrder = arrayMove(sectionsOrder, oldIndex, newIndex);
+            const newOrder: Section[] | [] = arrayMove(
+                sectionsOrder || [],
+                oldIndex || 0,
+                newIndex || 0,
+            );
             setSectionsOrder(newOrder); // Update the state via prop
         }
     };
@@ -715,7 +719,7 @@ const CourseContentView: React.FC<CourseContentViewProps> = ({
     // Handle save function to save section order.
     const handleSaveOrder = async () => {
         try {
-            const updatedData = sectionsOrder.map((section) => ({
+            const updatedData = sectionsOrder?.map((section) => ({
                 section_id: section.section_id,
                 section_order: section.section_order,
             }));
@@ -757,14 +761,6 @@ const CourseContentView: React.FC<CourseContentViewProps> = ({
                     ))}
                 </SortableContext>
             </DndContext>
-            {/* {canEdit && (
-                <button
-                    onClick={handleSaveOrder}
-                    className='mt-4 bg-primary text-white py-2 px-4'
-                >
-                    Save Current Order
-                </button>
-            )} */}
         </div>
     );
 };

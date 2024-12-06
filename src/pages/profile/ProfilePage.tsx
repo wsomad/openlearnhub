@@ -1,104 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
+import React, {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
 import ProfileComponent from '../../components/profile/ProfileComponent';
 import ProfileView from '../../components/profile/ProfileView';
-import { Course } from '../../types/course';
-import { ProfileStatistics } from '../../types/profilestatistics';
-import { ViewMode } from '../../types/shared';
-import { User } from '../../types/user';
+import {User} from '../../types/user';
+import HeaderComponent from '../../components/HeaderComponent';
+import {useUser} from '../../hooks/useUser';
 
-interface ProfilePageProps {
-    userId: string;
-}
-
-const ProfilePage: React.FC<ProfilePageProps> = ({userId}) => {
-    // Set initial view mode based on the user type (if only student, default to student)
-    const [viewMode, setViewMode] = useState<ViewMode>('student');
+const ProfilePage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-    // Define initial user profile data
     const [userProfile, setUserProfile] = useState<User | null>(null);
-    const [statistics, setStatistics] = useState<ProfileStatistics | null>(
-        null,
-    );
-    const [userCourses, setUserCourses] = useState<{
-        enrolled: Course[];
-        created: Course[];
-    }>({enrolled: [], created: []});
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    const navigate = useNavigate();
+    const {currentUser, userRole, fetchUserById} = useUser();
+    console.log('Cu user',currentUser);
 
     useEffect(() => {
-        const fetchProfileData = async () => {
+        const loadUser = async () => {
             try {
-                setIsLoading(true);
-                const response = await fetch('/dummyData.json');
-                const data = await response.json();
-
-                // Find user profile
-                const profile = data.users.find((u: User) => u.uid === userId);
-                if (!profile) {
-                    throw new Error('User not found');
+                if (!currentUser?.uid) {
+                    await fetchUserById(currentUser?.uid || '');
+                    console.log('Successfully get user data');
                 }
-
-                // Get enrolled and created courses
-                const enrolledCourseIds =
-                    profile.student?.enrolled_courses || [];
-                const createdCourseIds =
-                    profile.instructor?.created_courses || [];
-
-                const enrolledCourses = data.courses.filter((course: Course) =>
-                    enrolledCourseIds.includes(course.course_id),
-                );
-
-                const createdCourses = data.courses.filter((course: Course) =>
-                    createdCourseIds.includes(course.course_id),
-                );
-
-                setUserProfile(profile);
-                setStatistics(data.profile_statistics);
-                setUserCourses({
-                    enrolled: enrolledCourses,
-                    created: createdCourses,
-                });
-
-                // Set initial view mode based on role
-                setViewMode(
-                    profile.role === 'instructor' ? 'instructor' : 'student',
-                );
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err.message
-                        : 'Failed to load profile',
-                );
-                navigate('/error');
-            } finally {
-                setIsLoading(false);
+            } catch (error) {
+                console.error('Failed to get user data');
             }
         };
+        loadUser();
+    }, [currentUser]);
 
-        fetchProfileData();
-    }, [userId, navigate]);
-
-    // Toggle between student and instructor profile view modes (only allow switching if user is both)
-    const toggleProfileMode = () => {
-        if (userProfile?.role === 'student') {
-            setViewMode(viewMode === 'student' ? 'instructor' : 'student');
-        }
-    };
-
-    // Open/close modal for profile editing
     const toggleModal = () => {
         setIsModalOpen(!isModalOpen);
     };
 
     const handleProfileUpdate = async (updatedProfile: User) => {
         try {
-            // In a real app, you would make an API call here
             setUserProfile(updatedProfile);
             setIsModalOpen(false);
         } catch (err) {
@@ -106,54 +43,113 @@ const ProfilePage: React.FC<ProfilePageProps> = ({userId}) => {
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className='flex justify-center items-center h-screen'>
-                Loading...
-            </div>
-        );
-    }
-
-    if (error || !userProfile || !statistics) {
-        return (
-            <div className='text-red-500 text-center'>
-                Error: {error || 'Failed to load profile'}
-            </div>
-        );
-    }
-
     return (
-        <div className='font-abhaya profile-page p-6'>
-            {/* <HeaderComponent
-                userType={viewMode}
-                currentRole='student'
-                onToggleView={function (): void {
-                    throw new Error('Function not implemented.');
-                }}
-            /> */}
-            <ProfileView
-                viewMode={viewMode}
-                userProfile={userProfile}
-                toggleModal={toggleModal}
-                isInstructor={userProfile.role === 'instructor'}
-                courses={userCourses}
-            />
-
-            {isModalOpen && (
-                <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-                    <div className='bg-white p-6 rounded-lg max-w-lg w-full relative'>
-                        <ProfileComponent
-                            userProfile={userProfile}
-                            viewMode={viewMode}
-                            onClose={toggleModal}
-                            onProfileUpdate={handleProfileUpdate}
-                            statistics={statistics}
-                        />
-                    </div>
+        <div>
+            <HeaderComponent />
+            <div className='px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12'>
+                <div className='max-w-screen-xl w-full mx-auto font-abhaya'>
+                    <ProfileView/>
                 </div>
-            )}
+            </div>
         </div>
     );
 };
 
 export default ProfilePage;
+
+// const [statistics, setStatistics] = useState<ProfileStatistics | null>(
+    //     null,
+    // );
+    // const [userCourses, setUserCourses] = useState<{
+    //     enrolled: Course[];
+    //     created: Course[];
+    // }>({enrolled: [], created: []});
+
+    //const navigate = useNavigate();
+
+    // useEffect(() => {
+    //     const fetchProfileData = async () => {
+    //         try {
+    //             setIsLoading(true);
+    //             const response = await fetch('/dummyData.json');
+    //             const data = await response.json();
+
+    //             // Find user profile
+    //             const profile = data.users.find((u: User) => u.uid === userId);
+    //             if (!profile) {
+    //                 throw new Error('User not found');
+    //             }
+
+    //             // Get enrolled and created courses
+    //             const enrolledCourseIds =
+    //                 profile.student?.enrolled_courses || [];
+    //             const createdCourseIds =
+    //                 profile.instructor?.created_courses || [];
+
+    //             const enrolledCourses = data.courses.filter((course: Course) =>
+    //                 enrolledCourseIds.includes(course.course_id),
+    //             );
+
+    //             const createdCourses = data.courses.filter((course: Course) =>
+    //                 createdCourseIds.includes(course.course_id),
+    //             );
+
+    //             setUserProfile(profile);
+    //             setStatistics(data.profile_statistics);
+    //             setUserCourses({
+    //                 enrolled: enrolledCourses,
+    //                 created: createdCourses,
+    //             });
+
+    //             // Set initial view mode based on role
+    //             setViewMode(
+    //                 profile.role === 'instructor' ? 'instructor' : 'student',
+    //             );
+    //         } catch (err) {
+    //             setError(
+    //                 err instanceof Error
+    //                     ? err.message
+    //                     : 'Failed to load profile',
+    //             );
+    //             navigate('/error');
+    //         } finally {
+    //             setIsLoading(false);
+    //         }
+    //     };
+
+    //     fetchProfileData();
+    // }, [userId, navigate]);
+
+    // Toggle between student and instructor profile view modes (only allow switching if user is both)
+    // const toggleProfileMode = () => {
+    //     if (userProfile?.role === 'student') {
+    //         setViewMode(viewMode === 'student' ? 'instructor' : 'student');
+    //     }
+    // };
+
+
+    // if (isLoading) {
+    //     return (
+    //         <div className='flex justify-center items-center h-screen'>
+    //             Loading...
+    //         </div>
+    //     );
+    // }
+
+    // //|| !statistics
+    // if (error || !userProfile) {
+    //     return (
+    //         <div className='text-red-500 text-center'>
+    //             Error: {error || 'Failed to load profile'}
+    //         </div>
+    //     );
+    // }
+
+
+    // <ProfileView
+    //                     //viewMode={viewMode}
+    //                     //userProfile={userProfile}
+    //                     toggleModal={toggleModal}
+    //                     //isInstructor={userProfile.role === 'instructor'}
+    //                     //courses={userCourses}
+    //                 />

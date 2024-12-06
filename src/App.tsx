@@ -7,12 +7,12 @@ import SelectedCoursePage from './pages/student/course/SelectedCoursePage';
 import HomePage from './pages/student/home/HomePage';
 import CourseDashboardPage from './pages/instructor/home/CourseDashboardPage';
 import CreateCoursePage from './pages/instructor/course/CreateCoursePage';
-import {useUser} from './hooks/useUser';
-import {Course} from './types/course';
 import ProtectedRoute from './routes/ProtectedRoute/ProtectedRoute';
 import EditCoursePage from './pages/instructor/course/EditCoursePage';
+import ProfilePage from './pages/profile/ProfilePage';
+import CourseCategoriesPage from './pages/student/course/CourseCategoriesPage';
+import InstructorAuthPage from './pages/auth/InstructorAuthPage';
 
-// React.FC stands for React Functional Component.
 const App: React.FC = () => {
     // Destucturing properties from `useAuth`.
     // const {user, isAuthenticated, signUserOut} = useAuth();
@@ -53,13 +53,18 @@ const App: React.FC = () => {
                 {/* Authentication path */}
                 <Route path='/auth' element={<AuthPage />} />
                 <Route path='/home' element={<HomePage />} />
+                <Route path='/categories' element={<CourseCategoriesPage/>} />
                 {/* Course Enrolled Routes */}
                 <Route
                     path='/listofenrolledcourse'
                     element={<ListEnrolledCoursePage />}
                 />
+                {/* Profile Routes */}
+                <Route path='/profile' element={<ProfilePage />} />
                 {/* Instructor path */}
                 <Route path='/instructor'>
+                    <Route path='auth/' element={<InstructorAuthPage />} />
+                    <Route path='profile/' element={<ProfilePage />} />
                     {/* Course Dashboard path */}
                     <Route path='dashboard' element={<CourseDashboardPage />} />
                     {/* Create New Course */}
@@ -78,12 +83,7 @@ const App: React.FC = () => {
                     {/* Edit Course */}
                     <Route
                         path='dashboard/:courseId/edit'
-                        element={
-                            <EditCoursePage
-                            // userId={defaultUserId}
-                            // userType={userType}
-                            />
-                        }
+                        element={<EditCoursePage />}
                     />
                 </Route>
                 {/* Selected Course Page path */}
@@ -96,11 +96,6 @@ const App: React.FC = () => {
                     path='/enrolledcourse/:id'
                     element={<EnrolledCoursePage />}
                 />
-                {/* Profile Routes */}
-                {/* <Route
-                    path='/profile'
-                    element={<ProfilePage userId={defaultUserId} />}
-                > */}
                 {/* <Route
                         path='edit/:viewMode'
                         element={<ProfileComponent />}

@@ -15,7 +15,6 @@ import {
 } from 'firebase/firestore';
 import {db} from '../../config/FirebaseConfiguration';
 import {Course} from '../../types/course';
-import {UserRole} from '../../types/user';
 
 // Reference to `courses` collection (root reference for courses).
 const coursesCollection = collection(db, 'courses');
@@ -76,12 +75,11 @@ export const getCourseById = async (
 
             // Validate based on user role.
             if (userRole === 'instructor') {
-                // Ensure the instructor ID matches the course's instructor field.
                 if (course.instructor_id !== uid) {
                     console.warn(
                         `Instructor ID mismatch: course instructor is ${course.instructor_id}, but user ID is ${uid}`,
                     );
-                    return null; // Instructor cannot edit a course they don't own.
+                    return null;
                 }
             }
             return course;
@@ -92,6 +90,70 @@ export const getCourseById = async (
     } catch (error) {
         console.error('Error getting course:', error);
         return null;
+    }
+};
+
+export const getAllCourses = async (
+    uid: string | null,
+    userRole: 'student' | 'instructor',
+    filterType: 'default' | 'enrollment' | 'creator',
+    sortBy?: 'newest' | 'oldest' | 'popular',
+    readyForPublish?: boolean,
+    limitCount?: number,
+    courseType?: string[]
+): Promise<Course[]> => {
+    try {
+        let coursesQuery = query(coursesCollection);
+
+        // Apply filters based on filterType
+        if (filterType === 'creator' && userRole === 'instructor') {
+            coursesQuery = query(coursesCollection, where('instructor_id', '==', uid));
+        } else if (filterType === 'default' && userRole === 'student') {
+            if (readyForPublish) {
+                coursesQuery = query(
+                    coursesCollection,
+                    where('ready_for_publish', '==', true)
+                );
+            } else {
+                console.warn('Fetching default courses: readyForPublish is undefined.');
+            }
+        }
+
+        // Apply course type filter
+        if (courseType && courseType.length > 0) {
+            coursesQuery = query(coursesQuery, where('course_type', 'in', courseType)); // Use the "in" operator for multiple values
+        }
+
+        // Apply sorting based on sortBy
+        if (sortBy === 'newest') {
+            coursesQuery = query(coursesQuery, orderBy('course_created_at', 'desc'));
+        } else if (sortBy === 'oldest') {
+            coursesQuery = query(coursesQuery, orderBy('course_created_at', 'asc'));
+        } else if (sortBy === 'popular') {
+            coursesQuery = query(
+                coursesQuery,
+                where('course_enrollment_number', '>', 0),
+                orderBy('course_enrollment_number', 'desc')
+            );
+        }
+
+        // Apply limit filter
+        if (limitCount) {
+            coursesQuery = query(coursesQuery, limit(limitCount));
+        }
+
+        // Fetch and transform results
+        const querySnapshot = await getDocs(coursesQuery);
+        const courses = querySnapshot.docs.map((doc) => ({
+            course_id: doc.id,
+            ...doc.data(),
+        })) as Course[];
+
+        console.log('Fetched courses:', courses);
+        return courses;
+    } catch (error) {
+        console.error('Error fetching courses:', error);
+        return [];
     }
 };
 
@@ -137,75 +199,6 @@ export const searchSpecificCourse = async (
         return courses;
     } catch (error) {
         console.error('Error searching courses:', error);
-        return [];
-    }
-};
-
-/**
- * Get all courses in Firestore.
- * @returns An array of all courses.
- */
-export const getAllCourses = async (
-    uid: string | null,
-    userRole: 'student' | 'instructor',
-    filterType: 'default' | 'enrollment' | 'creator',
-    readyForPublish?: boolean,
-    limitCount?: number,
-): Promise<Course[]> => {
-    try {
-        // Query the collection.
-        let coursesQuery = query(coursesCollection);
-
-        // Apply filters based on `filterType` and `userRole`.
-        if (filterType === 'creator' && userRole === 'instructor') {
-            coursesQuery = query(
-                coursesCollection,
-                where('instructor_id', '==', uid),
-            );
-        } else if (filterType === 'default' && userRole === 'student') {
-            // if (uid && readyForPublish === true) {
-            //     coursesQuery = query(
-            //         coursesCollection,
-            //         //where('enrolled_students', 'array-contains', uid),
-            //         where('ready_for_publish', '!=', false),
-            //     );
-            // } else {
-            //     console.warn('UID is null. Courses cannot be filtered.');
-            // }
-            if (readyForPublish === true) {
-                coursesQuery = query(
-                    coursesCollection,
-                    where('ready_for_publish', '==', true), // Only fetch published courses
-                );
-            } else {
-                console.warn(
-                    'readyForPublish is undefined for student filter.',
-                );
-            }
-        }
-
-        // Order by creation date if we are fetching a limited number of courses.
-        if (limitCount) {
-            coursesQuery = query(
-                coursesQuery,
-                orderBy('course_created_at', 'desc'),
-                limit(limitCount),
-            );
-        }
-
-        // Get that documents.
-        const querySnapshot = await getDocs(coursesQuery);
-
-        // Map that documents to an array of courses.
-        const courses = querySnapshot.docs.map((doc) => ({
-            course_id: doc.id,
-            ...doc.data(),
-        })) as Course[];
-
-        console.log('Fetched courses:', courses);
-        return courses;
-    } catch (error) {
-        console.error('Error fetching courses:', error);
         return [];
     }
 };
@@ -269,52 +262,66 @@ const checkCourseTitle = async (course_title: string): Promise<boolean> => {
     return courseDoc.exists();
 };
 
+// /**
+//  * Fetch all courses from Firestore based on filters.
+//  * @param uid - User ID (required for certain filters like creator).
+//  * @param userRole - Role of the user (student or instructor).
+//  * @param filterType - Type of filter to apply (default, enrollment, or creator).
+//  * @param readyForPublish - Fetch only courses ready for publish (optional).
+//  * @param limitCount - Maximum number of courses to fetch (optional).
+//  * @param popularCourses - Fetch courses sorted by enrollment (optional).
+//  * @returns An array of courses matching the filters.
+//  */
 // export const getAllCourses = async (
 //     uid: string | null,
 //     userRole: 'student' | 'instructor',
-//     filterType: 'default' | 'enrolled' | 'created',
+//     filterType: 'default' | 'enrollment' | 'creator',
+//     readyForPublish?: boolean,
 //     limitCount?: number,
+//     popularCourses?: boolean,
 // ): Promise<Course[]> => {
 //     try {
-//         // Fetch all documents from the courses collection.
-//         // const querySnapshot = await getDocs(coursesCollection);
-//         const querySnapshot = query(coursesCollection);
+//         let coursesQuery = query(coursesCollection);
 
-//         // Map the documents to an array of courses.
-//         // const courses = querySnapshot.docs.map((doc) => ({
-//         //     course_id: doc.id,
-//         //     ...doc.data(),
-//         // })) as Course[];
-
-//         let filteredCourses: Course[];
-
-//         // Filter courses based on the filter type and user role.
-//         if (filterType === 'created' && userRole === 'instructor') {
-//             // Fetch courses where uid matches the instructor's uid.
-//             // filteredCourses = courses.filter(
-//             //     (course) => course.instructor_id === uid,
-//             // );
-//             querySnapshot = query();
-//             console.log(
-//                 'Successfully fetch all courses created by this instructor: ',
-//                 uid,
-//             );
-//         } else if (filterType === 'enrolled' && userRole === 'student') {
-//             if (uid) {
-//                 filteredCourses = courses.filter((course) =>
-//                     course.enrolled_students?.includes(uid),
+//         // Apply filters based on filterType
+//         if (filterType === 'creator' && userRole === 'instructor') {
+//             coursesQuery = query(coursesCollection, where('instructor_id', '==', uid));
+//         } else if (filterType === 'default' && userRole === 'student') {
+//             if (readyForPublish) {
+//                 coursesQuery = query(
+//                     coursesCollection,
+//                     where('ready_for_publish', '==', true)
 //                 );
 //             } else {
-//                 console.warn('UID is null; cannot filter enrolled courses.');
-//                 filteredCourses = []; // Return an empty array if uid is null
+//                 console.warn('Fetching default courses: readyForPublish is undefined.');
 //             }
-//         } else {
-//             // Default case: fetch all courses.
-//             filteredCourses = courses;
 //         }
 
-//         console.log('Filtered courses:', filteredCourses);
-//         return filteredCourses;
+//         // Apply popular courses and limit filters
+//         if (popularCourses && limitCount) {
+//             coursesQuery = query(
+//                 coursesQuery,
+//                 where('course_enrollment_number', '!=', 0),
+//                 orderBy('course_enrollment_number', 'desc'),
+//                 limit(limitCount)
+//             );
+//         } else if (limitCount) {
+//             coursesQuery = query(
+//                 coursesQuery,
+//                 orderBy('course_created_at', 'desc'),
+//                 limit(limitCount)
+//             );
+//         }
+
+//         // Fetch and transform results
+//         const querySnapshot = await getDocs(coursesQuery);
+//         const courses = querySnapshot.docs.map((doc) => ({
+//             course_id: doc.id,
+//             ...doc.data(),
+//         })) as Course[];
+
+//         console.log('Fetched courses:', courses);
+//         return courses;
 //     } catch (error) {
 //         console.error('Error fetching courses:', error);
 //         return [];

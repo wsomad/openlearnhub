@@ -6,6 +6,8 @@ import {useUser} from '../hooks/useUser';
 import {User} from '../types/user';
 import {toast} from 'react-toastify'; // Optional: Include toast notifications
 import {useSelector} from 'react-redux';
+import { Student } from '../types/student';
+import { StudentType } from '../types/student';
 
 const AuthComponent: React.FC = () => {
     const {signIn, signUp} = useAuth();
@@ -14,6 +16,12 @@ const AuthComponent: React.FC = () => {
     const [username, setUsername] = useState('');
     const [firstname, setFirstName] = useState('');
     const [lastname, setLastName] = useState('');
+    const [student, setStudent] = useState({
+        student_type: '',
+    })
+    const [instructor, setInstructor] = useState({
+
+    })
     const [isSignIn, setSignIn] = useState(true);
     const {userRole} = useUser();
     const currentState = useSelector((state) => state);
@@ -42,7 +50,12 @@ const AuthComponent: React.FC = () => {
                 profile_image: '../assets/images/userProfile.png',
                 created_at: new Date(),
                 updated_at: new Date(),
+                student: {},
+                instructor: {
+                    hasRegister: false,
+                }
             };
+
             try {
                 await signUp(defaultUserProfile);
                 toast.success('Account created successfully! Please sign in.');
@@ -55,9 +68,9 @@ const AuthComponent: React.FC = () => {
     };
 
     return (
-        <div className='flex w-full h-screen'>
+        <div className='flex w-full'>
             {/* Sidebar for larger screens */}
-            <div className='hidden lg:flex h-full w-1/3 items-center justify-center bg-background flex-col p-8'>
+            {/* <div className='hidden lg:flex h-full w-1/3 items-center justify-center bg-background flex-col p-8'>
                 <div className='absolute top-4 left-8 text-2xl font-bold mt-8'>
                     <span className='font-abhaya text-3xl text-primary'>
                         OpenLearn
@@ -86,51 +99,49 @@ const AuthComponent: React.FC = () => {
                         </span>
                     </h2>
                 </div>
-            </div>
+            </div> */}
 
             {/* Main form container */}
-            <div className='w-full flex items-center justify-center lg:w-1/2'>
-                <form onSubmit={handleSubmit} className='w-full max-w-xl'>
+            <div className='w-full flex items-center justify-center mx-auto'>
+                <form onSubmit={handleSubmit} className='w-full max-w-lg'>
                     <h1 className='font-abhaya text-5xl font-bold mb-6'>
                         {isSignIn ? 'Sign In' : 'Sign Up'}
                     </h1>
 
                     {!isSignIn && (
                         <div className='space-y-4'>
-                            <div>
-                                <label className='font-abhaya font-bold text-lg mb-1 block'>
-                                    First Name
-                                </label>
-                                <input
-                                    id='firstName'
-                                    className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
-                                    type='text'
-                                    placeholder='First Name'
-                                    value={firstname}
-                                    onChange={(e) =>
-                                        setFirstName(e.target.value)
-                                    }
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label
-                                    htmlFor='lastName'
-                                    className='font-abhaya text-lg font-medium mb-1 block'
-                                >
-                                    Last Name
-                                </label>
-                                <input
-                                    id='lastName'
-                                    className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
-                                    type='text'
-                                    placeholder='Last Name'
-                                    value={lastname}
-                                    onChange={(e) =>
-                                        setLastName(e.target.value)
-                                    }
-                                    required
-                                />
+                            <div className="flex space-x-4">
+                                <div className="flex-1">
+                                    <label className="font-abhaya font-bold text-lg mb-1 block">
+                                        First Name
+                                    </label>
+                                    <input
+                                        id="firstName"
+                                        className="w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary"
+                                        type="text"
+                                        placeholder="First Name"
+                                        value={firstname}
+                                        onChange={(e) => setFirstName(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <label
+                                        htmlFor="lastName"
+                                        className="font-abhaya text-lg font-medium mb-1 block"
+                                    >
+                                        Last Name
+                                    </label>
+                                    <input
+                                        id="lastName"
+                                        className="w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary"
+                                        type="text"
+                                        placeholder="Last Name"
+                                        value={lastname}
+                                        onChange={(e) => setLastName(e.target.value)}
+                                        required
+                                    />
+                                </div>
                             </div>
                             <div>
                                 <label

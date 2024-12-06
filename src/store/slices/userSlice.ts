@@ -25,7 +25,7 @@ const userSlice = createSlice({
             const user = action.payload;
             state.user = user;
             state.isAuthenticated = true;
-            state.userRole = user.role; // Set role based on the user data
+            state.userRole = user.role // Set role based on the user data
         },
 
         // Action to modify specific properties of the current user.

@@ -1,362 +1,366 @@
-import React, {useEffect, useState} from 'react';
-import {IoCloseOutline} from 'react-icons/io5';
-
-import {SpecializationArea} from '../../types/instructor';
-import {ProfileStatistics} from '../../types/profilestatistics';
-import {ViewMode} from '../../types/shared';
-import {StudentType} from '../../types/student';
-import {User} from '../../types/user';
+import React, { useEffect, useState } from 'react';
+import { IoCloseOutline } from 'react-icons/io5';
+import { User } from '../../types/user';
+import { Instructor } from '../../types/instructor';
+import { Student, StudentType } from '../../types/student';
+import { useUser } from '../../hooks/useUser';
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
 
 interface ProfileComponentProps {
-    userProfile: User;
-    viewMode: ViewMode;
-    onClose: () => void;
-    onProfileUpdate: (updatedProfile: User) => void;
-    statistics: ProfileStatistics;
+  onClose: () => void;
 }
 
 const ProfileComponent: React.FC<ProfileComponentProps> = ({
-    userProfile,
-    viewMode,
-    onClose,
-    onProfileUpdate,
-    statistics,
+  onClose,
 }) => {
-    // Common fields
-    const [username, setUsername] = useState<string>(userProfile.username);
-    const [firstName, setFirstName] = useState<string>(userProfile.firstname);
-    const [lastName, setLastName] = useState<string>(userProfile.lastname);
-    const [imageProfile, setImageProfile] = useState<string | null>(
-        userProfile.profile_image ?? null,
-    );
+  const { currentUser, userRole, updateUser } = useUser();
 
-    // Student-specific fields
-    const [studentType, setStudentType] = useState<StudentType>(
-        userProfile.student?.student_type || 'Undergraduate',
-    );
+  const [userFields, setUserFields] = useState<User>({
+    uid: '',
+    firstname: '',
+    lastname: '',
+    username: '',
+    email: '',
+    password: '',
+    role: userRole,
+    profile_image: '',
+    created_at: new Date(),
+    updated_at: new Date(),
+    student: undefined,
+    instructor: undefined
+  });
 
-    // Instructor-specific fields
-    const [summary, setSummary] = useState<string>(
-        userProfile.instructor?.profile_summary || '',
-    );
-    const [specializations, setSpecializations] = useState<
-        SpecializationArea[]
-    >(userProfile.instructor?.specialization_area || []);
-    const [experience, setExperience] = useState<number>(
-        userProfile.instructor?.years_of_experience || 0,
-    );
-    const [github, setGithub] = useState<string>(
-        userProfile.instructor?.social_links.github || '',
-    );
-    const [linkedin, setLinkedin] = useState<string>(
-        userProfile.instructor?.social_links.linkedin || '',
-    );
+  const [studentFields, setStudentFields] = useState<Student>({
+    ...userFields,
+    student_type: 'Undergraduate',
+    enrollment_date: new Date(),
+    completed_courses: 0,
+    courses_enrolled: 0,
+    completion_status: false,
+    enrolled_courses: [],
+  })
 
-    // Security fields
-    const [password, setPassword] = useState<string>('');
-    const [confirmPassword, setConfirmPassword] = useState<string>('');
+  // Initialize instructor-specific fields
+  const [instructorFields, setInstructorFields] = useState<Instructor>({
+    ...userFields,
+    profile_summary: '',
+    specialization_area: [],
+    years_of_experience: 0,
+    total_courses_created: 0,
+    created_courses: [],
+    rating: 1,
+    social_links: {
+      github: '',
+      linkedin: '',
+    },
+  });
 
-    const validateForm = (): boolean => {
-        if (!username || !firstName || !lastName) {
-            alert('Please fill in all required fields.');
-            return false;
-        }
+  const studentTypes: StudentType[] = [
+    'Secondary',
+    'High School',
+    'Undergraduate',
+    'Postgraduate',
+    'Doctorate',
+    'Professional Certification',
+  ];
 
-        if (password || confirmPassword) {
-            if (password.length < 8) {
-                alert('Password must be at least 8 characters long.');
-                return false;
-            }
+  useEffect(() => {
+  if (currentUser) {
+    setUserFields({ ...currentUser });
+    if (userRole === 'student' && currentUser.student) {
+      setStudentFields(currentUser.student || {});
+    } else if (userRole === 'instructor' && currentUser.instructor) {
+      setInstructorFields(currentUser.instructor || {});
+    }
+  }
+}, [currentUser, userRole]);
 
-            if (password !== confirmPassword) {
-                alert('Passwords do not match.');
-                return false;
-            }
-        }
+  // Form validation logic
+  const validateForm = (): boolean => {
+    if (!userFields.username || !userFields.firstname || !userFields.lastname) {
+      alert('Please fill in all required fields.');
+      return false;
+    }
+    if (userFields.password) {
+      if (userFields.password.length < 8) {
+        alert('Password must be at least 8 characters long.');
+        return false;
+      }
+    }
+    return true;
+  };
 
-        return true;
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+
+    if (!validateForm()) return;
+
+    const updatedStudent: Student = {
+      ...studentFields,
+      student_type: studentFields.student_type,
+    }
+
+    const updatedInstructor: Instructor = {
+      ...instructorFields,
+      profile_summary: instructorFields.profile_summary,
+      years_of_experience: instructorFields.years_of_experience,
+      social_links: {
+        github: instructorFields.social_links?.github,
+        linkedin: instructorFields.social_links?.linkedin
+      }
+    }
+
+    const updatedUser: User = {
+      ...userFields,
+      username: userFields.username,
+      firstname: userFields.firstname,
+      lastname: userFields.lastname,
+      updated_at: new Date(),
     };
 
-    const handleSubmit = async (
-        e: React.FormEvent<HTMLFormElement>,
-    ): Promise<void> => {
-        e.preventDefault();
+    let updatedProfile: any = { ...updatedUser };
 
-        if (!validateForm()) return;
+    if (userRole === 'student' && updatedStudent) {
+      updatedProfile.student = { ...updatedStudent }; // Add student-specific updates
+    } else if (userRole === 'instructor' && updatedInstructor) {
+      updatedProfile.instructor = { ...updatedInstructor }; // Add instructor-specific updates
+    }
 
-        // Create updated profile object
-        const updatedProfile: User = {
-            ...userProfile,
-            username,
-            firstname: firstName,
-            lastname: lastName,
-            profile_image: imageProfile || '',
-            student: {
-                ...userProfile.student,
-                student_type: studentType,
-            },
-        };
+    try {
+      if (currentUser?.uid) {
+        await updateUser(currentUser.uid, updatedProfile);
+        alert('Profile updated successfully!');
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('There was an error updating your profile. Please try again.');
+    }
 
-        // Update instructor profile if in instructor mode and user has instructor profile
-        if (viewMode === 'instructor' && userProfile.instructor) {
-            updatedProfile.instructor = {
-                ...userProfile.instructor,
-                profile_summary: summary,
-                specialization_area: specializations,
-                years_of_experience: experience,
-                social_links: {
-                    github,
-                    linkedin,
-                },
-            };
-        }
+    // // Create updated profile object
+    // const updatedProfile: User = {
+    //   ...userFields,
+    //   username: userFields.username,
+    //   firstname: userFields.firstname,
+    //   lastname: userFields.lastname,
+    //   profile_image: userFields.profile_image || '',
+    // };
 
-        try {
-            await onProfileUpdate(updatedProfile);
-        } catch (error) {
-            alert('Failed to update profile. Please try again.');
-        }
-    };
+    // If instructor, update instructor profile
+    // if (currentUser?.role === 'instructor') {
+    //   currentUser.instructor = {
+    //     ...userFields,
+    //     profile_summary: instructorFields.profile_summary,
+    //     specialization_area: instructorFields.specialization_area,
+    //     years_of_experience: instructorFields.years_of_experience,
+    //     social_links: instructorFields.social_links,
+    //   };
+    // }
 
-    return (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-            <div className='bg-white p-8 rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative'>
-                <button
-                    type='button'
-                    onClick={onClose}
-                    className='absolute top-8 right-4 text-3xl text-gray-500 hover:text-gray-800 transition-colors'
-                    aria-label='Close modal'
+  };
+
+  return (
+    <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+      <div className='bg-white p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto relative'>
+        <button
+          type='button'
+          onClick={onClose}
+          className='absolute top-6 right-4 text-3xl text-gray-500 hover:text-gray-800 transition-colors'
+          aria-label='Close modal'
+        >
+          <IoCloseOutline />
+        </button>
+
+        <h1 className='text-3xl font-bold mb-6'>
+          Update {userRole === 'student' ? '' : 'Instructor'} Profile
+        </h1>
+
+        <form onSubmit={handleSubmit} className='space-y-6'>
+          {userRole === 'student' ? (
+            <div className='space-y-4'>
+              <div>
+                <label className='block text-lg font-medium text-gray-700'>
+                  Email *
+                </label>
+                <input
+                  type='text'
+                  value={userFields.email}
+                  className='w-full border border-gray p-3 bg-gray mt-2'
+                  required
+                  disabled
+                />
+              </div>
+              <div>
+                <label className='block text-lg font-medium text-gray-700'>
+                  Username *
+                </label>
+                <input
+                  type='text'
+                  value={userFields.username}
+                  onChange={(e) =>
+                    setUserFields({ ...userFields, username: e.target.value })
+                  }
+                  className='w-full border border-gray p-3 bg-transparent mt-2'
+                  required
+                />
+              </div>
+              <div className='grid grid-cols-2 gap-4'>
+                <div>
+                  <label className='block text-lg font-medium text-gray-700'>
+                    First Name *
+                  </label>
+                  <input
+                    type='text'
+                    value={userFields.firstname}
+                    onChange={(e) =>
+                      setUserFields({ ...userFields, firstname: e.target.value })
+                    }
+                    className='w-full border border-gray p-3 bg-transparent mt-2'
+                    required
+                  />
+                </div>
+                <div>
+                  <label className='block text-lg font-medium text-gray-700'>
+                    Last Name *
+                  </label>
+                  <input
+                    type='text'
+                    value={userFields.lastname}
+                    onChange={(e) =>
+                      setUserFields({ ...userFields, lastname: e.target.value })
+                    }
+                    className='w-full border border-gray p-3 bg-transparent mt-2'
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className='block text-lg font-medium text-gray-700'>
+                  Education Level *
+                </label>
+                <select
+                  value={studentFields.student_type}
+                  onChange={(e) =>
+                    setStudentFields({
+                      ...studentFields,
+                        student_type: e.target.value as StudentType
+                    })
+                  }
+                  className='w-full border border-gray p-3 bg-transparent mt-2 appearance-none'
+                  required
                 >
-                    <IoCloseOutline />
-                </button>
-
-                <h1 className='text-3xl font-bold mb-6'>
-                    Edit {viewMode === 'student' ? 'Student' : 'Instructor'}{' '}
-                    Profile
-                </h1>
-
-                <form onSubmit={handleSubmit} className='space-y-6'>
-                    {/* Basic Information Section */}
-                    <div className='space-y-4'>
-                        <h2 className='text-2xl font-bold'>
-                            Basic Information
-                        </h2>
-                        <div>
-                            <label className='block text-lg font-medium text-gray-700'>
-                                Username*
-                            </label>
-                            <input
-                                type='text'
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
-                                required
-                            />
-                        </div>
-                        <div className='grid grid-cols-2 gap-4'>
-                            <div>
-                                <label className='block text-lg font-medium text-gray-700'>
-                                    First Name*
-                                </label>
-                                <input
-                                    type='text'
-                                    value={firstName}
-                                    onChange={(e) =>
-                                        setFirstName(e.target.value)
-                                    }
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className='block text-lg font-medium text-gray-700'>
-                                    Last Name*
-                                </label>
-                                <input
-                                    type='text'
-                                    value={lastName}
-                                    onChange={(e) =>
-                                        setLastName(e.target.value)
-                                    }
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
-                                    required
-                                />
-                            </div>
-                            <div className='col-span-2'>
-                                <label className='block text-lg font-medium text-gray-700'>
-                                    Profile Image
-                                </label>
-                                <input
-                                    type='text'
-                                    value={imageProfile || ''}
-                                    onChange={(e) =>
-                                        setImageProfile(e.target.value)
-                                    }
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Role-Specific Section */}
-                    {viewMode === 'student' ? (
-                        <div className='space-y-4'>
-                            <h2 className='text-2xl font-bold'>
-                                Student Details
-                            </h2>
-                            <div>
-                                <label className='block text-lg font-medium text-gray-700'>
-                                    Student Type*
-                                </label>
-                                <select
-                                    value={studentType}
-                                    onChange={(e) =>
-                                        setStudentType(
-                                            e.target.value as StudentType,
-                                        )
-                                    }
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2 appearance-none'
-                                    required
-                                >
-                                    {statistics.student_types.map((type) => (
-                                        <option key={type} value={type}>
-                                            {type}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className='space-y-4'>
-                            <h2 className='text-2xl font-bold'>
-                                Instructor Details
-                            </h2>
-                            <div>
-                                <label className='block text-lg font-medium text-gray-700'>
-                                    Profile Summary
-                                </label>
-                                <textarea
-                                    value={summary}
-                                    onChange={(e) => setSummary(e.target.value)}
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
-                                    rows={4}
-                                    placeholder='Write a brief summary about yourself and your teaching experience...'
-                                />
-                            </div>
-                            <div>
-                                <label className='block text-lg font-medium text-gray-700'>
-                                    Specializations
-                                </label>
-                                <select
-                                    value={specializations}
-                                    onChange={(e) => {
-                                        const selected = Array.from(
-                                            e.target.selectedOptions,
-                                            (option) =>
-                                                option.value as SpecializationArea,
-                                        );
-                                        setSpecializations(selected);
-                                    }}
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2 appearance-none'
-                                >
-                                    {statistics.specialization_areas.map(
-                                        (area) => (
-                                            <option key={area} value={area}>
-                                                {area}
-                                            </option>
-                                        ),
-                                    )}
-                                </select>
-                            </div>
-                            <div>
-                                <label className='block text-lg font-medium text-gray-700'>
-                                    Years of Experience
-                                </label>
-                                <input
-                                    type='number'
-                                    value={experience}
-                                    onChange={(e) =>
-                                        setExperience(Number(e.target.value))
-                                    }
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
-                                    min={0}
-                                />
-                            </div>
-                            <div>
-                                <label className='block text-lg font-medium text-gray-700'>
-                                    GitHub Profile
-                                </label>
-                                <input
-                                    type='url'
-                                    value={github}
-                                    onChange={(e) => setGithub(e.target.value)}
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
-                                    placeholder='https://github.com/username'
-                                />
-                            </div>
-                            <div>
-                                <label className='block text-lg font-medium text-gray-700'>
-                                    LinkedIn Profile
-                                </label>
-                                <input
-                                    type='url'
-                                    value={linkedin}
-                                    onChange={(e) =>
-                                        setLinkedin(e.target.value)
-                                    }
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
-                                    placeholder='https://linkedin.com/in/username'
-                                />
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Security Section */}
-                    <div className='space-y-4'>
-                        <h2 className='text-2xl font-bold'>Security</h2>
-                        <div>
-                            <label className='block text-lg font-medium text-gray-700'>
-                                New Password
-                            </label>
-                            <input
-                                type='password'
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
-                                placeholder='Leave blank to keep current password'
-                                minLength={8}
-                            />
-                        </div>
-                        {password && (
-                            <div>
-                                <label className='block text-lg font-medium text-gray-700'>
-                                    Confirm Password
-                                </label>
-                                <input
-                                    type='password'
-                                    value={confirmPassword}
-                                    onChange={(e) =>
-                                        setConfirmPassword(e.target.value)
-                                    }
-                                    className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2'
-                                    minLength={8}
-                                />
-                            </div>
-                        )}
-                    </div>
-
-                    <div className='pt-4'>
-                        <button
-                            type='submit'
-                            className='w-full py-3 rounded-3xl bg-primary text-white text-lg hover:bg-primary-dark transition-colors active:scale-[.98]'
-                        >
-                            Save Changes
-                        </button>
-                    </div>
-                </form>
+                  {studentTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-        </div>
-    );
+          ) : (
+            <div className='space-y-4'>
+              <div>
+                <label className='block text-lg font-medium text-gray-700'>
+                  Profile Summary
+                </label>
+                <textarea
+                  value={instructorFields.profile_summary}
+                  onChange={(e) =>
+                    setInstructorFields({
+                      ...instructorFields,
+                      profile_summary: e.target.value
+                    })
+                  }
+                  className='w-full border border-gray p-3 bg-transparent mt-2'
+                  rows={4}
+                  placeholder='Write a brief summary about yourself and your teaching experience...'
+                />
+              </div>
+              <div>
+                <label className='block text-lg font-medium text-gray-700'>
+                  Years of Experience
+                </label>
+                <input
+                  type='number'
+                  value={instructorFields.years_of_experience}
+                  onChange={(e) =>
+                    setInstructorFields({ ...instructorFields, years_of_experience: Number(e.target.value) })
+                  }
+                  className='w-full border border-gray p-3 bg-transparent mt-2'
+                  min={0}
+                />
+              </div>
+              <div>
+                <label className='block text-lg font-medium text-gray-700'>
+                  Social Links
+                </label>
+                <div className='flex items-center border border-gray p-3 bg-transparent mt-2'>
+                  <FaGithub className='text-gray-500 mr-3' />
+                  <input
+                    type='text'
+                    placeholder='GitHub URL'
+                    value={instructorFields.social_links?.github}
+                    onChange={(e) =>
+                      setInstructorFields({
+                        ...instructorFields,
+                        social_links: { ...instructorFields.social_links, github: e.target.value },
+                      })
+                    }
+                    className='w-full bg-transparent outline-none'
+                  />
+                </div>
+
+                <div className='flex items-center border border-gray p-3 bg-transparent mt-2'>
+                  <FaLinkedin className='text-gray-500 mr-3' />
+                  <input
+                    type='text'
+                    placeholder='LinkedIn URL'
+                    value={instructorFields.social_links?.linkedin}
+                    onChange={(e) =>
+                      setInstructorFields({
+                        ...instructorFields,
+                        social_links: { ...instructorFields.social_links, linkedin: e.target.value },
+                      })
+                    }
+                    className='w-full bg-transparent outline-none'
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          <div className='mt-6'>
+            <button
+              type='submit'
+              className='w-full bg-primary text-white py-3 px-4 hover:bg-blue-600'
+            >
+              Update Profile
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 };
 
 export default ProfileComponent;
+
+// <div>
+//                 <label className='block text-lg font-medium text-gray-700'>
+//                   Specializations
+//                 </label>
+//                 <select
+//                   value={instructorFields.specialization_area}
+//                   onChange={(e) => {
+//                     const selected = Array.from(e.target.selectedOptions, (option) => option.value);
+//                     setInstructorFields({ ...instructorFields, specialization_area: selected });
+//                   }}
+//                   className='w-full border-2 border-gray-100 rounded-3xl p-3 bg-transparent mt-2 appearance-none'
+//                 >
+//                   <option value='Math'>Math</option>
+//                   <option value='Science'>Science</option>
+//                   {/* Add more specializations if needed */}
+//                 </select>
+//               </div>
+
+
+{/* Role-Specific Section */}

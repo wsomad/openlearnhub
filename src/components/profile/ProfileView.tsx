@@ -1,133 +1,318 @@
-import React from 'react';
-import { FaGithub, FaLinkedin } from 'react-icons/fa';
-import { GiGiftOfKnowledge } from 'react-icons/gi';
-import { PiMapPinSimpleAreaFill } from 'react-icons/pi';
-import { SiCoursera } from 'react-icons/si';
+import React, {useEffect, useState} from 'react';
+import {FaGithub, FaLinkedin, FaRegStar, FaStar} from 'react-icons/fa';
+import defaultProfilePicture from '../../assets/images/userProfile.png';
+import {useUser} from '../../hooks/useUser';
+import { useCourses } from '../../hooks/useCourses';
+import CardDashboard from '../CardInstructor';
+import CardCourseComponent from '../card/CardCourseComponent';
+import { useNavigate } from 'react-router-dom';
+import ProfileComponent from './ProfileComponent';
 
-import userProfileImg from '../../assets/images/userProfile.png';
-import { Course } from '../../types/course';
-import { ViewMode } from '../../types/shared';
-import { User } from '../../types/user';
-import CardDashboard from '../CardDashboard';
 
-interface ProfileViewProps {
-    viewMode: ViewMode;
-    userProfile: User;
-    toggleModal: () => void;
-    isInstructor: boolean;
-    courses: {
-        enrolled: Course[];
-        created: Course[];
+const ProfileView: React.FC = () => {
+    //const currentCourses = isStudent ? courses.enrolled : courses.created;
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const {allCourses, fetchAllCourses} = useCourses();
+    const {currentUser, userRole, fetchUserById} = useUser();
+    const isStudent = userRole === 'student';
+    const isInstructor = userRole === 'instructor';
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const loadUser = async () => {
+            try {
+                if (!currentUser?.uid) {
+                    await fetchUserById(currentUser?.uid || '');
+                    console.log('Successfully get user data');
+                }
+            } catch (error) {
+                console.error('Failed to get user data');
+            }
+        };
+        loadUser();
+    }, [currentUser]);
+
+    useEffect(() => {
+        const loadCourses = async () => {
+            const filterType = isStudent ? 'default' : 'creator';
+            const readyForPublish = isStudent ? true : false;
+            if (currentUser?.uid) {
+                await fetchAllCourses(
+                    currentUser.uid,
+                    userRole,
+                    filterType,
+                    'newest',
+                    readyForPublish,
+                )
+            }
+        }
+        loadCourses();
+    }, [currentUser?.uid, userRole]);
+
+    const toggleModal = () => {
+        setIsModalOpen(!isModalOpen);
     };
-}
 
-const ProfileView: React.FC<ProfileViewProps> = ({
-    viewMode,
-    userProfile,
-    toggleModal,
-    isInstructor,
-    courses,
-}) => {
-    const isStudent = viewMode === 'student';
-    const currentCourses = isStudent ? courses.enrolled : courses.created;
+    if (!currentUser) {
+        return;
+    }
 
     return (
-        <div className='profile-view max-w-screen-xl mx-auto px-0.5'>
-            <h2 className='text-5xl font-bold mt-12 mb-12'>
-                {userProfile.username}'s {isStudent ? 'Student' : 'Instructor'}{' '}
-                Profile
-            </h2>
+        <div>
+            <div className='profile-view max-w-screen-xl mx-auto px-0.5'>
+                {/* <h2 className='text-5xl font-bold my-6'>
+                    {currentUser.username}'s {userRole ? 'Student' : 'Instructor'}{' '}
+                    Profile
+                </h2> */}
+                {/* border border-gray */}
 
-            <div className='flex items-start mb-12'>
-                {/* Profile Image Section */}
-                <div
-                    className={`relative w-32 h-32 rounded-full overflow-hidden mr-6 ${
-                        isStudent
-                            ? 'filter grayscale'
-                            : 'border-4 border-primary'
-                    }`}
-                >
-                    <img
-                        src={userProfile.profile_image || userProfileImg}
-                        alt={`${userProfile.firstname}'s Profile`}
-                        className='w-full h-full object-cover'
-                    />
-                </div>
+                <div className='flex items-start justify-start my-6'>
+                    <div
+                        className={`relative w-40 h-40 rounded-full overflow-hidden mr-10 border-2 border-primary`}
+                    >
+                        <img
+                            src={currentUser.profile_image || defaultProfilePicture}
+                            alt={`${currentUser.firstname}'s Profile`}
+                            className='w-full h-full object-cover'
+                        />
+                    </div>
 
-                {/* Profile Info Section */}
-                <div className='flex-1'>
-                    <p className='text-3xl font-bold mt-8'>
-                        {userProfile.firstname} {userProfile.lastname}
-                    </p>
+                    <div className='flex-1'>
+                        <div className='flex flex-row'>
+                            <p className='text-3xl font-bold'>
+                                {currentUser.username}
+                            </p>
+                            {/* Only instructor has this */}
+                            {isInstructor ? (
+                                <div className='flex flex-row ml-4 items-center justify-center'>
+                                    {currentUser?.instructor?.social_links?.github && (
+                                        <a
+                                            href={currentUser.instructor.social_links.github}
+                                            target='_blank'
+                                            rel='noopener noreferrer'
+                                            className='mr-2'
+                                        >
+                                            <FaGithub className='w-5 h-5 cursor-pointer' />
+                                        </a>
+                                    )}
 
-                    <div className='mt-1 flex space-x-16'>
-                        {!isStudent && userProfile.instructor && (
-                            <>
-                                {userProfile.instructor.social_links
-                                    .linkedin && (
-                                    <p className='flex items-center space-x-2'>
-                                        <FaLinkedin /> {/* LinkedIn icon */}
-                                        <span>
-                                            LinkedIn:{' '}
-                                            <a
-                                                href={
-                                                    userProfile.instructor
-                                                        .social_links.linkedin
-                                                }
-                                                target='_blank'
-                                                rel='noopener noreferrer'
-                                                className='text-secondary hover:text-secondary-dark transition-colors'
-                                            >
+                                    {currentUser?.instructor?.social_links?.linkedin && (
+                                        <a
+                                            href={currentUser?.instructor?.social_links?.linkedin}
+                                            target='_blank'
+                                            rel='noopener noreferrer'
+                                        >
+                                            <FaLinkedin className='w-5 h-5 cursor-pointer' />
+                                        </a>
+                                    )}
+                                </div>
+                            ) : (
+                                ''
+                            )}
+                        </div>
+
+                        <div className='grid grid-row-1 md:grid-row-2 lg:grid-row-3 gap-3 mt-4'>
+                            {isStudent ? (
+                                <>
+                                    <div className='flex flex-row items-center'>
+                                        <p className='text-md bg-gray px-2 font-medium text-white mr-4'>
+                                            Email
+                                        </p>
+                                        <p className='text-lg font-semibold text-gray-700'>
+                                            {currentUser.email}
+                                        </p>
+                                    </div>
+                                    <div className='flex flex-row items-center'>
+                                        <p className='text-md bg-gray px-2 font-medium text-white mr-4'>
+                                            Joined At
+                                        </p>
+                                        <p className='text-lg font-semibold text-gray-700'>
+                                            {currentUser.created_at
+                                                .toDate()
+                                                .toLocaleDateString('en-uk', {
+                                                    year: 'numeric',
+                                                    month: 'long',
+                                                    day: 'numeric',
+                                                })}
+                                        </p>
+                                    </div>
+                                    <div className='flex flex-row items-center'>
+                                        <p className='text-md bg-gray px-2 font-medium text-white mr-4'>
+                                            Education Level
+                                        </p>
+                                        <p className='text-lg font-semibold text-black'>
+                                            {currentUser?.student?.student_type || 'No Education Level'}
+                                        </p>
+                                    </div>
+                                </>
+                            ) : (
+                                currentUser.instructor && (
+                                    <>
+                                        <div className='flex flex-row items-center'>
+                                            <p className='text-md bg-gray px-2 font-medium text-white mr-4'>
+                                                Specialization
+                                            </p>
+                                            <p className='text-lg font-semibold text-gray-700'>
+                                                {currentUser?.instructor?.specialization_area && currentUser.instructor.specialization_area.length > 0
+                                                    ? currentUser.instructor.specialization_area.join(' | ')
+                                                    : 'No specialization areas available'}
+                                            </p>
+                                        </div>
+                                        <div className='flex flex-row items-center'>
+                                            <p className='text-md bg-gray px-2 font-medium text-white mr-4'>
+                                                Experience
+                                            </p>
+                                            <p className='text-lg font-semibold text-gray-700'>
                                                 {
-                                                    userProfile.instructor
-                                                        .social_links.linkedin
-                                                }
-                                            </a>
-                                        </span>
-                                    </p>
-                                )}
-                                {userProfile.instructor.social_links.github && (
-                                    <p className='flex items-center space-x-2'>
-                                        <FaGithub /> {/* GitHub icon */}
-                                        <span>
-                                            GitHub:{' '}
-                                            <a
-                                                href={
-                                                    userProfile.instructor
-                                                        .social_links.github
-                                                }
-                                                target='_blank'
-                                                rel='noopener noreferrer'
-                                                className='text-secondary hover:text-secondary-dark transition-colors'
-                                            >
-                                                {
-                                                    userProfile.instructor
-                                                        .social_links.github
-                                                }
-                                            </a>
-                                        </span>
-                                    </p>
-                                )}
-                            </>
-                        )}
+                                                    currentUser.instructor
+                                                        .years_of_experience
+                                                }{' '}
+                                                years
+                                            </p>
+                                        </div>
+                                        <div className='flex flex-row items-center'>
+                                            <p className='text-md bg-gray px-2 font-medium text-white mr-4'>
+                                                Rating
+                                            </p>
+                                            <p className='flex flex-row text-lg font-semibold text-black'>
+                                                {[...Array(5)].map((_, index) => (
+                                                    <span
+                                                        key={index}
+                                                        className='text-yellow-500 text-xl'
+                                                    >
+                                                        {currentUser?.instructor
+                                                            ?.rating &&
+                                                        index <
+                                                            currentUser.instructor
+                                                                .rating ? (
+                                                            <FaStar className='text-secondary' /> // Solid star
+                                                        ) : (
+                                                            <FaRegStar className='text-gray' /> // Outlined star
+                                                        )}
+                                                    </span>
+                                                ))}
+                                            </p>
+                                        </div>
+                                    </>
+                                )
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className='space-x-4 flex items-end'>
+                        <button
+                            onClick={toggleModal}
+                            className='bg-primary text-white px-4 py-2 mb-2 transition-colors '
+                        >
+                            Update {isStudent ? 'Your' : 'Instructor'} Profile
+                        </button>
                     </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className='mt-10 space-x-4'>
-                    <button
-                        onClick={toggleModal}
-                        className='bg-primary text-white px-4 py-2 rounded mb-2 hover:bg-primary-dark transition-colors'
-                    >
-                        Edit {isStudent ? 'Student' : 'Instructor'} Profile
-                    </button>
+                {/* Instructor Summary Section */}
+                {isInstructor && currentUser.instructor && (
+                    <div className='flex flex-row gap-6 mt-8'>
+                        <div className='w-2/3 bg-white p-4 border border-gray'>
+                            <h3 className='text-2xl font-semibold text-gray-800 mb-4'>
+                                Profile Summary
+                            </h3>
+                            <p className='text-gray-700 text-lg'>
+                                {currentUser.instructor.profile_summary}
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* <hr className='border-t gray mb-8 opacity-15' /> */}
+
+                {/* Course List Section */}
+                <div className='mt-8'>
+                    <h3 className='text-2xl font-bold mb-4'>
+                        {isStudent ? 'Enrolled Courses' : 'Created Courses'}
+                    </h3>
+                    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+                        {isStudent? allCourses.map((course) => (
+                            <CardCourseComponent
+                                key={course.course_id}
+                                thumbnail={course.course_thumbnail_url}
+                                title={course.course_title}
+                                instructor={course.course_instructor}
+                                pricing={course.course_pricing}
+                                buttonText='Continue'
+                                onButtonClick={() =>
+                                    navigate(`/selectedcourse/${course.course_id}`)
+                                }
+                                size='sm'
+                            />
+                        )) : allCourses.map((course) => (
+                            // <CardDashboard
+                            //     key={course.course_id}
+                            //     courseId={course.course_id}
+                            //     thumbnailUrl={course.course_thumbnail_url}
+                            //     title={course.course_title}
+                            //     description={course.course_description}
+                            //     sectionsNumber={course.course_number_of_section}
+                            //     pricing={course.course_pricing}
+                            //     enrollmentNumber={course.course_enrollment_number || 0}
+                            // />
+                            <CardCourseComponent
+                                key={course.course_id}
+                                thumbnail={course.course_thumbnail_url}
+                                title={course.course_title}
+                                instructor={course.course_instructor}
+                                enrolledStudents={course.course_enrollment_number}
+                                buttonText='Edit'
+                                onButtonClick={() =>
+                                    navigate(`/selectedcourse/${course.course_id}`)
+                                }
+                                size='sm'
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
+            {isModalOpen && (
+                <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+                    <div className='bg-white p-6 rounded-lg max-w-lg w-full relative'>
+                        <ProfileComponent
+                            //userProfile={userProfile}
+                            //viewMode={viewMode}
+                            onClose={toggleModal}
+                            //onProfileUpdate={handleProfileUpdate}
+                            //statistics={statistics}
+                        />
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
-            <hr className='border-t gray mb-8 opacity-15' />
+export default ProfileView;
 
-            {/* Profile Stats Grid */}
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
+
+// interface ProfileViewProps {
+    //viewMode: ViewMode;
+    //userProfile: User;
+    //toggleModal: () => void;
+    //isInstructor: boolean;
+    // courses: {
+    //     enrolled: Course[];
+    //     created: Course[];
+    // };
+// }
+
+// {
+    //viewMode,
+    //userProfile,
+    //toggleModal,
+    //isInstructor,
+    //courses,
+// }
+
+{/* Profile Stats Grid */}
+            {/* <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
                 {isStudent ? (
                     <>
                         <div className='flex flex-col'>
@@ -135,15 +320,21 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                                 Email
                             </p>
                             <p className='text-lg font-semibold text-gray-700'>
-                                {userProfile.email}
+                                {currentUser.email}
                             </p>
                         </div>
                         <div className='flex flex-col'>
                             <p className='text-md font-medium text-gray-500'>
-                                Courses Enrolled
+                                Joined At
                             </p>
                             <p className='text-lg font-semibold text-gray-700'>
-                                {userProfile.student.courses_enrolled}
+                                {currentUser.created_at
+                                    .toDate()
+                                    .toLocaleDateString('en-uk', {
+                                        year: 'numeric',
+                                        month: 'numeric',
+                                        day: 'numeric',
+                                    })}
                             </p>
                         </div>
                         <div className='flex flex-col'>
@@ -151,12 +342,12 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                                 Student Type
                             </p>
                             <p className='text-lg font-semibold text-gray-700'>
-                                {userProfile.student.student_type}
+                                {currentUser?.student?.student_type}
                             </p>
                         </div>
                     </>
                 ) : (
-                    userProfile.instructor && (
+                    currentUser.instructor && (
                         <>
                             <div className='flex flex-col'>
                                 <p className='text-md font-medium text-gray-500 flex items-center space-x-2'>
@@ -165,7 +356,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                                 </p>
                                 <p className='text-lg font-semibold text-gray-700'>
                                     {
-                                        userProfile.instructor
+                                        currentUser.instructor
                                             .total_courses_created
                                     }
                                 </p>
@@ -176,9 +367,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                                     <span>Specialization</span>
                                 </p>
                                 <p className='text-lg font-semibold text-gray-700'>
-                                    {userProfile.instructor.specialization_area.join(
-                                        ', ',
-                                    )}
+                                    Nothing
                                 </p>
                             </div>
 
@@ -188,51 +377,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({
                                     <span>Experience</span>
                                 </p>
                                 <p className='text-lg font-semibold text-gray-700'>
-                                    {userProfile.instructor.years_of_experience}{' '}
+                                    {currentUser.instructor.years_of_experience}{' '}
                                     years
                                 </p>
                             </div>
                         </>
                     )
                 )}
-            </div>
+            </div> */}
 
-            <hr className='border-t gray mb-8 opacity-15' />
-
-            {/* Course List Section */}
-            <div className='mt-8'>
-                <h3 className='text-2xl font-bold mb-4'>
-                    {isStudent ? 'Enrolled Courses' : 'Created Courses'}
-                </h3>
-                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-                    {currentCourses.map((course) => (
-                        <CardDashboard
-                            key={course.course_id}
-                            courseId={course.course_id}
-                            thumbnailUrl={course.course_thumbnail_url}
-                            title={course.course_title}
-                            description={course.course_description}
-                            sectionsNumber={course.course_number_of_section}
-                            pricing={course.course_pricing}
-                            enrollmentNumber={course.course_enrollment_number}
-                        />
-                    ))}
-                </div>
-            </div>
-
-            {/* Instructor Summary Section */}
-            {!isStudent && userProfile.instructor && (
-                <div className='mt-8 bg-white p-6 rounded-lg shadow-md'>
-                    <h3 className='text-3xl font-semibold text-gray-800 mb-4'>
-                        Profile Summary
-                    </h3>
-                    <p className='text-gray-700 text-lg'>
-                        {userProfile.instructor.profile_summary}
-                    </p>
-                </div>
-            )}
-        </div>
-    );
-};
-
-export default ProfileView;
+            {/* <hr className='border-t gray mb-8 opacity-15' /> */}

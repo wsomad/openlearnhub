@@ -9,11 +9,12 @@ import {
     updateSectionById,
 } from '../services/firestore/SectionService';
 import {
-    clearSection,
-    clearSections,
     modifySection,
     setSection,
     setSections,
+    clearSection,
+    clearSections,
+    clearSingleSection,
 } from '../store/slices/sectionSlice';
 
 export const useSections = () => {
@@ -34,16 +35,8 @@ export const useSections = () => {
         course_id: string,
         section: Section,
     ): Promise<void> => {
-        // try {
-        //     await addSection(course_id, section);
-        //     dispatch(setSections([...allSections, section]));
-        //     console.log('Section created successfully: ');
-        // } catch (error) {
-        //     console.error('Failed to create section: ', error);
-        // }
         try {
-            const addedSection = await addSections(course_id, section); // Assuming addSection supports arrays
-            // dispatch(setSections([...allSections, sections]));
+            const addedSection = await addSections(course_id, section);
             dispatch(setSection(addedSection));
             console.log('Sections created successfully:');
         } catch (error) {
@@ -214,6 +207,14 @@ export const useSections = () => {
         }
     };
 
+    const deleteAllSections = () => {
+        clearSections();
+    }
+
+    const deleteSingleSection = () => {
+        clearSingleSection();
+    }
+
     return {
         selectedSection,
         allSections,
@@ -222,5 +223,7 @@ export const useSections = () => {
         fetchAllSections,
         updateSection,
         deleteSection,
+        deleteAllSections,
+        deleteSingleSection,
     };
 };
