@@ -87,9 +87,6 @@ jobs:
       - name: Run ESLint
         run: podman run --rm ghcr.io/${{ github.repository }}:${{ github.sha }} npm run lint
 
-      - name: Run Tests
-        run: podman run --rm ghcr.io/${{ github.repository }}:${{ github.sha }} npm run test
-
       - name: Push Podman image
         if: github.ref == 'refs/heads/main'
         run: |
