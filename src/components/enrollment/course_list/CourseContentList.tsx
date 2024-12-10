@@ -11,21 +11,31 @@ import AddSectionModal from '../../modal/AddSectionModal';
 import CourseContentView from './CourseContentView';
 
 interface CourseContentListProps {
-    course_id: string;
+    course_id?: string;
+    isDraft?: boolean;
     sectionsOrder: Section[];
     setSectionsOrder: React.Dispatch<React.SetStateAction<Section[]>>;
     onLessonSelect?: (lesson: LessonBase) => void;
     onSaveOrder: () => void;
     selectedLessonId?: string;
+    onSectionChange: (section: Section) => void;
+    onSectionDelete: (sectionId: string) => void;
+    onLessonChange: (sectionId: string, lesson: LessonBase) => void;
+    onLessonDelete: (sectionId: string, lessonId: string) => void;
 }
 
 const CourseContentList: React.FC<CourseContentListProps> = ({
     course_id,
+    isDraft,
     sectionsOrder,
     setSectionsOrder,
     onLessonSelect,
     onSaveOrder,
     selectedLessonId,
+    onSectionChange,
+    onSectionDelete,
+    onLessonChange,
+    onLessonDelete,
 }) => {
     const {selectedCourse} = useCourses();
     const {
@@ -80,60 +90,77 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     // Close modal function for modal of content.
     const closeSectionModal = (): void => setIsModalOpen(false);
 
-    // Close confirmation function to close modal of content.
-    // const closeConfirmModal = (): void => {
-    //     setIsConfirmModalOpen(false);
-    //     clearSingleSection();
-    // };
-    const closeConfirmModal = (): void => {
-        setIsConfirmModalOpen(false);
-        deleteSelectedSection();
-    };
+    // const handleAddSection = async (
+    //     newSection: Omit<Section, 'section_id' | 'lessons'>,
+    // ): Promise<void> => {
+    //     if (!canEditCourse()) return;
 
-    // Handle add function to add section.
+    //     console.log('Current sections:', sectionsOrder); // Debug log
+
+    //     // Explicitly calculate next order based on existing sections
+    //     const maxOrder = Math.max(
+    //         ...sectionsOrder.map((s) => s.section_order),
+    //         0,
+    //     );
+    //     const nextOrder = maxOrder + 1;
+
+    //     console.log('Calculated next order:', nextOrder); // Debug log
+
+    //     const section: Section = {
+    //         ...newSection,
+    //         section_id: `temp-${Date.now()}`,
+    //         section_order: nextOrder, // Use calculated order
+    //         lessons: [],
+    //     };
+
+    //     console.log('New section being created:', section); // Debug log
+
+    //     onSectionChange(section);
+    //     closeSectionModal();
+    // };
+
+    // Handle delete function to delete section.
     const handleAddSection = async (
         newSection: Omit<Section, 'section_id' | 'lessons'>,
     ): Promise<void> => {
         if (!canEditCourse()) return;
 
-        try {
-            const section: Section = {
-                ...newSection,
-                section_id: newSection.section_title || '',
-                section_order: newSection.section_order,
-                lessons: [],
-            };
+        // Get existing sections sorted by order
+        const sortedSections = [...sectionsOrder].sort(
+            (a, b) => a.section_order - b.section_order,
+        );
 
-            // For new courses, we'll just update the local state
-            if (!course_id) {
-                setSectionsOrder((prev) =>
-                    [...prev, section].sort(
-                        (a, b) =>
-                            (a.section_order || 0) - (b.section_order || 0),
-                    ),
-                );
-            } else {
-                // For existing courses, update Firebase
-                await createSections(course_id, section);
-                await fetchAllSections(course_id);
-            }
+        // The next order should simply be the length + 1
+        const nextOrder = sortedSections.length + 1;
 
-            closeSectionModal();
-            console.log('Section created successfully.');
-        } catch (error) {
-            console.error('Failed to create this section:', error);
-        }
+        console.log('Current sections:', sortedSections);
+        console.log('Next order will be:', nextOrder);
+
+        const section: Section = {
+            ...newSection,
+            section_id: `temp-${Date.now()}`,
+            section_order: nextOrder,
+            lessons: [],
+        };
+
+        onSectionChange(section);
+        closeSectionModal();
     };
 
-    // Handle delete function to delete section.
     const handleDeleteSection = async (section_id: string) => {
-        if (!course_id) return;
+        if (!course_id && !isDraft) return;
 
-        try {
-            await deleteSection(course_id, section_id);
-        } catch (error) {
-            console.error('Failed to delete section:', error);
-        }
+        onSectionDelete(section_id);
+
+        // Update local state for immediate UI feedback
+        setSectionsOrder((prev) =>
+            prev.filter((section) => section.section_id !== section_id),
+        );
+
+        // For draft mode, also update sectionData state
+        setSectionData((prev) =>
+            prev.filter((section) => section.section_id !== section_id),
+        );
     };
 
     // Handle edit function to edit section title.
@@ -141,16 +168,33 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         section_id: string,
         updatedSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
     ) => {
-        if (!course_id) return;
+        if (!course_id && !isDraft) return;
 
-        try {
-            await updateSection(course_id, section_id, {
-                ...updatedSection,
-                section_id: section_id,
-            });
-        } catch (error) {
-            console.error('Error updating section:', error);
-        }
+        const sectionToUpdate = {
+            ...updatedSection,
+            section_id: section_id,
+            lessons: [],
+        };
+
+        onSectionChange(sectionToUpdate);
+
+        // Update local state for immediate UI feedback
+        setSectionsOrder((prev) =>
+            prev.map((section) =>
+                section.section_id === section_id
+                    ? {...section, ...updatedSection}
+                    : section,
+            ),
+        );
+
+        // For draft mode, also update sectionData state
+        setSectionData((prev) =>
+            prev.map((section) =>
+                section.section_id === section_id
+                    ? {...section, ...updatedSection}
+                    : section,
+            ),
+        );
     };
 
     // Handle add function to add lesson.
@@ -158,46 +202,21 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         section_id: string,
         lesson: LessonBase,
     ): Promise<void> => {
-        if (!course_id) {
-            console.error('Cannot add lesson: No course ID');
-            return;
-        }
-
-        try {
-            await createLessons(course_id, section_id, lesson);
-            console.log('Lesson added successfully:', lesson);
-        } catch (error) {
-            console.error('Failed to add lesson:', error);
-            throw error;
-        }
+        onLessonChange(section_id, lesson);
     };
 
     const handleEditLesson = async (
         section_id: string,
         lesson: LessonBase,
     ): Promise<void> => {
-        if (!course_id) return;
-
-        try {
-            await updateLesson(course_id, section_id, lesson);
-        } catch (error) {
-            console.error('Failed to edit lesson:', error);
-            throw error;
-        }
+        onLessonChange(section_id, lesson);
     };
 
     const handleDeleteLesson = async (
         section_id: string,
         lesson_id: string,
     ): Promise<void> => {
-        if (!course_id) return;
-
-        try {
-            await deleteLesson(course_id, section_id, lesson_id);
-        } catch (error) {
-            console.error('Failed to delete lesson:', error);
-            throw error;
-        }
+        onLessonDelete(section_id, lesson_id);
     };
 
     return (
@@ -222,6 +241,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
             <div className='p-6'>
                 <CourseContentView
                     course_id={course_id || ''}
+                    isDraft={isDraft}
                     canEdit={canEditCourse()}
                     sectionsOrder={sectionsOrder || []}
                     setSectionsOrder={setSectionsOrder || (() => {})}
@@ -237,6 +257,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                 {isModalOpen && (
                     <AddSectionModal
                         isOpen={isModalOpen}
+                        isDraft={isDraft}
                         onClose={closeSectionModal}
                         onSubmit={handleAddSection}
                     />

@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 
-import { createNewQuestion } from '../components/enrollment/testingLesson/questionUtils';
+// import { createNewQuestion } from '../components/enrollment/testingLesson/questionUtils';
 import {
 	addLesson,
 	deleteLessonById,
@@ -9,17 +9,12 @@ import {
 	updateLessonById,
 } from '../services/firestore/LessonService';
 import {
-	addQuestion,
 	clearLesson,
-	clearQuestions,
-	clearSingleLesson,
-	deleteQuestion,
+	clearLessonsState,
 	modifyLesson,
-	resetLessonState,
+	modifyLessonRemove,
 	setLesson,
 	setLessons,
-	setQuestions,
-	updateQuestion,
 } from '../store/slices/lessonSlice';
 import { RootState } from '../store/store';
 import { LessonBase } from '../types/lesson';
@@ -36,17 +31,34 @@ export const useLessons = () => {
     const lessonsBySection = useSelector(
         (state: RootState) => state.lessons.lessonsBySection,
     );
-    const questions = useSelector(
-        (state: RootState) => state.lessons.questions,
-    );
 
     /**
      * Retrieves lessons for a specific section
      * @param sectionId - ID of the section to get lessons for
      * @returns Array of lessons or empty array if section not found
      */
-    const getLessonsForSection = (sectionId: string) => {
-        return lessonsBySection[sectionId] || [];
+    const fetchLessonsForSection = async (
+        sectionId: string,
+        courseId: string,
+    ) => {
+        try {
+            const lessons = await getAllLessons(courseId, sectionId);
+            const serializedLessons = lessons
+                .map(serializeLesson)
+                .sort((a, b) => a.lesson_order - b.lesson_order);
+
+            dispatch(
+                setLessons({
+                    sectionId: sectionId,
+                    lessons: serializedLessons,
+                }),
+            );
+
+            return serializedLessons;
+        } catch (error) {
+            console.error('Error fetching lessons for section:', error);
+            return [];
+        }
     };
 
     /**
@@ -82,8 +94,14 @@ export const useLessons = () => {
         course_id: string,
         section_id: string,
         lesson_data: LessonBase,
-    ): Promise<void> => {
+    ): Promise<LessonBase | undefined> => {
         try {
+            console.log('Creating lesson with:', {
+                course_id,
+                section_id,
+                lesson_data,
+            }); // Add debug log
+
             // Get existing lessons to determine order
             const currentLessons = await getAllLessons(course_id, section_id);
 
@@ -97,11 +115,14 @@ export const useLessons = () => {
                       ) + 1
                     : 1;
 
-            // Add order to lesson data
+            // Add order to lesson data and ensure section_id is set
             const lessonToAdd = {
                 ...lesson_data,
                 lesson_order: nextLessonOrder,
+                section_id: section_id, // Explicitly set section_id
             };
+
+            console.log('Lesson data to add:', lessonToAdd); // Add debug log
 
             // Create lesson in Firebase
             const addedLesson = await addLesson(
@@ -110,16 +131,20 @@ export const useLessons = () => {
                 lessonToAdd,
             );
 
+            console.log('Lesson added to Firebase:', addedLesson); // Add debug log
+
             // Update Redux store
             dispatch(setLesson(serializeLesson(addedLesson)));
 
             // Refresh lessons list
             await fetchAllLessons(course_id, section_id);
 
-            console.log('Lesson created successfully:', addedLesson);
+            console.log('Lesson creation complete:', addedLesson);
+
+            return addedLesson;
         } catch (error) {
             console.error('Failed to create lesson:', error);
-            throw error;
+            return undefined;
         }
     };
 
@@ -245,7 +270,7 @@ export const useLessons = () => {
 
             // Update Redux state to remove lesson
             dispatch(
-                clearLesson({
+                modifyLessonRemove({
                     section_id: section_id,
                     lesson_id: lesson_id,
                 }),
@@ -287,74 +312,18 @@ export const useLessons = () => {
     };
 
     const clearSelectedLesson = () => {
-        dispatch(clearSingleLesson());
+        dispatch(clearLesson());
     };
 
     // Quiz-related functions
 
-    /**
-     * Adds a new question to the quiz
-     */ const handleAddQuestion = () => {
-        const newQuestion = createNewQuestion(questions.length);
-        dispatch(addQuestion(newQuestion));
-    };
-
-    /**
-     * Updates a specific question field
-     * @param index - Question index
-     * @param field - Field to update
-     * @param value - New value
-     */
-    const handleQuestionChange = (
-        index: number,
-        field: keyof Question,
-        value: string | number | string[],
-    ) => {
-        const updatedQuestion = {...questions[index]};
-
-        // Handle options array separately
-        if (field === 'question_options') {
-            updatedQuestion.question_options = value as string[];
-        } else {
-            (updatedQuestion as any)[field] = value;
-        }
-
-        dispatch(updateQuestion({index, question: updatedQuestion}));
-    };
-
-    /**
-     * Deletes a question and reorders remaining questions
-     * @param indexToDelete - Index of question to delete
-     */
-    const handleDeleteQuestion = (indexToDelete: number) => {
-        dispatch(deleteQuestion(indexToDelete));
-
-        // Reorder remaining questions
-        const updatedQuestions = questions
-            .filter((_, index) => index !== indexToDelete)
-            .map((q, index) => ({
-                ...q,
-                question_order: index + 1,
-            }));
-
-        dispatch(setQuestions(updatedQuestions));
-    };
-
-    const initializeQuizQuestions = (questions: Question[]) => {
-        dispatch(setQuestions(questions));
-    };
-
-    const clearQuizQuestions = () => {
-        dispatch(clearQuestions());
-    };
-
     const resetLessonsState = () => {
-        dispatch(resetLessonState());
+        dispatch(clearLessonsState());
     };
 
     return {
         selectedLesson,
-        getLessonsForSection,
+        fetchLessonsForSection,
         createLessons,
         fetchLessonById,
         fetchAllLessons,
@@ -362,12 +331,6 @@ export const useLessons = () => {
         deleteLesson,
         setSelectedLesson,
         clearSelectedLesson,
-        questions,
-        handleAddQuestion,
-        handleQuestionChange,
-        handleDeleteQuestion,
-        initializeQuizQuestions,
-        clearQuizQuestions,
         resetLessonsState,
     };
 };

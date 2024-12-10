@@ -11,11 +11,18 @@ import { clearSingleCourse } from '../../../store/slices/courseSlice';
 import { clearSections } from '../../../store/slices/sectionSlice';
 import { Course } from '../../../types/course';
 import { SpecializationArea } from '../../../types/instructor';
+import {
+	DocumentLesson,
+	LessonBase,
+	QuizLesson,
+	VideoLesson,
+} from '../../../types/lesson';
 import { Section } from '../../../types/section';
 import CourseContentList from './CourseContentList';
 
 interface CourseFormProps {
     courseId?: string;
+    isDraft?: boolean;
 }
 
 const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
@@ -35,10 +42,20 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
         fetchAllSections,
         updateSection,
         resetSectionsState,
+        createSections,
+        deleteSection,
     } = useSections();
-    const {fetchAllLessons, resetLessonsState} = useLessons();
+    const {
+        fetchAllLessons,
+        resetLessonsState,
+        createLessons,
+        updateLesson,
+        deleteLesson,
+    } = useLessons();
     const [sectionsOrder, setSectionsOrder] = useState<Section[]>([]);
     const [error, setError] = useState<string | null>(null);
+
+    const [isUnmounting, setIsUnmounting] = useState(false);
 
     // Declare initial state to create a new course.
     const [courseData, setCourseData] = useState<Course>({
@@ -66,6 +83,18 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
         'Cybersecurity',
     ];
 
+    const [pendingChanges, setPendingChanges] = useState<{
+        sections: Section[];
+        deletedSections: string[];
+        lessons: LessonBase[];
+        deletedLessons: {sectionId: string; lessonId: string}[];
+    }>({
+        sections: [],
+        deletedSections: [],
+        lessons: [],
+        deletedLessons: [],
+    });
+
     // Run side effect to fetch course with `courseId`.
     useEffect(() => {
         if (!currentUser || !userRole) return;
@@ -83,29 +112,34 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
         loadCourse();
     }, [courseId]);
 
-    // Run side effect to fetch all sections based on `courseId`.
     useEffect(() => {
-        if (!currentUser || !userRole || !courseId) return;
+        if (!currentUser || !userRole) return;
 
         const loadSection = async () => {
             try {
                 if (courseId) {
                     await fetchAllSections(courseId);
+                } else {
+                    setSectionsOrder([]);
+                    dispatch(clearSections());
+                    resetSectionsState();
+                    resetLessonsState();
                 }
             } catch (error) {
                 console.error('Failed to fetch a list of sections:', error);
             }
         };
 
-        loadSection();
+        if (!isUnmounting) {
+            loadSection();
+        }
 
-        // Clear sections only when component unmounts or courseId changes
         return () => {
-            if (courseId !== undefined) {
-                dispatch(clearSections());
-                resetSectionsState();
-                resetLessonsState();
-            }
+            setIsUnmounting(true);
+            dispatch(clearSections());
+            resetSectionsState();
+            resetLessonsState();
+            setSectionsOrder([]);
         };
     }, [courseId, currentUser, userRole]);
 
@@ -146,16 +180,30 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
         }
     }, [selectedCourse]);
 
-    // Run side effect to clear state management.
     useEffect(() => {
-        return () => {
-            deleteSingleCourse();
-            // dispatch(clearSingleCourse());
+        if (!courseId) {
+            setSectionsOrder([]);
             dispatch(clearSections());
             resetSectionsState();
             resetLessonsState();
+        }
+
+        return () => {
+            setIsUnmounting(true);
+            deleteSingleCourse();
+            dispatch(clearSingleCourse());
+            dispatch(clearSections());
+            resetSectionsState();
+            resetLessonsState();
+            setSectionsOrder([]);
+            setPendingChanges({
+                sections: [],
+                deletedSections: [],
+                lessons: [],
+                deletedLessons: [],
+            });
         };
-    }, [dispatch]);
+    }, [courseId]);
 
     // Run this side effect to sort section order.
     useEffect(() => {
@@ -205,6 +253,224 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
         setCourseData((course) => ({
             ...course,
             course_requirements: updatedRequirements,
+        }));
+    };
+
+    // const onSectionChange = async (section: Section) => {
+    //     console.log('Current sectionsOrder:', sectionsOrder); // Debug log
+    //     console.log('New section being added:', section); // Debug log
+
+    //     const existingSection = sectionsOrder.find(
+    //         (s) => s.section_id === section.section_id,
+    //     );
+
+    //     if (existingSection) {
+    //         // Update existing section while maintaining order
+    //         setSectionsOrder((prev) => {
+    //             const updated = prev.map((s) =>
+    //                 s.section_id === section.section_id
+    //                     ? {...s, ...section}
+    //                     : s,
+    //             );
+    //             return updated;
+    //         });
+    //     } else {
+    //         // Add new section with sequential order
+    //         setSectionsOrder((prev) => {
+    //             return [
+    //                 ...prev,
+    //                 {
+    //                     ...section,
+    //                     section_order: prev.length + 1, // This ensures sequential ordering
+    //                 },
+    //             ];
+    //         });
+    //     }
+
+    //     // Update pending changes
+    //     setPendingChanges((prev) => {
+    //         let updatedSections;
+    //         if (existingSection) {
+    //             // For existing sections, maintain their order
+    //             updatedSections = prev.sections.map((s) =>
+    //                 s.section_id === section.section_id ? section : s,
+    //             );
+    //         } else {
+    //             // For new sections, use sequential order
+    //             updatedSections = [
+    //                 ...prev.sections,
+    //                 {
+    //                     ...section,
+    //                     section_order: sectionsOrder.length + 1,
+    //                 },
+    //             ];
+    //         }
+
+    //         console.log('Updated pending changes sections:', updatedSections);
+
+    //         return {
+    //             ...prev,
+    //             sections: updatedSections,
+    //         };
+    //     });
+    // };
+    // const onSectionChange = async (section: Section) => {
+    //     console.log('Current sectionsOrder:', sectionsOrder); // Debug log
+    //     console.log('New section being added:', section); // Debug log
+
+    //     const existingSection = sectionsOrder.find(
+    //         (s) => s.section_id === section.section_id,
+    //     );
+
+    //     if (existingSection) {
+    //         // Update existing section while maintaining its order
+    //         setSectionsOrder((prev) => {
+    //             const updated = prev.map((s) =>
+    //                 s.section_id === section.section_id
+    //                     ? {...s, ...section}
+    //                     : s,
+    //             );
+    //             return updated;
+    //         });
+    //     } else {
+    //         // Add new section with sequential order based on current sections
+    //         const newOrder =
+    //             sectionsOrder.length > 0
+    //                 ? Math.max(...sectionsOrder.map((s) => s.section_order)) + 1
+    //                 : 1;
+
+    //         setSectionsOrder((prev) => [
+    //             ...prev,
+    //             {
+    //                 ...section,
+    //                 section_order: newOrder,
+    //             },
+    //         ]);
+    //     }
+
+    //     // Update pending changes
+    //     setPendingChanges((prev) => {
+    //         const updatedSections = existingSection
+    //             ? prev.sections.map((s) =>
+    //                   s.section_id === section.section_id ? section : s,
+    //               )
+    //             : [
+    //                   ...prev.sections,
+    //                   {...section, section_order: sectionsOrder.length + 1},
+    //               ];
+
+    //         return {
+    //             ...prev,
+    //             sections: updatedSections,
+    //         };
+    //     });
+    // };
+
+    const onSectionChange = async (section: Section) => {
+        console.log('Current sectionsOrder:', sectionsOrder);
+        console.log('New section being added:', section);
+
+        const existingSection = sectionsOrder.find(
+            (s) => s.section_id === section.section_id,
+        );
+
+        if (existingSection) {
+            // Update existing section
+            setSectionsOrder((prev) =>
+                prev.map((s) =>
+                    s.section_id === section.section_id
+                        ? {...s, ...section}
+                        : s,
+                ),
+            );
+
+            setPendingChanges((prev) => ({
+                ...prev,
+                sections: prev.sections.map((s) =>
+                    s.section_id === section.section_id
+                        ? {...s, ...section}
+                        : s,
+                ),
+            }));
+        } else {
+            // Add new section
+            setSectionsOrder((prev) => [...prev, section]);
+
+            setPendingChanges((prev) => ({
+                ...prev,
+                sections: [...prev.sections, section],
+            }));
+        }
+    };
+
+    const onSectionDelete = async (sectionId: string) => {
+        // Remove the section and reorder remaining sections
+        setSectionsOrder((prev) => {
+            const filtered = prev.filter(
+                (section) => section.section_id !== sectionId,
+            );
+            // Reorder remaining sections
+            return filtered.map((section, index) => ({
+                ...section,
+                section_order: index + 1,
+            }));
+        });
+
+        // Update pending changes and ensure orders are updated there too
+        setPendingChanges((prev) => {
+            const updatedSections = prev.sections
+                .filter((s) => s.section_id !== sectionId)
+                .map((s, index) => ({
+                    ...s,
+                    section_order: index + 1,
+                }));
+
+            return {
+                ...prev,
+                sections: updatedSections,
+                deletedSections: [...prev.deletedSections, sectionId],
+            };
+        });
+    };
+
+    const onLessonChange = (sectionId: string, lesson: LessonBase) => {
+        setPendingChanges((prev) => {
+            // Check if this lesson already exists in pending changes
+            const existingLessonIndex = prev.lessons.findIndex(
+                (l) =>
+                    l.lesson_id === lesson.lesson_id &&
+                    l.section_id === sectionId,
+            );
+
+            let updatedLessons;
+            if (existingLessonIndex >= 0) {
+                // Update existing lesson
+                updatedLessons = prev.lessons.map((l, index) =>
+                    index === existingLessonIndex
+                        ? {...lesson, section_id: sectionId}
+                        : l,
+                );
+            } else {
+                // Add new lesson while preserving existing ones
+                updatedLessons = [
+                    ...prev.lessons,
+                    {...lesson, section_id: sectionId},
+                ];
+            }
+
+            console.log('Updated pending lessons:', updatedLessons); // Debug log
+
+            return {
+                ...prev,
+                lessons: updatedLessons,
+            };
+        });
+    };
+
+    const onLessonDelete = (sectionId: string, lessonId: string) => {
+        setPendingChanges((prev) => ({
+            ...prev,
+            deletedLessons: [...prev.deletedLessons, {sectionId, lessonId}],
         }));
     };
 
@@ -258,16 +524,548 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
         }
     };
 
-    // Handle save draft of course.
-    const handleSaveDraft = (e: React.FormEvent) => {
-        handleSaveOrder();
-        handleSubmit(e, false);
+    const createLessonData = (
+        lesson: any,
+        sectionTitle: string,
+    ): LessonBase => {
+        const baseLesson = {
+            lesson_id: '',
+            section_id: sectionTitle,
+            lesson_title: lesson.lesson_title,
+            lesson_order: lesson.lesson_order || 0,
+            lesson_type: lesson.lesson_type,
+        };
+
+        switch (lesson.lesson_type) {
+            case 'document':
+                return {
+                    ...baseLesson,
+                    lesson_type: 'document',
+                    document_url: lesson.document_url || '',
+                } as DocumentLesson;
+            case 'video':
+                return {
+                    ...baseLesson,
+                    lesson_type: 'video',
+                    video_url: lesson.video_url || '',
+                    video_duration: lesson.video_duration || 0,
+                } as VideoLesson;
+            case 'quiz':
+                return {
+                    ...baseLesson,
+                    lesson_type: 'quiz',
+                    quiz: lesson.quiz || {
+                        quiz_id: '',
+                        quiz_title: lesson.lesson_title,
+                        quiz_number_of_questions: 0,
+                        questions: [],
+                    },
+                } as QuizLesson;
+            default:
+                return {
+                    ...baseLesson,
+                    lesson_type: 'document',
+                    document_url: '',
+                } as DocumentLesson;
+        }
     };
 
-    // Handle create new course.
-    const handleCreateCourse = (e: React.FormEvent) => {
-        handleSaveOrder();
-        handleSubmit(e, true);
+    // Handle save draft of course.
+    const handleSaveDraft = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            if (!courseId) {
+                // For new courses (CreateCoursePage) - This part remains unchanged
+                const courseToCreate = {
+                    ...courseData,
+                    course_id: courseData.course_title,
+                    ready_for_publish: false,
+                };
+                await createCourse(courseToCreate);
+
+                // Create sections and lessons sequentially
+                for (let section of sectionsOrder) {
+                    try {
+                        const sectionToCreate: Omit<Section, 'section_id'> = {
+                            section_title: section.section_title,
+                            section_order: section.section_order,
+                            course_id: courseData.course_title,
+                            lessons: [],
+                        };
+
+                        const createdSection = await createSections(
+                            courseData.course_title,
+                            sectionToCreate,
+                        );
+
+                        if (createdSection) {
+                            // Filter lessons that belong to this section AND haven't been deleted
+                            const sectionLessons =
+                                pendingChanges.lessons.filter((lesson) => {
+                                    const isDeleted =
+                                        pendingChanges.deletedLessons.some(
+                                            (deletedLesson) =>
+                                                deletedLesson.lessonId ===
+                                                    lesson.lesson_id &&
+                                                deletedLesson.sectionId ===
+                                                    section.section_id,
+                                        );
+                                    return (
+                                        lesson.section_id ===
+                                            section.section_id && !isDeleted
+                                    );
+                                });
+
+                            for (const lesson of sectionLessons) {
+                                try {
+                                    const lessonToCreate = createLessonData(
+                                        lesson,
+                                        createdSection.section_id,
+                                    );
+                                    await createLessons(
+                                        courseData.course_title,
+                                        createdSection.section_id,
+                                        lessonToCreate,
+                                    );
+                                } catch (error) {
+                                    console.error(
+                                        'Error creating lesson:',
+                                        error,
+                                    );
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error(
+                            'Error in section/lesson creation:',
+                            error,
+                        );
+                    }
+                }
+            } else {
+                // For existing courses (EditCoursePage)
+
+                // Handle section updates first - this is crucial for fixing section editing (added)
+                for (const section of pendingChanges.sections) {
+                    const existingSection = sectionsOrder.find(
+                        (s) =>
+                            s.section_id === section.section_id &&
+                            !section.section_id.startsWith('temp-'),
+                    );
+
+                    if (existingSection) {
+                        // Update existing section while preserving order
+                        await updateSection(courseId, section.section_id, {
+                            section_title: section.section_title,
+                            section_order: section.section_order,
+                            course_id: courseId,
+                        });
+                    }
+                }
+
+                // Handle deletions first
+                for (const sectionId of pendingChanges.deletedSections) {
+                    const sectionToDelete = sectionsOrder.find(
+                        (s) => s.section_id === sectionId,
+                    );
+                    if (sectionToDelete && sectionToDelete.lessons) {
+                        for (const lesson of sectionToDelete.lessons) {
+                            await deleteLesson(
+                                courseId,
+                                sectionId,
+                                lesson.lesson_id,
+                            );
+                        }
+                    }
+                    await deleteSection(courseId, sectionId);
+                }
+
+                for (const {
+                    sectionId,
+                    lessonId,
+                } of pendingChanges.deletedLessons) {
+                    await deleteLesson(courseId, sectionId, lessonId);
+                }
+
+                const orderedSections = [...sectionsOrder].sort(
+                    (a, b) => a.section_order - b.section_order,
+                );
+                const maxExistingOrder = Math.max(
+                    ...orderedSections.map((s) => s.section_order),
+                    0,
+                );
+
+                for (const section of pendingChanges.sections) {
+                    if (section.section_id.startsWith('temp-')) {
+                        // Get current sections sorted by order
+                        const sortedSections = [...sectionsOrder].sort(
+                            (a, b) => a.section_order - b.section_order,
+                        );
+
+                        // Next order should be length + 1 of current sorted sections
+                        const newSectionOrder = sortedSections.length;
+
+                        const sectionToCreate: Omit<Section, 'section_id'> = {
+                            section_title: section.section_title,
+                            section_order: newSectionOrder + 1, // This ensures next sequential number
+                            course_id: courseId,
+                            lessons: [],
+                        };
+
+                        console.log(
+                            'Creating new section with order:',
+                            newSectionOrder + 1,
+                        );
+
+                        const createdSection = await createSections(
+                            courseId,
+                            sectionToCreate,
+                        );
+
+                        if (createdSection) {
+                            const sectionLessons =
+                                pendingChanges.lessons.filter(
+                                    (lesson) =>
+                                        lesson.section_id ===
+                                        section.section_id,
+                                );
+
+                            for (const lesson of sectionLessons) {
+                                const lessonToCreate = createLessonData(
+                                    lesson,
+                                    createdSection.section_id,
+                                );
+                                await createLessons(
+                                    courseId,
+                                    createdSection.section_id,
+                                    lessonToCreate,
+                                );
+                            }
+                        }
+                    }
+                }
+
+                // Handle lessons for existing sections
+                // Modified lesson handling logic
+                const existingSectionLessons = pendingChanges.lessons.filter(
+                    (lesson) => {
+                        return sectionsOrder.some(
+                            (s) => s.section_id === lesson.section_id,
+                        );
+                    },
+                );
+
+                console.log('Lessons to be created:', existingSectionLessons);
+
+                // Process lessons section by section
+                for (const section of sectionsOrder) {
+                    const sectionLessons = existingSectionLessons.filter(
+                        (lesson) => lesson.section_id === section.section_id,
+                    );
+
+                    // Get current max lesson order for this section
+                    const existingLessonsInSection = await fetchAllLessons(
+                        courseId,
+                        section.section_id,
+                    );
+                    const maxOrder = Math.max(
+                        ...existingLessonsInSection.map((l) => l.lesson_order),
+                        0,
+                    );
+
+                    // Create each lesson with correct order
+                    for (let i = 0; i < sectionLessons.length; i++) {
+                        const lesson = sectionLessons[i];
+                        try {
+                            if (
+                                !lesson.lesson_id ||
+                                lesson.lesson_id.includes('draft-') ||
+                                lesson.lesson_id === ''
+                            ) {
+                                const lessonToCreate = createLessonData(
+                                    {
+                                        ...lesson,
+                                        lesson_id: '',
+                                        lesson_order: maxOrder + i + 1,
+                                    },
+                                    section.section_id,
+                                );
+
+                                await createLessons(
+                                    courseId,
+                                    section.section_id,
+                                    lessonToCreate,
+                                );
+                            } else {
+                                await updateLesson(
+                                    courseId,
+                                    section.section_id,
+                                    lesson,
+                                );
+                            }
+                        } catch (error) {
+                            console.error(
+                                'Error processing lesson:',
+                                error,
+                                lesson,
+                            );
+                        }
+                    }
+                }
+
+                // Update course order and submit
+                await handleSaveOrder();
+                await handleSubmit(e, false);
+            }
+
+            setPendingChanges({
+                sections: [],
+                deletedSections: [],
+                lessons: [],
+                deletedLessons: [],
+            });
+
+            navigate('/instructor/dashboard');
+        } catch (error) {
+            setError('Failed to save course draft.');
+            console.error('Error saving draft:', error);
+        }
+    };
+
+    // Handle save course.
+    const handleCreateCourse = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            if (!courseId) {
+                // For new courses (CreateCoursePage) - This part remains unchanged
+                const courseToCreate = {
+                    ...courseData,
+                    course_id: courseData.course_title,
+                    ready_for_publish: true,
+                };
+                await createCourse(courseToCreate);
+
+                // Create sections and lessons sequentially
+                for (let section of sectionsOrder) {
+                    try {
+                        const sectionToCreate: Omit<Section, 'section_id'> = {
+                            section_title: section.section_title,
+                            section_order: section.section_order,
+                            course_id: courseData.course_title,
+                            lessons: [],
+                        };
+
+                        const createdSection = await createSections(
+                            courseData.course_title,
+                            sectionToCreate,
+                        );
+
+                        if (createdSection) {
+                            const sectionLessons =
+                                pendingChanges.lessons.filter(
+                                    (lesson) =>
+                                        lesson.section_id ===
+                                        section.section_id,
+                                );
+
+                            for (const lesson of sectionLessons) {
+                                try {
+                                    const lessonToCreate = createLessonData(
+                                        lesson,
+                                        createdSection.section_id,
+                                    );
+                                    await createLessons(
+                                        courseData.course_title,
+                                        createdSection.section_id,
+                                        lessonToCreate,
+                                    );
+                                } catch (error) {
+                                    console.error(
+                                        'Error creating lesson:',
+                                        error,
+                                    );
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error(
+                            'Error in section/lesson creation:',
+                            error,
+                        );
+                    }
+                }
+            } else {
+                // For existing courses (EditCoursePage)
+                // Handle deletions first
+                for (const sectionId of pendingChanges.deletedSections) {
+                    const sectionToDelete = sectionsOrder.find(
+                        (s) => s.section_id === sectionId,
+                    );
+                    if (sectionToDelete && sectionToDelete.lessons) {
+                        for (const lesson of sectionToDelete.lessons) {
+                            await deleteLesson(
+                                courseId,
+                                sectionId,
+                                lesson.lesson_id,
+                            );
+                        }
+                    }
+                    await deleteSection(courseId, sectionId);
+                }
+
+                for (const {
+                    sectionId,
+                    lessonId,
+                } of pendingChanges.deletedLessons) {
+                    await deleteLesson(courseId, sectionId, lessonId);
+                }
+
+                // Handle section updates and additions
+                const orderedSections = [...sectionsOrder].sort(
+                    (a, b) => a.section_order - b.section_order,
+                );
+                const maxExistingOrder = Math.max(
+                    ...orderedSections.map((s) => s.section_order),
+                    0,
+                );
+
+                for (const section of pendingChanges.sections) {
+                    const existingSection = sectionsOrder.find(
+                        (s) =>
+                            s.section_id === section.section_id &&
+                            !section.section_id.startsWith('temp-'),
+                    );
+
+                    if (existingSection) {
+                        // Update existing section while maintaining its order
+                        await updateSection(
+                            courseId,
+                            section.section_id,
+                            section,
+                        );
+                    } else {
+                        // Create new section with correct order
+                        const sectionToCreate: Omit<Section, 'section_id'> = {
+                            section_title: section.section_title,
+                            section_order: maxExistingOrder + 1,
+                            course_id: courseId,
+                            lessons: [],
+                        };
+
+                        const createdSection = await createSections(
+                            courseId,
+                            sectionToCreate,
+                        );
+
+                        if (createdSection) {
+                            const sectionLessons =
+                                pendingChanges.lessons.filter((lesson) => {
+                                    const isDeleted =
+                                        pendingChanges.deletedLessons.some(
+                                            (deletedLesson) =>
+                                                deletedLesson.lessonId ===
+                                                    lesson.lesson_id &&
+                                                deletedLesson.sectionId ===
+                                                    section.section_id,
+                                        );
+                                    return (
+                                        lesson.section_id ===
+                                            section.section_id && !isDeleted
+                                    );
+                                });
+
+                            for (const lesson of sectionLessons) {
+                                const lessonToCreate = createLessonData(
+                                    lesson,
+                                    createdSection.section_id,
+                                );
+                                await createLessons(
+                                    courseId,
+                                    createdSection.section_id,
+                                    lessonToCreate,
+                                );
+                            }
+                        }
+                    }
+                }
+
+                const existingSectionLessons = pendingChanges.lessons.filter(
+                    (lesson) => {
+                        const section = sectionsOrder.find(
+                            (s) =>
+                                s.section_id === lesson.section_id &&
+                                !s.section_id.startsWith('temp-'),
+                        );
+                        return section;
+                    },
+                );
+
+                // Separate updates from new lessons more carefully
+                const lessonUpdates = existingSectionLessons.filter(
+                    (lesson) =>
+                        lesson.lesson_id &&
+                        !lesson.lesson_id.includes('draft-') &&
+                        lesson.lesson_id !== '',
+                );
+
+                const newLessons = existingSectionLessons.filter(
+                    (lesson) =>
+                        !lesson.lesson_id ||
+                        lesson.lesson_id === '' ||
+                        lesson.lesson_id.includes('draft-'),
+                );
+
+                console.log('New lessons to create:', newLessons);
+                console.log('Lessons to update:', lessonUpdates);
+
+                // Handle truly new lessons
+                for (const lesson of newLessons) {
+                    try {
+                        const lessonToCreate = createLessonData(
+                            {
+                                ...lesson,
+                                lesson_id: '', // Set empty to let Firebase generate one
+                                lesson_order:
+                                    lesson.lesson_order ||
+                                    newLessons.indexOf(lesson) + 1,
+                            },
+                            lesson.section_id,
+                        );
+
+                        await createLessons(
+                            courseId,
+                            lesson.section_id,
+                            lessonToCreate,
+                        );
+                    } catch (error) {
+                        console.error('Error creating lesson:', error, lesson);
+                    }
+                }
+
+                // Handle updates to existing lessons
+                for (const lesson of lessonUpdates) {
+                    if (lesson.lesson_id) {
+                        await updateLesson(courseId, lesson.section_id, lesson);
+                    }
+                }
+
+                // Update course order and submit
+                await handleSaveOrder();
+                await handleSubmit(e, true);
+            }
+
+            setPendingChanges({
+                sections: [],
+                deletedSections: [],
+                lessons: [],
+                deletedLessons: [],
+            });
+
+            navigate('/instructor/dashboard');
+        } catch (error) {
+            setError('Failed to save course draft.');
+            console.error('Error saving draft:', error);
+        }
     };
 
     // Handle cancellation of course.
@@ -444,9 +1242,14 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
 
                 <CourseContentList
                     course_id={courseId || ''}
+                    isDraft={!courseId}
                     sectionsOrder={sectionsOrder}
                     setSectionsOrder={setSectionsOrder}
                     onSaveOrder={handleSaveOrder}
+                    onSectionChange={onSectionChange}
+                    onSectionDelete={onSectionDelete}
+                    onLessonChange={onLessonChange}
+                    onLessonDelete={onLessonDelete}
                 ></CourseContentList>
 
                 <div className='flex justify-end space-x-4'>

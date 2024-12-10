@@ -1,7 +1,8 @@
 // CreateCoursePage.tsx
 import React from 'react';
-import HeaderComponent from '../../../components/HeaderComponent';
+
 import CourseForm from '../../../components/enrollment/course_list/CourseForm';
+import HeaderComponent from '../../../components/HeaderComponent';
 
 const CreateCoursePage: React.FC = () => {
     return (
@@ -20,7 +21,7 @@ const CreateCoursePage: React.FC = () => {
                 <div className='grid grid-cols-1 gap-8'>
                     <div className='bg-white shadow-sm'>
                         <div className='py-6'>
-                            <CourseForm></CourseForm>
+                            <CourseForm isDraft={true}></CourseForm>
                         </div>
                     </div>
                 </div>

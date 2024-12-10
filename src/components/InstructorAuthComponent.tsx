@@ -1,13 +1,15 @@
-import React, { useState, FormEvent } from 'react';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom'; // To handle navigation
+import { X } from 'lucide-react';
+import React, { FormEvent, useState } from 'react';
 import { FaGoogle } from 'react-icons/fa';
-import { Instructor, SpecializationArea } from '../types/instructor';
+import { useNavigate } from 'react-router-dom'; // To handle navigation
+import { toast } from 'react-toastify';
+
 import { useUser } from '../hooks/useUser';
+import { Instructor, SpecializationArea } from '../types/instructor';
 import { User } from '../types/user';
 
 const InstructorAuthComponent: React.FC = () => {
-    const { currentUser, updateUser } = useUser();
+    const {currentUser, updateUser} = useUser();
     const navigate = useNavigate();
 
     const [instructor, setInstructor] = useState<Instructor>({
@@ -16,7 +18,7 @@ const InstructorAuthComponent: React.FC = () => {
         years_of_experience: 0,
         total_courses_created: 0,
         rating: 1,
-        social_links: { github: '', linkedin: '' }
+        social_links: {github: '', linkedin: ''},
     });
 
     // Redirect if user already has registered
@@ -26,26 +28,38 @@ const InstructorAuthComponent: React.FC = () => {
         }
     }, [currentUser, navigate]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
+    const handleChange = (
+        e: React.ChangeEvent<
+            HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >,
+    ) => {
+        const {name, value} = e.target;
         setInstructor((prev) => ({
             ...prev,
             [name]: value,
         }));
     };
 
-    const handleSpecializationChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedValues = Array.from(event.target.selectedOptions, option => option.value) as SpecializationArea[];
-        setInstructor(prevState => ({
+    const handleSpecializationChange = (
+        event: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
+        const selectedValues = Array.from(
+            event.target.selectedOptions,
+            (option) => option.value,
+        ) as SpecializationArea[];
+        setInstructor((prevState) => ({
             ...prevState,
             specialization_area: selectedValues || [],
         }));
     };
 
     const handleRemoveSpecialization = (specialization: string) => {
-        setInstructor(prevState => ({
+        setInstructor((prevState) => ({
             ...prevState,
-            specialization_area: prevState.specialization_area?.filter(item => item !== specialization) || [],
+            specialization_area:
+                prevState.specialization_area?.filter(
+                    (item) => item !== specialization,
+                ) || [],
         }));
     };
 
@@ -59,149 +73,168 @@ const InstructorAuthComponent: React.FC = () => {
 
         try {
             if (currentUser?.uid) {
-                await updateUser(currentUser.uid, {role: 'instructor', ...defaultInstructorProfile} as Partial<User>);
+                await updateUser(currentUser.uid, {
+                    role: 'instructor',
+                    ...defaultInstructorProfile,
+                } as Partial<User>);
                 toast.success('Successfully registered as an instructor!');
                 navigate('/instructor/dashboard'); // Navigate to the instructor dashboard
             }
         } catch (error) {
-            toast.error('Failed to create instructor profile. Please try again.');
+            toast.error(
+                'Failed to create instructor profile. Please try again.',
+            );
             console.error('Error during instructor sign-up:', error);
         }
     };
 
     return (
-        <div className='w-full flex items-center justify-center mx-auto'>
-            <form onSubmit={handleSubmit} className='w-full max-w-lg'>
-                <h1 className='font-abhaya text-5xl font-bold mb-6'>
-                    Instructor Registration
+        <div className='min-h-screen flex flex-col items-center justify-center bg-white p-4'>
+            {/* Brand Text */}
+            <div className='font-abhaya text-center mb-2'>
+                <h1 className='text-6xl font-bold'>
+                    <span className='text-primary'>Learn</span>
+                    <span className='text-tertiary'>Hub.</span>
                 </h1>
+            </div>
 
-                <div className='space-y-4'>
-                    <div>
-                        <label htmlFor='email' className='font-abhaya text-lg font-medium mb-1 block'>
-                            Email
-                        </label>
-                        <input
-                            id='email'
-                            name='email'
-                            className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
-                            type='email'
-                            placeholder='Email@example.com'
-                            value={currentUser?.email}
-                            required
-                            disabled
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor='profileSummary' className='font-abhaya text-lg font-medium mb-1 block'>
-                            Profile Summary
-                        </label>
-                        <textarea
-                            id='profileSummary'
-                            name='profile_summary'
-                            className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
-                            placeholder='Write a brief summary about yourself'
-                            value={instructor.profile_summary}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
+            {/* Main Form Container */}
+            <div className='w-full max-w-lg bg-white p-8 rounded-lg'>
+                <form onSubmit={handleSubmit} className='space-y-6'>
+                    <h2 className='font-abhaya text-4xl font-bold text-center mb-4'>
+                        Instructor Registration
+                    </h2>
 
-                    <div>
-                        <label htmlFor='specializationArea' className='font-abhaya text-lg font-medium mb-1 block'>
-                            Specialization Area
-                        </label>
-                        <select
-                            id='specializationArea'
-                            name='specialization_area'
-                            className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
-                            multiple
-                            value={instructor.specialization_area}
-                            onChange={handleSpecializationChange}
-                            required
-                        >
-                            <option value=''>Select Specialization</option>
-                            <option value='Web Development'>Web Development</option>
-                            <option value='Machine Learning'>Machine Learning</option>
-                            <option value='Mobile Development'>Mobile Development</option>
-                            <option value='Cybersecurity'>Cybersecurity</option>
-                        </select>
-                    </div>
+                    <div className='space-y-4'>
+                        <div>
+                            <label className='font-abhaya text-lg font-bold mb-1 block'>
+                                Email
+                            </label>
+                            <input
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                type='email'
+                                value={currentUser?.email}
+                                disabled
+                            />
+                        </div>
 
-                    {/* Display selected specializations */}
-                    <div className='mt-4'>
-                        <div className='flex flex-wrap gap-2'>
-                            {instructor.specialization_area?.map((specialization) => (
-                                <div key={specialization} className='flex items-center bg-gray-200 px-3 py-1 rounded-full'>
-                                    <span>{specialization}</span>
-                                    <button
-                                        type='button'
-                                        onClick={() => handleRemoveSpecialization(specialization)}
-                                        className='ml-2 text-red-600'
-                                    >
-                                        <FaGoogle />
-                                    </button>
-                                </div>
-                            ))}
+                        <div>
+                            <label className='font-abhaya text-lg font-bold mb-1 block'>
+                                Profile Summary
+                            </label>
+                            <textarea
+                                name='profile_summary'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded h-32'
+                                placeholder='Write a brief summary about yourself'
+                                value={instructor.profile_summary}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className='font-abhaya text-lg font-bold mb-1 block'>
+                                Specialization Area
+                            </label>
+                            <select
+                                name='specialization_area'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                onChange={handleSpecializationChange}
+                                value=''
+                            >
+                                <option value=''>Select Specialization</option>
+                                <option value='Web Development'>
+                                    Web Development
+                                </option>
+                                <option value='Machine Learning'>
+                                    Machine Learning
+                                </option>
+                                <option value='Mobile Development'>
+                                    Mobile Development
+                                </option>
+                                <option value='Cybersecurity'>
+                                    Cybersecurity
+                                </option>
+                            </select>
+
+                            {/* Selected Specializations */}
+                            <div className='font-abhaya font-bold mt-3 flex flex-wrap gap-2'>
+                                {instructor.specialization_area?.map(
+                                    (specialization) => (
+                                        <div
+                                            key={specialization}
+                                            className='flex items-center gap-2 bg-gray px-3 py-1.5 rounded-full text-sm'
+                                        >
+                                            <span>{specialization}</span>
+                                            <button
+                                                type='button'
+                                                onClick={() =>
+                                                    handleRemoveSpecialization(
+                                                        specialization,
+                                                    )
+                                                }
+                                                className='text-delete'
+                                            >
+                                                <X className='h-4 w-4' />
+                                            </button>
+                                        </div>
+                                    ),
+                                )}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className='font-abhaya text-lg font-bold mb-1 block'>
+                                Years of Experience
+                            </label>
+                            <input
+                                name='years_of_experience'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                type='number'
+                                placeholder='Years of Experience'
+                                value={instructor.years_of_experience || ''}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <label className='font-abhaya text-lg font-bold mb-1 block'>
+                                GitHub Link (Optional)
+                            </label>
+                            <input
+                                name='github'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                type='url'
+                                placeholder='GitHub Profile'
+                                value={instructor.social_links?.github}
+                                onChange={handleChange}
+                            />
+                        </div>
+
+                        <div>
+                            <label className='font-abhaya text-lg font-bold mb-1 block'>
+                                LinkedIn Link (Optional)
+                            </label>
+                            <input
+                                name='linkedin'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                type='url'
+                                placeholder='LinkedIn Profile'
+                                value={instructor.social_links?.linkedin}
+                                onChange={handleChange}
+                            />
                         </div>
                     </div>
 
-                    <div>
-                        <label htmlFor='yearsOfExperience' className='font-abhaya text-lg font-medium mb-1 block'>
-                            Years of Experience
-                        </label>
-                        <input
-                            id='yearsOfExperience'
-                            name='years_of_experience'
-                            className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
-                            type='number'
-                            placeholder='Years of Experience'
-                            value={instructor.years_of_experience || ''}
-                            onChange={handleChange}
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor='github' className='font-abhaya text-lg font-medium mb-1 block'>
-                            GitHub Link (Optional)
-                        </label>
-                        <input
-                            id='github'
-                            name='github'
-                            className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
-                            type='url'
-                            placeholder='GitHub Profile'
-                            value={instructor.social_links?.github}
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor='linkedin' className='font-abhaya text-lg font-medium mb-1 block'>
-                            LinkedIn Link (Optional)
-                        </label>
-                        <input
-                            id='linkedin'
-                            name='linkedin'
-                            className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
-                            type='url'
-                            placeholder='LinkedIn Profile'
-                            value={instructor.social_links?.linkedin}
-                            onChange={handleChange}
-                        />
-                    </div>
-                </div>
-
-                <div className='mt-8'>
                     <button
-                        className='w-full py-3 bg-primary text-white text-lg active:scale-[.98] font-abhaya'
+                        className='w-full py-3 bg-primary text-white text-lg active:scale-95 font-abhaya rounded transition-transform'
                         type='submit'
                     >
                         Proceed to Instructor
                     </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     );
 };

@@ -24,6 +24,7 @@ import SortableCourseSection from './SortableCourseSection';
 
 interface CourseContentViewProps {
     course_id: string;
+    isDraft?: boolean;
     canEdit: boolean;
     sectionsOrder: Section[]; // Receive state
     setSectionsOrder: React.Dispatch<React.SetStateAction<Section[]> | []>; // Receive state updater
@@ -41,6 +42,7 @@ interface CourseContentViewProps {
 
 const CourseContentView: React.FC<CourseContentViewProps> = ({
     course_id,
+    isDraft,
     canEdit,
     sectionsOrder,
     setSectionsOrder,
@@ -118,6 +120,7 @@ const CourseContentView: React.FC<CourseContentViewProps> = ({
                     {sectionsOrder.map((section, index) => (
                         <SortableCourseSection
                             key={section.section_id}
+                            isDraft={isDraft}
                             section={section}
                             index={index + 1}
                             canEdit={canEdit}

@@ -188,6 +188,10 @@ const EnrolledCoursePage = () => {
                             onSaveOrder={() => {}}
                             onLessonSelect={handleLessonSelect}
                             selectedLessonId={selectedLesson?.lesson_id}
+                            onSectionChange={() => {}}
+                            onSectionDelete={() => {}}
+                            onLessonChange={() => {}}
+                            onLessonDelete={() => {}}
                         />
                     </div>
                 </div>

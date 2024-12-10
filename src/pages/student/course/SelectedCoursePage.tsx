@@ -15,6 +15,7 @@ import { useSections } from '../../../hooks/useSections';
 import { useUser } from '../../../hooks/useUser';
 import { clearSingleCourse } from '../../../store/slices/courseSlice';
 import { Course } from '../../../types/course';
+import { VideoLesson } from '../../../types/lesson';
 
 const SelectedCoursePage: React.FC = () => {
     const {selectedCourse, fetchCourseById, updateCourse, deleteSingleCourse} =
@@ -75,6 +76,34 @@ const SelectedCoursePage: React.FC = () => {
         }
     };
 
+    {
+        /* Calculate total duration */
+    }
+    const totalDuration =
+        selectedCourse?.sections?.reduce((acc, section) => {
+            return (
+                acc +
+                section.lessons.reduce((lessonAcc, lesson) => {
+                    if ('video_duration' in lesson) {
+                        return (
+                            lessonAcc + (lesson as VideoLesson).video_duration
+                        );
+                    }
+                    return lessonAcc;
+                }, 0)
+            );
+        }, 0) || 0;
+
+    const totalQuizzes =
+        selectedCourse?.sections?.reduce((acc, section) => {
+            return (
+                acc +
+                section.lessons.filter(
+                    (lesson) => lesson.lesson_type === 'quiz',
+                ).length
+            );
+        }, 0) || 0;
+
     return (
         <div>
             <HeaderComponent />
@@ -92,7 +121,7 @@ const SelectedCoursePage: React.FC = () => {
                     </div>
 
                     {/* Course Card and Requirements Section */}
-                    <div className='flex justify-between items-start mt-6 gap-6'>
+                    <div className='flex gap-8 items-start mt-6'>
                         <CardCourseComponent
                             thumbnail={
                                 selectedCourse?.course_thumbnail_url || ''
@@ -104,38 +133,26 @@ const SelectedCoursePage: React.FC = () => {
                                 selectedCourse?.course_instructor ||
                                 'Course Instructor'
                             }
-                            pricing={selectedCourse?.course_pricing || 'FREE'}
+                            pricing={'FREE'}
                             buttonText='Enroll'
                             onButtonClick={() =>
                                 console.log('Navigating to Course Details page')
                             }
                             size='lg'
                         />
-                        <div className='flex flex-col'>
-                            <div className='py-4 border border-gray max-w-lg max-h-[550px] overflow-y-auto'>
-                                {/* <div>
-                                    <h2 className='font-abhaya px-6 text-2xl font-bold mb-2'>
-                                        About Course
-                                    </h2>
-                                    <hr className='border-t gray opacity-15 mb-4' />
-                                    <p className='font-abhaya  px-6 text-lg'>
-                                        {selectedCourse?.course_description}
-                                    </p>
-                                    <ul className='font-abhaya  px-6 text-lg list-disc list-inside mt-4'>
-                                        {renderedRequirements}
-                                    </ul>
-                                </div> */}
+                        <div className='flex flex-col flex-1 max-w-xl h-[550px]'>
+                            <div className='flex-1 py-4 border border-gray overflow-y-auto'>
                                 <CourseRequirements
                                     course_id={selectedCourse?.course_id || ''}
                                     course_requirements={
                                         selectedCourse?.course_requirements ||
                                         []
                                     }
-                                ></CourseRequirements>
+                                />
                             </div>
                             <button
                                 onClick={handleEnrollementClick}
-                                className='bg-secondary font-abhaya font-semibold text-white py-2 px-4 mt-6'
+                                className='bg-secondary font-abhaya font-semibold text-white py-2 px-4 mt-4'
                             >
                                 Enroll Now
                             </button>
@@ -143,26 +160,23 @@ const SelectedCoursePage: React.FC = () => {
                     </div>
 
                     {/* Course Details */}
-                    <div className='flex flex-col my-5'>
-                        <h5 className='font-abhaya text-2xl font-bold'>
-                            This course includes
-                        </h5>
-                        <div className='font-abhaya text-lg flex flex-row justify-start items-center mt-4'>
-                            {/* Duration */}
-                            <div className='flex flex-row items-center mr-8'>
-                                <RiTimer2Line className='mr-2' />
-                                <p className='mr-4'>20.4 hours</p>
-                            </div>
-                            {/* Sections */}
-                            <div className='flex flex-row items-center mr-8'>
-                                <HiOutlineDocumentText className='mr-2' />
-                                <p className='mr-4'>23 sections</p>
-                            </div>
-                            {/* Questions */}
-                            <div className='flex flex-row items-center'>
-                                <MdQuiz className='mr-2' />
-                                <p className='mr-4'>25 questions</p>
-                            </div>
+                    <div className='font-abhaya text-lg flex flex-row justify-start items-center mt-4'>
+                        <div className='flex flex-row items-center mr-8'>
+                            <RiTimer2Line className='mr-2' />
+                            <p className='mr-4'>
+                                {(totalDuration / 3600).toFixed(1)} hours
+                            </p>
+                        </div>
+                        <div className='flex flex-row items-center mr-8'>
+                            <HiOutlineDocumentText className='mr-2' />
+                            <p className='mr-4'>
+                                {selectedCourse?.course_number_of_section || 0}{' '}
+                                sections
+                            </p>
+                        </div>
+                        <div className='flex flex-row items-center'>
+                            <MdQuiz className='mr-2' />
+                            <p className='mr-4'>{totalQuizzes} quizzes</p>
                         </div>
                     </div>
                 </div>

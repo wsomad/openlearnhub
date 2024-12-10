@@ -1,49 +1,63 @@
-import {createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {Question} from '../../types/Question';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+import { Question } from '../../types/question';
 
 interface QuestionState {
     selectedQuestion: Question | null;
-    allQuestions: Question[] | [];
+    quizQuestions: Question[];
 }
 
 const initialState: QuestionState = {
     selectedQuestion: null,
-    allQuestions: [],
+    quizQuestions: [],
 };
 
-const QuestionSlice = createSlice({
+const questionSlice = createSlice({
     name: 'questions',
     initialState,
     reducers: {
+        // Existing reducers
         setQuestion(state, action: PayloadAction<Question>) {
             state.selectedQuestion = action.payload;
         },
+
+        // Quiz question management reducers (transferred from lessonSlice)
         setQuestions(state, action: PayloadAction<Question[]>) {
-            state.allQuestions = action.payload;
+            state.quizQuestions = action.payload;
         },
+
+        modifyQuestionAdd(state, action: PayloadAction<Question>) {
+            state.quizQuestions.push(action.payload);
+        },
+
         modifyQuestion(
             state,
             action: PayloadAction<{
-                id: string;
-                updatedQuestionObject: Partial<Question>;
+                index: number;
+                question: Question;
             }>,
         ) {
-            const {id, updatedQuestionObject} = action.payload;
-
-            const existingQuestion = state.allQuestions.find(
-                (question: Question) => question.question_id === id,
-            );
-
-            if (existingQuestion) {
-                Object.assign(existingQuestion, updatedQuestionObject);
-            }
+            const {index, question} = action.payload;
+            state.quizQuestions[index] = question;
         },
-        clearSingleQuestion(state) {
-            state.selectedQuestion = null;
+
+        modifyQuestionRemove(state, action: PayloadAction<number>) {
+            state.quizQuestions.splice(action.payload, 1);
+        },
+
+        clearQuestions(state) {
+            state.quizQuestions = [];
         },
     },
 });
 
-export const {setQuestion, setQuestions, modifyQuestion, clearSingleQuestion} =
-    QuestionSlice.actions;
-export default QuestionSlice.reducer;
+export const {
+    setQuestion,
+    setQuestions,
+    modifyQuestionAdd,
+    modifyQuestion,
+    modifyQuestionRemove,
+    clearQuestions,
+} = questionSlice.actions;
+
+export default questionSlice.reducer;

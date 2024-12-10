@@ -1,6 +1,7 @@
-import React, {useEffect, useState} from 'react';
-import {useCourses} from '../../hooks/useCourses';
-import {useUser} from '../../hooks/useUser';
+import React, { useEffect, useState } from 'react';
+
+import { useCourses } from '../../hooks/useCourses';
+import { useUser } from '../../hooks/useUser';
 
 interface CourseRequirementsProps {
     course_id: string | null;
@@ -37,9 +38,6 @@ const CourseRequirements: React.FC<CourseRequirementsProps> = ({
                 Course Requirements
             </h2>
             {/* <hr className='border-t gray opacity-15 my-3 mx-6' /> */}
-            <p className='font-abhaya  px-6 text-lg'>
-                {selectedCourse?.course_description}
-            </p>
             <ul className='font-abhaya  px-6 text-lg list-disc list-inside mt-4'>
                 {renderedRequirements}
             </ul>

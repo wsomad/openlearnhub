@@ -33,7 +33,10 @@ const DeleteModal: React.FC<DeleteModalProps> = ({
                         Cancel
                     </button>
                     <button
-                        onClick={(e) => onConfirm(e)}
+                        onClick={(e) => {
+                            onConfirm(e);
+                            onClose(); // Ensure modal closes
+                        }}
                         className='px-4 py-2 bg-delete text-white rounded hover:bg-red-600'
                     >
                         Delete

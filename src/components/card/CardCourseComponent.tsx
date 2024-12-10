@@ -1,8 +1,9 @@
 import React from 'react';
+import { HiOutlineDocumentText } from 'react-icons/hi';
+import { MdQuiz } from 'react-icons/md';
+import { RiTimer2Line } from 'react-icons/ri';
+
 import CardCourseDetails from './CardCourseDetails';
-import {HiOutlineDocumentText} from 'react-icons/hi';
-import {RiTimer2Line} from 'react-icons/ri';
-import {MdQuiz} from 'react-icons/md';
 
 interface CardCourseComponentProps {
     thumbnail: string;
@@ -112,11 +113,14 @@ const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
                     {size !== 'xl' &&
                         (enrolledStudents ? (
                             <p className='font-abhaya font-bold text-lg text-black'>
-                                {enrolledStudents} {enrolledStudents! > 1 ? "Enrollments" : "Enrollment"}
+                                {enrolledStudents}{' '}
+                                {enrolledStudents! > 1
+                                    ? 'Enrollments'
+                                    : 'Enrollment'}
                             </p>
                         ) : (
                             <p className='font-abhaya font-bold text-lg text-black'>
-                                MYR {pricing}
+                                FREE
                             </p>
                         ))}
                     {size !== 'xl' ? (

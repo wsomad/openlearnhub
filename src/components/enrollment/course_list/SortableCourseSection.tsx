@@ -11,6 +11,7 @@ import Lesson from '../testingLesson/Lesson';
 
 interface SortableCourseSectionProps {
     section: Section;
+    isDraft?: boolean;
     index: number;
     canEdit: boolean;
     onDeleteSection: (section_id: string) => void;
@@ -27,6 +28,7 @@ interface SortableCourseSectionProps {
 
 const SortableCourseSection: React.FC<SortableCourseSectionProps> = ({
     section,
+    isDraft,
     index,
     canEdit,
     onDeleteSection,
@@ -72,6 +74,7 @@ const SortableCourseSection: React.FC<SortableCourseSectionProps> = ({
                 {canEdit && userRole === 'instructor' && <DragHandle />}
                 <Lesson
                     key={section.section_id}
+                    isDraft={isDraft}
                     section={section}
                     index={index}
                     canEdit={userRole === 'instructor'}

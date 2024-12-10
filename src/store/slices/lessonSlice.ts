@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 import { LessonBase } from '../../types/lesson';
-import { Question } from '../../types/question';
 
 // This applicable to Document, Video, and Quiz.
 
@@ -9,14 +8,12 @@ import { Question } from '../../types/question';
 interface LessonState {
     selectedLesson: LessonBase | null; // Currently selected/active lesson
     lessonsBySection: Record<string, LessonBase[]>; // Map of section IDs to their lessons
-    questions: Question[]; // Questions for quiz type lessons
 }
 
 // Initial state values when store is created
 const initialState: LessonState = {
     selectedLesson: null,
     lessonsBySection: {},
-    questions: [],
 };
 
 // Create the lesson slice with reducers
@@ -85,7 +82,7 @@ const lessonSlice = createSlice({
          * @param state Current lesson state
          * @param action Payload containing section ID and lesson ID to remove
          */
-        clearLesson(
+        modifyLessonRemove(
             state,
             action: PayloadAction<{section_id: string; lesson_id: string}>,
         ) {
@@ -103,71 +100,17 @@ const lessonSlice = createSlice({
          * Clears the currently selected lesson
          * @param state Current lesson state
          */
-        clearSingleLesson(state) {
+        clearLesson(state) {
             state.selectedLesson = null;
-        },
-
-        // Quiz Question Management Reducers
-
-        /**
-         * Sets the entire array of questions for a quiz
-         * @param state Current lesson state
-         * @param action Payload containing array of questions
-         */
-        setQuestions(state, action: PayloadAction<Question[]>) {
-            state.questions = action.payload;
-        },
-
-        /**
-         * Adds a new question to the quiz
-         * @param state Current lesson state
-         * @param action Payload containing new question data
-         */
-        addQuestion(state, action: PayloadAction<Question>) {
-            state.questions.push(action.payload);
-        },
-
-        /**
-         * Updates a specific question in the quiz
-         * @param state Current lesson state
-         * @param action Payload containing question index and updated data
-         */
-        updateQuestion(
-            state,
-            action: PayloadAction<{
-                index: number;
-                question: Question;
-            }>,
-        ) {
-            const {index, question} = action.payload;
-            state.questions[index] = question;
-        },
-
-        /**
-         * Removes a question from the quiz
-         * @param state Current lesson state
-         * @param action Payload containing index of question to remove
-         */
-        deleteQuestion(state, action: PayloadAction<number>) {
-            state.questions.splice(action.payload, 1);
-        },
-
-        /**
-         * Clears all questions from the quiz
-         * @param state Current lesson state
-         */
-        clearQuestions(state) {
-            state.questions = [];
         },
 
         /**
          * Resets the entire lesson state to initial values
          * @param state Current lesson state
          */
-        resetLessonState: (state) => {
+        clearLessonsState: (state) => {
             state.selectedLesson = null;
             state.lessonsBySection = {};
-            state.questions = [];
         },
     },
 });
@@ -178,13 +121,8 @@ export const {
     setLessons,
     modifyLesson,
     clearLesson,
-    clearSingleLesson,
-    setQuestions,
-    addQuestion,
-    updateQuestion,
-    deleteQuestion,
-    clearQuestions,
-    resetLessonState,
+    modifyLessonRemove,
+    clearLessonsState,
 } = lessonSlice.actions;
 
 // Export the reducer

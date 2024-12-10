@@ -3,12 +3,14 @@ import React, { useEffect, useState } from 'react';
 
 import { useCourses } from '../../../hooks/useCourses';
 import { useLessons } from '../../../hooks/useLessons';
+import { useQuestions } from '../../../hooks/useQuestions';
 import { LessonBase } from '../../../types/lesson';
 import DocumentPreview from './DocumentPreview';
 import VideoPreview from './VideoPreview';
 
 interface LessonModalProps {
     sectionId: string;
+    isDraft?: boolean;
     onClose: () => void;
     lessonToEdit?: LessonBase;
     onSubmit: (lessonData: LessonBase) => Promise<void>;
@@ -16,23 +18,21 @@ interface LessonModalProps {
 
 const LessonModal: React.FC<LessonModalProps> = ({
     sectionId,
+    isDraft,
     onClose,
     lessonToEdit,
     onSubmit,
 }) => {
     const {selectedCourse} = useCourses();
+    const {createLessons, updateLesson, fetchAllLessons} = useLessons();
     const {
-        createLessons,
-        updateLesson,
-        fetchAllLessons,
-        questions,
-        handleAddQuestion,
-        handleQuestionChange,
-        handleDeleteQuestion,
-        //for redux state
+        quizQuestions,
+        createQuestion,
+        updateQuestion,
+        deleteQuestion,
         initializeQuizQuestions,
-        clearQuizQuestions,
-    } = useLessons();
+        clearQuestionsState,
+    } = useQuestions();
     const [lessonTitle, setLessonTitle] = useState('');
     const [lessonType, setLessonType] = useState<'document' | 'video' | 'quiz'>(
         'document',
@@ -66,15 +66,30 @@ const LessonModal: React.FC<LessonModalProps> = ({
                     initializeQuizQuestions(lessonToEdit.quiz.questions);
                     break;
             }
+        } else {
+            // Reset states when creating new lesson
+            setLessonTitle('');
+            setDocumentUrl('');
+            setVideoUrl('');
+            setVideoDuration(0);
+            setQuizTitle('');
+            clearQuestionsState(); // Clear quiz questions
         }
 
         // Cleanup when component unmounts
         return () => {
             if (lessonType === 'quiz') {
-                clearQuizQuestions();
+                clearQuestionsState();
             }
         };
     }, [lessonToEdit]);
+
+    useEffect(() => {
+        if (lessonType === 'quiz' && !lessonToEdit) {
+            clearQuestionsState(); // Clear quiz questions when switching to quiz type
+            setQuizTitle(''); // Reset quiz title
+        }
+    }, [lessonType]);
 
     const renderLessonTypeInputs = () => {
         switch (lessonType) {
@@ -137,7 +152,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
 
                 {/* Questions List */}
                 <div className='space-y-4'>
-                    {questions.map((question, qIndex) => (
+                    {quizQuestions.map((question, qIndex) => (
                         <div
                             key={question.question_id}
                             className='bg-white p-6 rounded-lg border shadow-sm relative group'
@@ -154,7 +169,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                         type='text'
                                         value={question.question_text}
                                         onChange={(e) =>
-                                            handleQuestionChange(
+                                            updateQuestion(
                                                 qIndex,
                                                 'question_text',
                                                 e.target.value,
@@ -165,9 +180,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                     />
                                     <button
                                         type='button'
-                                        onClick={() =>
-                                            handleDeleteQuestion(qIndex)
-                                        }
+                                        onClick={() => deleteQuestion(qIndex)}
                                         className='p-2 text-gray-400 hover:text-red-500 rounded-lg transition-colors'
                                         title='Delete question'
                                     >
@@ -203,7 +216,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                                         ];
                                                         newOptions[oIndex] =
                                                             e.target.value;
-                                                        handleQuestionChange(
+                                                        updateQuestion(
                                                             qIndex,
                                                             'question_options',
                                                             newOptions,
@@ -229,7 +242,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                                 question.question_correct_answer_index
                                             }
                                             onChange={(e) =>
-                                                handleQuestionChange(
+                                                updateQuestion(
                                                     qIndex,
                                                     'question_correct_answer_index',
                                                     Number(e.target.value),
@@ -262,7 +275,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                                 ''
                                             }
                                             onChange={(e) =>
-                                                handleQuestionChange(
+                                                updateQuestion(
                                                     qIndex,
                                                     'question_answer_explanation',
                                                     e.target.value,
@@ -282,7 +295,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                 {/* Add Question Button */}
                 <button
                     type='button'
-                    onClick={handleAddQuestion}
+                    onClick={createQuestion}
                     className='w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2'
                 >
                     <svg
@@ -308,53 +321,59 @@ const LessonModal: React.FC<LessonModalProps> = ({
         e.preventDefault();
         e.stopPropagation();
 
-        if (!selectedCourse?.course_id) {
-            console.error('No course selected');
-            return;
-        }
-
         try {
             let lessonData: LessonBase;
+            // If editing, keep original ID
+            // If new lesson in draft mode, use draft prefix
+            // If new lesson in existing section, let Firebase generate ID (use null)
+            const lessonId =
+                lessonToEdit?.lesson_id ||
+                (isDraft ? `draft-${Date.now()}` : '');
 
             if (lessonType === 'document') {
                 lessonData = {
-                    lesson_id: lessonToEdit?.lesson_id || '',
+                    lesson_id: lessonId,
                     section_id: sectionId,
                     lesson_title: lessonTitle,
                     lesson_type: 'document',
-                    lesson_order: lessonToEdit ? lessonToEdit.lesson_order : 0,
+                    lesson_order: lessonToEdit?.lesson_order || 0,
                     document_url: documentUrl,
                 };
             } else if (lessonType === 'video') {
                 lessonData = {
-                    lesson_id: lessonToEdit?.lesson_id || '',
+                    lesson_id: lessonId,
                     section_id: sectionId,
                     lesson_title: lessonTitle,
                     lesson_type: 'video',
-                    lesson_order: lessonToEdit ? lessonToEdit.lesson_order : 0,
+                    lesson_order: lessonToEdit?.lesson_order || 0,
                     video_url: videoUrl,
                     video_duration: videoDuration,
                 };
             } else {
+                // Quiz type - keep as is since it's working
                 const quiz_id =
                     lessonToEdit?.lesson_type === 'quiz'
                         ? lessonToEdit.quiz.quiz_id
-                        : `quiz${Date.now()}`;
+                        : isDraft
+                        ? `draft-quiz-${Date.now()}`
+                        : `quiz-${Date.now()}`;
 
                 lessonData = {
-                    lesson_id: lessonToEdit?.lesson_id || '',
+                    lesson_id: lessonId,
                     section_id: sectionId,
                     lesson_title: lessonTitle,
                     lesson_type: 'quiz',
-                    lesson_order: lessonToEdit ? lessonToEdit.lesson_order : 0,
+                    lesson_order: lessonToEdit?.lesson_order || 0,
                     quiz: {
                         quiz_id,
                         quiz_title: quizTitle,
-                        quiz_number_of_questions: questions.length,
-                        questions: questions,
+                        quiz_number_of_questions: quizQuestions.length,
+                        questions: quizQuestions,
                     },
                 };
             }
+
+            console.log('Submitting lesson data:', lessonData); // Debug log
 
             try {
                 await onSubmit(lessonData);
@@ -363,7 +382,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                 console.error('Failed to submit lesson:', error);
             }
         } catch (error) {
-            console.error('Failed to save lesson:', error);
+            console.error('Failed to create lesson data:', error);
         }
     };
 

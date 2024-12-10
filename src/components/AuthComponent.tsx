@@ -66,56 +66,31 @@ const AuthComponent: React.FC = () => {
     };
 
     return (
-        <div className='flex w-full'>
-            {/* Sidebar for larger screens */}
-            {/* <div className='hidden lg:flex h-full w-1/3 items-center justify-center bg-background flex-col p-8'>
-                <div className='absolute top-4 left-8 text-2xl font-bold mt-8'>
-                    <span className='font-abhaya text-3xl text-primary'>
-                        OpenLearn
-                    </span>
-                    <span className='font-abhaya text-3xl text-tertiary'>
-                        Hub.
-                    </span>
-                </div>
-                <img
-                    src={authImage}
-                    alt='Educational Illustration'
-                    className='w-3/4 h-auto mx-auto'
-                />
-                <div className='text-center mb-32'>
-                    <h2 className='text-5xl font-bold'>
-                        <span className='font-abhaya text-7xl block text-black'>
-                            Unlock Your
-                        </span>
-                        <span className='font-abhaya text-7xl block text-black'>
-                            Potential
-                        </span>
-                        <span className='font-abhaya text-7xl block'>
-                            <span className='text-black'>With </span>
-                            <span className='text-primary'>Learn</span>
-                            <span className='text-black'>Hub.</span>
-                        </span>
-                    </h2>
-                </div>
-            </div> */}
+        <div className='min-h-screen flex flex-col items-center justify-center bg-white p-4'>
+            {/* Brand Text */}
+            <div className='font-abhaya text-center mb-2'>
+                <h1 className='text-6xl font-bold'>
+                    <span className='text-primary'>Learn</span>
+                    <span className='text-tertiary'>Hub.</span>
+                </h1>
+            </div>
 
-            {/* Main form container */}
-            <div className='w-full flex items-center justify-center mx-auto'>
-                <form onSubmit={handleSubmit} className='w-full max-w-lg'>
-                    <h1 className='font-abhaya text-5xl font-bold mb-6'>
+            {/* Main Form Container */}
+            <div className='w-full max-w-lg bg-white p-8 rounded-lg'>
+                <form onSubmit={handleSubmit} className='space-y-6'>
+                    <h2 className='font-abhaya text-4xl font-bold text-center mb-4'>
                         {isSignIn ? 'Sign In' : 'Sign Up'}
-                    </h1>
+                    </h2>
 
                     {!isSignIn && (
                         <div className='space-y-4'>
-                            <div className='flex space-x-4'>
+                            <div className='flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0'>
                                 <div className='flex-1'>
                                     <label className='font-abhaya font-bold text-lg mb-1 block'>
                                         First Name
                                     </label>
                                     <input
-                                        id='firstName'
-                                        className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
+                                        className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
                                         type='text'
                                         placeholder='First Name'
                                         value={firstname}
@@ -126,15 +101,11 @@ const AuthComponent: React.FC = () => {
                                     />
                                 </div>
                                 <div className='flex-1'>
-                                    <label
-                                        htmlFor='lastName'
-                                        className='font-abhaya text-lg font-medium mb-1 block'
-                                    >
+                                    <label className='font-abhaya text-lg font-bold mb-1 block'>
                                         Last Name
                                     </label>
                                     <input
-                                        id='lastName'
-                                        className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
+                                        className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
                                         type='text'
                                         placeholder='Last Name'
                                         value={lastname}
@@ -146,15 +117,11 @@ const AuthComponent: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <label
-                                    htmlFor='username'
-                                    className='font-abhaya text-lg font-medium mb-1 block'
-                                >
+                                <label className='font-abhaya text-lg font-bold mb-1 block'>
                                     Username
                                 </label>
                                 <input
-                                    id='username'
-                                    className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
+                                    className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
                                     type='text'
                                     placeholder='Username'
                                     value={username}
@@ -167,17 +134,13 @@ const AuthComponent: React.FC = () => {
                         </div>
                     )}
 
-                    <div className='space-y-4 mt-4'>
+                    <div className='space-y-4'>
                         <div>
-                            <label
-                                htmlFor='email'
-                                className='font-abhaya text-lg font-medium mb-1 block'
-                            >
+                            <label className='font-abhaya text-lg font-bold mb-1 block'>
                                 Email
                             </label>
                             <input
-                                id='email'
-                                className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
                                 type='email'
                                 placeholder='Email@example.com'
                                 value={email}
@@ -186,15 +149,11 @@ const AuthComponent: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label
-                                htmlFor='password'
-                                className='font-abhaya text-lg font-medium mb-1 block'
-                            >
+                            <label className='font-abhaya text-lg font-bold mb-1 block'>
                                 Password
                             </label>
                             <input
-                                id='password'
-                                className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
                                 type='password'
                                 placeholder='Password'
                                 value={password}
@@ -204,43 +163,43 @@ const AuthComponent: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className='mt-8 flex flex-col gap-y-4'>
+                    <div className='space-y-4'>
                         <button
-                            className='w-full py-3 bg-primary text-white text-lg active:scale-[.98] font-abhaya'
+                            className='w-full py-3 bg-primary text-white text-lg active:scale-95 font-abhaya rounded transition-transform'
                             type='submit'
                         >
                             {isSignIn ? 'Sign In' : 'Sign Up'}
                         </button>
-                        <div className='flex justify-center items-center text-black font-abhaya text-lg font-medium mb-1'>
+                        <div className='text-center font-abhaya text-lg'>
                             {isSignIn ? (
-                                <>
+                                <p>
                                     Don't have an account?{' '}
                                     <button
                                         type='button'
-                                        className='text-secondary font-bold hover:underline ml-1'
+                                        className='text-secondary font-bold hover:underline'
                                         onClick={() => setSignIn(false)}
                                     >
                                         Sign Up
                                     </button>
-                                </>
+                                </p>
                             ) : (
-                                <>
+                                <p>
                                     Already have an account?{' '}
                                     <button
                                         type='button'
-                                        className='text-secondary font-bold hover:underline ml-1'
+                                        className='text-secondary font-bold hover:underline'
                                         onClick={() => setSignIn(true)}
                                     >
                                         Sign In
                                     </button>
-                                </>
+                                </p>
                             )}
                         </div>
                     </div>
 
-                    <div className='flex items-center my-4'>
+                    <div className='flex items-center'>
                         <hr className='flex-grow border-t border-gray-300' />
-                        <span className='mx-2 text-gray-500 font-medium font-abhaya'>
+                        <span className='px-4 text-gray-500 font-medium font-abhaya'>
                             or
                         </span>
                         <hr className='flex-grow border-t border-gray-300' />
@@ -248,7 +207,7 @@ const AuthComponent: React.FC = () => {
 
                     <button
                         type='button'
-                        className='w-full flex items-center justify-center py-3 border border-gray hover:bg-gray-100'
+                        className='w-full flex items-center justify-center py-3 border border-gray-300 hover:bg-gray-50 rounded transition-colors'
                         onClick={() => {
                             /* Handle Google sign-in */
                         }}

@@ -40,15 +40,16 @@ export const useSections = () => {
     const createSections = async (
         course_id: string,
         section: Omit<Section, 'section_id'>,
-    ): Promise<void> => {
+    ): Promise<Section | undefined> => {
         try {
             const newSection = {
                 ...section,
-                section_id: '',
+                section_id: section.section_title || '',
             };
             const addedSection = await addSections(course_id, newSection);
             dispatch(setSection(addedSection));
             console.log('Sections created successfully:');
+            return addedSection;
         } catch (error) {
             console.error('Failed to create sections:', error);
         }
@@ -141,13 +142,13 @@ export const useSections = () => {
                 return;
             }
 
-            // // First delete all lessons in the section
-            // const sectionLessons = await getAllLessons(course_id, section_id);
-            // await Promise.all(
-            //     sectionLessons.map((lesson) =>
-            //         deleteLessonById(course_id, section_id, lesson.lesson_id),
-            //     ),
-            // );
+            // First delete all lessons in the section
+            const sectionLessons = await getAllLessons(course_id, section_id);
+            await Promise.all(
+                sectionLessons.map((lesson) =>
+                    deleteLessonById(course_id, section_id, lesson.lesson_id),
+                ),
+            );
 
             // Delete the section itself
             await deleteSectionById(course_id, section_id);

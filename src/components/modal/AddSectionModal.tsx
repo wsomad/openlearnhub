@@ -7,6 +7,7 @@ import { Section } from '../../types/section';
 
 interface AddSectionModalProps {
     isOpen: boolean;
+    isDraft?: boolean;
     onClose: () => void;
     onSubmit: (
         newSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
@@ -16,6 +17,7 @@ interface AddSectionModalProps {
 
 const AddSectionModal: React.FC<AddSectionModalProps> = ({
     isOpen,
+    isDraft,
     onClose,
     onSubmit,
     sectionToEdit,
@@ -30,6 +32,28 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
         }
     }, [sectionToEdit]);
 
+    // const handleSubmit = (): void => {
+    //     if (!sectionTitle.trim()) {
+    //         alert('Section title is required.');
+    //         return;
+    //     }
+
+    //     const newSection = {
+    //         section_title: sectionTitle,
+    //         section_order:
+    //             sectionToEdit?.section_order || allSections.length + 1,
+    //         course_id: selectedCourse?.course_id || '',
+    //         section_id: isDraft
+    //             ? `draft-section-${Date.now()}`
+    //             : sectionToEdit?.section_id || '', // Add section_id for drafts
+    //     };
+
+    //     onSubmit(newSection);
+    //     onClose();
+    //     deleteSelectedSection();
+    //     setSectionTitle('');
+    // };
+
     const handleSubmit = (): void => {
         if (!sectionTitle.trim()) {
             alert('Section title is required.');
@@ -38,9 +62,11 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
 
         const newSection = {
             section_title: sectionTitle,
-            section_order:
-                sectionToEdit?.section_order || allSections.length + 1,
+            section_order: sectionToEdit?.section_order || 0,
             course_id: selectedCourse?.course_id || '',
+            section_id: isDraft
+                ? `draft-section-${Date.now()}`
+                : sectionToEdit?.section_id || '',
         };
 
         onSubmit(newSection);

@@ -14,6 +14,7 @@ import LessonModal from './LessonModal';
 
 interface LessonProps {
     section: Section;
+    isDraft?: boolean;
     index: number;
     canEdit: boolean;
     onLessonSelect?: (lesson: LessonBase) => void;
@@ -29,6 +30,7 @@ interface LessonProps {
 
 const Lesson: React.FC<LessonProps> = ({
     section,
+    isDraft,
     index,
     canEdit,
     onLessonSelect,
@@ -45,7 +47,7 @@ const Lesson: React.FC<LessonProps> = ({
     const {
         fetchAllLessons,
         selectedLesson,
-        getLessonsForSection,
+        fetchLessonsForSection,
         setSelectedLesson,
         clearSelectedLesson,
     } = useLessons();
@@ -63,31 +65,26 @@ const Lesson: React.FC<LessonProps> = ({
         null,
     );
 
-    // Get lessons for current section using the section ID
-    const sectionLessons = getLessonsForSection(section.section_id);
-
-    // Fetch lessons when component mounts or section/course changes
+    const [lessons, setLessons] = useState<LessonBase[]>([]);
     useEffect(() => {
-        fetchSectionLessonsData();
-    }, [section.course_id, section.section_id]);
+        const loadLessons = async () => {
+            if (section.section_id && selectedCourse?.course_id) {
+                const sectionLessons = await fetchLessonsForSection(
+                    section.section_id,
+                    selectedCourse.course_id,
+                );
+                setLessons(sectionLessons);
+            }
+        };
+        loadLessons();
+    }, [section.section_id, selectedCourse?.course_id]);
 
     // Update selected section when expanded state changes
     useEffect(() => {
-        if (isExpanded) {
+        if (isExpanded && section.section_id) {
             setSelectedSection(section);
         }
-    }, [isExpanded]);
-
-    // Fetches lessons for the current section if a course is selected
-    const fetchSectionLessonsData = async () => {
-        if (!selectedCourse?.course_id) return;
-
-        try {
-            await fetchAllLessons(selectedCourse.course_id, section.section_id);
-        } catch (error) {
-            console.error('Error loading lessons:', error);
-        }
-    };
+    }, [isExpanded, section.section_id]);
 
     // Toggles section expansion and sets the selected section
     const toggleSectionVisibility = () => {
@@ -96,20 +93,33 @@ const Lesson: React.FC<LessonProps> = ({
     };
 
     // Handles section deletion with event prevention
+    // const confirmSectionDeletion = async (e?: React.MouseEvent) => {
+    //     if (e) {
+    //         e.preventDefault();
+    //         e.stopPropagation();
+    //     }
+
+    //     onDeleteSection(section.section_id);
+    //     setIsDeleteSectionModalOpen(false);
+    // };
     const confirmSectionDeletion = async (e?: React.MouseEvent) => {
         if (e) {
             e.preventDefault();
             e.stopPropagation();
         }
 
-        if (!selectedCourse?.course_id) return;
-
         try {
-            await deleteSection(selectedCourse.course_id, section.section_id);
-            await fetchSectionLessonsData();
+            await onDeleteSection(section.section_id);
+
+            // Add local state update
+            if (isDraft) {
+                setIsExpanded(false);
+                deleteSelectedSection();
+            }
+
             setIsDeleteSectionModalOpen(false);
         } catch (error) {
-            console.error('Error deleting section:', error);
+            console.error('Failed to delete section:', error);
         }
     };
 
@@ -125,12 +135,20 @@ const Lesson: React.FC<LessonProps> = ({
         setIsAddLessonOpen(false);
         deleteSelectedSection();
         clearSelectedLesson();
-        await fetchSectionLessonsData();
+        // await fetchSectionLessonsData();
     };
 
     // Opens lesson edit modal and sets the selected lesson
     const openEditLessonModal = (lesson: LessonBase) => {
-        setSelectedLesson(lesson);
+        // When opening edit modal for a draft lesson, maintain the draft ID
+        const lessonToEdit = isDraft
+            ? {
+                  ...lesson,
+                  lesson_id: lesson.lesson_id, // Keep the existing draft ID
+              }
+            : lesson;
+
+        setSelectedLesson(lessonToEdit);
         setIsAddLessonOpen(true);
     };
 
@@ -138,7 +156,15 @@ const Lesson: React.FC<LessonProps> = ({
     const handleUpdateSection = (
         updatedSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
     ) => {
-        onEditSectionTitle(section.section_id, updatedSection);
+        if (isDraft) {
+            // For draft mode, pass the existing section ID
+            onEditSectionTitle(section.section_id, {
+                ...updatedSection,
+                course_id: section.course_id, // Maintain course_id if it exists
+            });
+        } else {
+            onEditSectionTitle(section.section_id, updatedSection);
+        }
         setIsEditSectionOpen(false);
     };
 
@@ -150,25 +176,65 @@ const Lesson: React.FC<LessonProps> = ({
         setIsDeleteModalOpen(true);
     };
 
-    // Deletes the specific lesson.
-    const handleDeleteSection = (e?: React.MouseEvent) => {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
+    const handleAddLesson = async (section_id: string, lesson: LessonBase) => {
+        try {
+            const newLesson = {
+                ...lesson,
+                lesson_id: isDraft ? `draft-${Date.now()}` : lesson.lesson_id,
+                section_id: section_id,
+            };
+            await onAddLesson(section_id, newLesson);
+            setLessons((prev) => [...prev, newLesson]);
+            setIsAddLessonOpen(false); // Close modal after successful add
+        } catch (error) {
+            console.error('Failed to add lesson:', error);
         }
-        onDeleteSection(section.section_id);
-        setIsDeleteSectionModalOpen(false);
     };
 
-    const handleDeleteLesson = (e?: React.MouseEvent) => {
-        if (e) {
-            e.preventDefault();
-            e.stopPropagation();
+    const handleEditLesson = async (section_id: string, lesson: LessonBase) => {
+        try {
+            // Maintain the original lesson ID when editing
+            const updatedLesson = {
+                ...lesson,
+                lesson_id: selectedLesson?.lesson_id || '', // Keep original ID
+                section_id: section_id,
+            };
+            await onEditLesson(section_id, updatedLesson);
+            setLessons((prev) =>
+                prev.map((l) =>
+                    l.lesson_id === selectedLesson?.lesson_id
+                        ? updatedLesson
+                        : l,
+                ),
+            );
+            setIsAddLessonOpen(false);
+        } catch (error) {
+            console.error('Failed to edit lesson:', error);
         }
-        if (lessonToDelete) {
-            onDeleteLesson(section.section_id, lessonToDelete.lesson_id);
+    };
+
+    const handleDeleteLesson = async (
+        section_id: string,
+        lesson_id: string,
+    ) => {
+        try {
+            await onDeleteLesson(section_id, lesson_id);
+
+            // Update local state immediately
+            setLessons((prev) => prev.filter((l) => l.lesson_id !== lesson_id));
+            setIsDeleteModalOpen(false);
+            setLessonToDelete(null);
+
+            // If in draft mode, ensure the UI updates even if Firebase operation isn't performed
+            if (isDraft) {
+                const updatedLessons = lessons.filter(
+                    (l) => l.lesson_id !== lesson_id,
+                );
+                setLessons(updatedLessons);
+            }
+        } catch (error) {
+            console.error('Failed to delete lesson:', error);
         }
-        setIsDeleteModalOpen(false);
     };
 
     return (
@@ -191,7 +257,7 @@ const Lesson: React.FC<LessonProps> = ({
                                 {index}. {section.section_title}
                             </h3>
                             <p className='text-sm text-gray-600'>
-                                {sectionLessons.length} lessons
+                                {lessons.length} lessons
                             </p>
                         </div>
                     </div>
@@ -229,8 +295,8 @@ const Lesson: React.FC<LessonProps> = ({
 
             {isExpanded && (
                 <div className='bg-gray-50 shadow-sm'>
-                    {sectionLessons.length > 0 ? (
-                        sectionLessons.map((lesson, idx) => (
+                    {lessons.length > 0 ? (
+                        lessons.map((lesson, idx) => (
                             <div
                                 key={lesson.lesson_id}
                                 onClick={(e) => {
@@ -295,17 +361,18 @@ const Lesson: React.FC<LessonProps> = ({
             {isAddLessonOpen && (
                 <LessonModal
                     sectionId={section.section_id}
+                    isDraft={isDraft}
                     onClose={closeAddLessonModal}
                     lessonToEdit={selectedLesson ?? undefined}
                     onSubmit={async (lessonData) => {
                         try {
                             if (selectedLesson) {
-                                await onEditLesson(
+                                await handleEditLesson(
                                     section.section_id,
                                     lessonData,
                                 );
                             } else {
-                                await onAddLesson(
+                                await handleAddLesson(
                                     section.section_id,
                                     lessonData,
                                 );
@@ -328,7 +395,11 @@ const Lesson: React.FC<LessonProps> = ({
                     }}
                     onConfirm={
                         lessonToDelete
-                            ? handleDeleteLesson
+                            ? (e?: React.MouseEvent) =>
+                                  handleDeleteLesson(
+                                      section.section_id,
+                                      lessonToDelete.lesson_id,
+                                  )
                             : confirmSectionDeletion
                     }
                     itemTitle={
