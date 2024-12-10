@@ -1,0 +1,57 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main # Trigger on pushes to the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout code
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Set up Docker or Podman
+    - name: Set up Podman
+      uses: redhat-actions/setup-podman@v2 # Use this for Podman
+      with:
+        version: latest
+
+    # Authenticate Docker/Podman
+    - name: Authenticate with Docker Hub
+      run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+    # Build the Docker container
+    - name: Build Docker image
+      run: |
+        docker build -t my-app:latest .
+
+    # Push the container to a registry (optional)
+    - name: Push Docker image to Docker Hub
+      run: |
+        docker tag my-app:latest my-dockerhub-user/my-app:latest
+        docker push my-dockerhub-user/my-app:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    # Checkout code
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # Install Vercel CLI
+    - name: Install Vercel CLI
+      run: npm install -g vercel
+
+    # Deploy to Vercel
+    - name: Deploy to Vercel
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      run: vercel --prod
