@@ -43,7 +43,6 @@ const SearchComponent: React.FC = () => {
                     currentUser?.uid,
                     userRole,
                 );
-                // Set the results.
                 setResults(courses);
             }
         } catch (error) {
