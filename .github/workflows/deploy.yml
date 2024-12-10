@@ -1,59 +1,49 @@
 name: CI/CD
-
 on:
   push:
   pull_request:
-    branches:
-      - main  # Trigger on pushes to the main branch
+    branches: [ main ]
 
 jobs:
-  build:
+  verify-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout code
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # Set up Podman
-      - name: Set up Podman
-        uses: redhat-actions/setup-podman@v2
-        with:
-          version: latest
-
-      # Authenticate with GitHub Container Registry
-      - name: Authenticate with GitHub Container Registry
-        env:
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # GitHub automatically provides this secret
+      - name: Install Podman
         run: |
-          echo $GHCR_TOKEN | podman login ghcr.io --username $GITHUB_ACTOR --password-stdin
+          sudo apt-get update
+          sudo apt-get install -y podman
 
-      # Build the Podman container image
+      - name: Login to GitHub Container Registry
+        run: |
+          echo "${{ secrets.PACKAGES_TOKEN }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
+
       - name: Build Podman image
         run: |
-          podman build -t ghcr.io/${{ github.repository_owner }}/my-app:latest .
+          podman build \
+            -t ghcr.io/${{ github.repository }}:${{ github.sha }} .
 
-      # Push the container to GitHub Container Registry
-      - name: Push Podman image to GitHub Container Registry
+      - name: Push Podman image
+        if: github.ref == 'refs/heads/main'
         run: |
-          podman push ghcr.io/${{ github.repository_owner }}/my-app:latest
+          podman tag ghcr.io/${{ github.repository }}:${{ github.sha }} ghcr.io/${{ github.repository }}:latest
+          podman push ghcr.io/${{ github.repository }}:${{ github.sha }}
+          podman push ghcr.io/${{ github.repository }}:latest
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-
-    steps:
-      # Checkout code
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # Install Vercel CLI
       - name: Install Vercel CLI
-        run: npm install -g vercel
+        if: github.ref == 'refs/heads/main'
+        run: npm install --global vercel@latest
 
-      # Deploy to Vercel
+      - name: Pull Vercel Environment Information
+        if: github.ref == 'refs/heads/main'
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        if: github.ref == 'refs/heads/main'
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
       - name: Deploy to Vercel
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: vercel --prod
+        if: github.ref == 'refs/heads/main'
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
