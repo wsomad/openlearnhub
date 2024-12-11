@@ -73,7 +73,7 @@ jobs:
       - name: Build Podman image
         run: |
           podman build \
-            -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/my-app:${{ github.sha }} .
+            -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:${{ github.sha }} .
 
       # Step 5: Push Podman image to Docker Hub
       - name: Push Podman image
