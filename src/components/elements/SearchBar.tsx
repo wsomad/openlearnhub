@@ -6,7 +6,6 @@ interface SearchBarProps {
     handleInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-/**** */
 const SearchBar = ({query, handleInputChange}: SearchBarProps) => {
     return (
         <div className='relative w-3/4 mx-auto mt-8'>
