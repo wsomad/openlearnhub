@@ -79,7 +79,7 @@ jobs:
       - name: Push Podman image
         if: github.ref == 'refs/heads/main'
         run: |
-          podman tag docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:${{ github.sha }} docker.io/${{ secrets.DOCKERHUB_USERNAME }}/my-app:latest
+          podman tag docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:${{ github.sha }} docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:latest
           podman push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:${{ github.sha }}
           podman push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:latest
 
