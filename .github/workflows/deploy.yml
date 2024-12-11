@@ -1,3 +1,49 @@
+# name: CI/CD
+# on:
+#   push:
+#   pull_request:
+#     branches: [ main ]
+
+# jobs:
+#   verify-and-deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - uses: actions/checkout@v3
+
+#       - name: Install Podman
+#         run: |
+#           sudo apt-get update
+#           sudo apt-get install -y podman
+
+#       - name: Login to GitHub Container Registry
+#         run: |
+#           echo "${{ secrets.PACKAGES_TOKEN }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
+
+#       - name: Build Podman image
+#         run: |
+#           podman build \
+#             -t ghcr.io/${{ github.repository }}:${{ github.sha }} .
+
+#       - name: Push Podman image
+#         if: github.ref == 'refs/heads/main'
+#         run: |
+#           podman tag ghcr.io/${{ github.repository }}:${{ github.sha }} ghcr.io/${{ github.repository }}:latest
+#           podman push ghcr.io/${{ github.repository }}:${{ github.sha }}
+#           podman push ghcr.io/${{ github.repository }}:latest
+
+#       - name: Install Vercel CLI
+#         if: github.ref == 'refs/heads/main'
+#         run: npm install --global vercel@latest
+
+#       - name: Pull Vercel Environment Information
+#         if: github.ref == 'refs/heads/main'
+#         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+#       - name: Build Project Artifacts
+#         if: github.ref == 'refs/heads/main'
+#         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
 name: CI/CD
 on:
   push:
@@ -9,40 +55,78 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the code
       - uses: actions/checkout@v3
 
+      # Cache Dependencies
+      # Add caching for npm to avoid reinstalling dependencies every time
+      - name: Set up Cache for npm
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-cache-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-cache-
+
+      # Install dependencies only if not cached
+      - name: Install Dependencies
+        run: npm ci
+
+      # Install Podman
       - name: Install Podman
         run: |
           sudo apt-get update
           sudo apt-get install -y podman
 
-      - name: Login to GitHub Container Registry
+      # Log in to GitHub Container Registry
+      - name: Log in to GHCR
         run: |
           echo "${{ secrets.PACKAGES_TOKEN }}" | podman login ghcr.io -u ${{ github.actor }} --password-stdin
 
-      - name: Build Podman image
+      # Build the Podman image
+      - name: Build Podman Image
         run: |
           podman build \
             -t ghcr.io/${{ github.repository }}:${{ github.sha }} .
 
-      - name: Push Podman image
+      # Cache Podman Layers
+      # Use GitHub's cache to reuse image layers
+      - name: Cache Podman Layers
+        uses: actions/cache@v3
+        with:
+          path: /home/runner/.local/share/containers/cache
+          key: ${{ runner.os }}-podman-cache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-podman-cache-
+
+      # Push the built image to GHCR
+      - name: Push Podman Image
         if: github.ref == 'refs/heads/main'
         run: |
           podman tag ghcr.io/${{ github.repository }}:${{ github.sha }} ghcr.io/${{ github.repository }}:latest
           podman push ghcr.io/${{ github.repository }}:${{ github.sha }}
           podman push ghcr.io/${{ github.repository }}:latest
 
+      # Install Vercel CLI
       - name: Install Vercel CLI
         if: github.ref == 'refs/heads/main'
         run: npm install --global vercel@latest
 
-      - name: Pull Vercel Environment Information
+      # Pull Vercel environment information
+      - name: Pull Vercel Environment Info
         if: github.ref == 'refs/heads/main'
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
+      # Build project artifacts
       - name: Build Project Artifacts
         if: github.ref == 'refs/heads/main'
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      # Deploy to Vercel
+      - name: Deploy to Vercel
+        if: github.ref == 'refs/heads/main'
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+
 
       - name: Deploy to Vercel
         if: github.ref == 'refs/heads/main'
