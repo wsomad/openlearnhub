@@ -72,13 +72,12 @@ jobs:
       # Step 4: Build Podman image
       - name: Build Podman image
         run: |
-          podman build \-t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:${{ github.sha }} .
+          podman build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:${{ github.sha }} .
           podman tag docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:${{ github.sha }} docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:latest
 
 
       # Step 5: Push Podman image to Docker Hub
       - name: Push Podman image
-        if: github.ref == 'refs/heads/main'
         run: |
           podman push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:${{ github.sha }}
           podman push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/openlearnhub:latest
