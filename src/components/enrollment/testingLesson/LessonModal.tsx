@@ -323,12 +323,17 @@ const LessonModal: React.FC<LessonModalProps> = ({
 
         try {
             let lessonData: LessonBase;
-            // If editing, keep original ID
-            // If new lesson in draft mode, use draft prefix
-            // If new lesson in existing section, let Firebase generate ID (use null)
-            const lessonId =
-                lessonToEdit?.lesson_id ||
-                (isDraft ? `draft-${Date.now()}` : '');
+            // Generate ID upfront to ensure it's never empty
+            const uniqueId = isDraft
+                ? `draft-${sectionId}-${Date.now()}-${Math.random()
+                      .toString(36)
+                      .substring(2, 9)}`
+                : `temp-${sectionId}-${Date.now()}-${Math.random()
+                      .toString(36)
+                      .substring(2, 9)}`;
+
+            // Always use either the existing ID or the new unique one
+            const lessonId = lessonToEdit?.lesson_id || uniqueId;
 
             if (lessonType === 'document') {
                 lessonData = {
@@ -373,10 +378,13 @@ const LessonModal: React.FC<LessonModalProps> = ({
                 };
             }
 
-            console.log('Submitting lesson data:', lessonData); // Debug log
+            console.log('=== LessonModal: Submitting lesson ===', lessonData);
 
             try {
                 await onSubmit(lessonData);
+                console.log(
+                    '=== LessonModal: Lesson submitted successfully ===',
+                );
                 onClose();
             } catch (error) {
                 console.error('Failed to submit lesson:', error);

@@ -3,6 +3,8 @@ import { FaPlus } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
 import { useCourses } from '../../hooks/useCourses';
+import { useLessons } from '../../hooks/useLessons';
+import { useSections } from '../../hooks/useSections';
 import { useUser } from '../../hooks/useUser';
 import { Course } from '../../types/course';
 import { User } from '../../types/user';
@@ -11,6 +13,8 @@ import DeleteCourseModal from '../modal/DeleteCourseModal';
 
 const CardInstructorDashboard: React.FC = () => {
     const {allCourses, fetchAllCourses, deleteCourse} = useCourses();
+    const {fetchAllSections, deleteSection, allSections} = useSections();
+    const {fetchLessonsForSection, deleteLesson} = useLessons();
     const {updateUser} = useUser();
     const {currentUser, userRole} = useUser();
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -80,7 +84,7 @@ const CardInstructorDashboard: React.FC = () => {
             }
             setIsDeleteModalOpen(false);
             setSelectedCourseId(null);
-            window.location.reload();
+            // window.location.reload();
         } catch (error) {
             console.error('Failed to delete course:', error);
         }
@@ -101,41 +105,49 @@ const CardInstructorDashboard: React.FC = () => {
     ));
 
     return (
-        <div className='space-y-6'>
-            <p className='font-abhaya text-2xl font-bold text-primary'>
-                {currentUser?.instructor?.total_courses_created || 0} Courses
-                Created
-            </p>
-            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4'>
-                <Link
-                    to='/instructor/dashboard/course/create'
-                    className='bg-white border-2 border-dashed border-gray-300 p-4 flex flex-col items-center justify-center space-y-3 hover:border-primary hover:bg-gray-50 transition-colors cursor-pointer min-h-[250px]'
-                >
-                    <div className='w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center'>
-                        <FaPlus className='w-6 h-6 text-primary' />
-                    </div>
-                    <h3 className='text-2xl font-semibold font-abhaya text-primary'>
-                        New Course
-                    </h3>
-                    <p className='text-gray-500 text-center text-base font-abhaya'>
-                        Create a new course
-                    </p>
-                </Link>
-                {renderedCourses}
+        <>
+            <div className='space-y-6 min-h-screen bg-gray-50 p-4 sm:p-6'>
+                <p className='font-abhaya text-xl sm:text-2xl font-bold text-primary'>
+                    {currentUser?.instructor?.total_courses_created || 0}{' '}
+                    Courses Created
+                </p>
+                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6'>
+                    <Link
+                        to='/instructor/dashboard/course/create'
+                        className='bg-white border-2 border-dashed border-gray-300 p-4 flex flex-col items-center justify-center space-y-3 hover:border-primary hover:bg-gray-50 transition-colors cursor-pointer min-h-[250px] rounded-lg shadow-sm'
+                    >
+                        <div className='w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/10 flex items-center justify-center'>
+                            <FaPlus className='w-5 h-5 sm:w-6 sm:h-6 text-primary' />
+                        </div>
+                        <h3 className='text-xl sm:text-2xl font-semibold font-abhaya text-primary'>
+                            New Course
+                        </h3>
+                        <p className='text-gray-500 text-center text-sm sm:text-base font-abhaya'>
+                            Create a new course
+                        </p>
+                    </Link>
+                    {renderedCourses}
+                </div>
             </div>
+
             {isDeleteModalOpen && (
-                <DeleteCourseModal
-                    isOpen={isDeleteModalOpen}
-                    courseTitle={
-                        allCourses.find(
-                            (course) => course.course_id === selectedCourseId,
-                        )?.course_title || ''
-                    }
-                    onClose={() => setIsDeleteModalOpen(false)}
-                    onConfirm={handleDeleteCourse}
-                />
+                <div className='fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center'>
+                    <div className='relative w-full max-w-md mx-4'>
+                        <DeleteCourseModal
+                            isOpen={isDeleteModalOpen}
+                            courseTitle={
+                                allCourses.find(
+                                    (course) =>
+                                        course.course_id === selectedCourseId,
+                                )?.course_title || ''
+                            }
+                            onClose={() => setIsDeleteModalOpen(false)}
+                            onConfirm={handleDeleteCourse}
+                        />
+                    </div>
+                </div>
             )}
-        </div>
+        </>
     );
 };
 

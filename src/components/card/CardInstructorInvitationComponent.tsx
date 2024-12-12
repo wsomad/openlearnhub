@@ -1,6 +1,7 @@
-import React from 'react';
-import {IoMdCheckmark} from 'react-icons/io';
 import Player from 'lottie-react';
+import React from 'react';
+import { IoMdCheckmark } from 'react-icons/io';
+
 import lottieAnimation from '../../assets/animations/InstructorAnimation2.json';
 
 const CardInstructorInvitationComponent: React.FC = () => {
@@ -12,7 +13,7 @@ const CardInstructorInvitationComponent: React.FC = () => {
 
     return (
         <>
-            <div className='w-3/4 bg-white border border-gray overflow-hidden mb-10'>
+            <div className='w-full bg-white border border-gray overflow-hidden mb-10'>
                 <div className='flex flex-col md:flex-row items-start'>
                     <div className='w-full md:w-2/3 p-6'>
                         <h2 className='font-abhaya text-2xl font-bold text-black my-2'>
@@ -44,7 +45,7 @@ const CardInstructorInvitationComponent: React.FC = () => {
                         </button>
                     </div>
 
-                    <div className='w-full md:w-1/2 flex items-end'>
+                    <div className='w-full md:w-1/2 flex justify-end items-end'>
                         <Player
                             autoplay
                             loop

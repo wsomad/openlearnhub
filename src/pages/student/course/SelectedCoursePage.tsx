@@ -11,19 +11,23 @@ import CardDashboard from '../../../components/CardInstructor';
 import CourseRequirements from '../../../components/enrollment/CourseRequirements';
 import HeaderComponent from '../../../components/HeaderComponent';
 import { useCourses } from '../../../hooks/useCourses';
+import { useLessons } from '../../../hooks/useLessons';
 import { useSections } from '../../../hooks/useSections';
 import { useUser } from '../../../hooks/useUser';
 import { clearSingleCourse } from '../../../store/slices/courseSlice';
 import { Course } from '../../../types/course';
 import { VideoLesson } from '../../../types/lesson';
+import { Section } from '../../../types/section';
 
 const SelectedCoursePage: React.FC = () => {
+    const {currentUser, userRole, updateUser} = useUser();
     const {selectedCourse, fetchCourseById, updateCourse, deleteSingleCourse} =
         useCourses();
-    const {currentUser, userRole} = useUser();
-    const {resetSectionsState} = useSections();
+    const {fetchAllSections, resetSectionsState} = useSections();
+    const {fetchLessonsForSection} = useLessons();
     const {id} = useParams<{id: string}>();
     const [loading, setLoading] = useState(true);
+    const [isEnrolled, setIsEnrolled] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const currentState = useSelector((state) => state);
@@ -50,41 +54,160 @@ const SelectedCoursePage: React.FC = () => {
         };
     }, [dispatch]);
 
+    useEffect(() => {
+        const loadCourseData = async () => {
+            if (id && currentUser?.uid) {
+                // First fetch the course
+                await fetchCourseById(id, currentUser?.uid, userRole);
+                console.log('Course Data:', selectedCourse);
+
+                // Then fetch all sections
+                await fetchAllSections(id);
+
+                // If we have sections, fetch lessons for each section
+                if (selectedCourse?.sections) {
+                    for (const section of selectedCourse.sections) {
+                        await fetchLessonsForSection(section.section_id, id);
+                    }
+                }
+
+                // Now log all the data
+                console.log(
+                    'Selected Course after fetching all data:',
+                    selectedCourse,
+                );
+                console.log('Sections:', selectedCourse?.sections);
+
+                // Calculate and log metrics
+                const totalDuration = calculateTotalDuration(
+                    selectedCourse?.sections,
+                );
+                const totalQuizzes = calculateTotalQuizzes(
+                    selectedCourse?.sections,
+                );
+
+                console.log('Total Duration (seconds):', totalDuration);
+                console.log(
+                    'Total Duration (hours):',
+                    (totalDuration / 3600).toFixed(1),
+                );
+                console.log(
+                    'Number of Sections:',
+                    selectedCourse?.sections?.length,
+                );
+                console.log('Number of Quizzes:', totalQuizzes);
+
+                setLoading(false);
+            }
+        };
+
+        loadCourseData();
+    }, [currentUser, userRole, id]);
+
+    useEffect(() => {
+        const checkEnrollmentStatus = () => {
+            if (!currentUser?.student || !selectedCourse?.course_id) return;
+
+            const isAlreadyEnrolled =
+                currentUser.student.enrolled_courses?.includes(
+                    selectedCourse.course_id,
+                );
+            setIsEnrolled(!!isAlreadyEnrolled);
+        };
+
+        checkEnrollmentStatus();
+    }, [currentUser, selectedCourse]);
+
+    // const handleEnrollementClick = async (
+    //     e: React.MouseEvent<HTMLButtonElement>,
+    // ) => {
+    //     e.preventDefault();
+
+    //     const enrollmentNumber =
+    //         (selectedCourse?.course_enrollment_number || 0) + 1;
+
+    //     const updatedCourse = {
+    //         ...selectedCourse,
+    //         course_enrollment_number: enrollmentNumber,
+    //     } as Course;
+
+    //     try {
+    //         const response = await updateCourse(id || '', updatedCourse);
+
+    //         console.log(
+    //             'Successfully update number of enrollment for this course',
+    //             response,
+    //         );
+    //         navigate(`/enrolledcourse/${selectedCourse?.course_id}`);
+    //     } catch (error) {
+    //         console.error('Failed to update course enrollment number', error);
+    //     }
+    // };
+
     const handleEnrollementClick = async (
         e: React.MouseEvent<HTMLButtonElement>,
     ) => {
         e.preventDefault();
 
-        const enrollmentNumber =
-            (selectedCourse?.course_enrollment_number || 0) + 1;
+        if (!currentUser || !selectedCourse || !id) return;
 
-        const updatedCourse = {
-            ...selectedCourse,
-            course_enrollment_number: enrollmentNumber,
-        } as Course;
+        // If already enrolled, just navigate to course
+        if (isEnrolled) {
+            navigate(`/enrolledcourse/${selectedCourse.course_id}`);
+            return;
+        }
 
         try {
-            const response = await updateCourse(id || '', updatedCourse);
+            // Update course data
+            const updatedCourse = {
+                ...selectedCourse,
+                course_enrollment_number:
+                    (selectedCourse.course_enrollment_number || 0) + 1,
+                enrolled_students: [
+                    ...(selectedCourse.enrolled_students || []),
+                    currentUser.uid,
+                ],
+            } as Course;
 
-            console.log(
-                'Successfully update number of enrollment for this course',
-                response,
-            );
-            navigate(`/enrolledcourse/${selectedCourse?.course_id}`);
+            // Update student data
+            const updatedUser = {
+                ...currentUser,
+                student: {
+                    ...(currentUser.student || {}),
+                    enrolled_courses: [
+                        ...(currentUser.student?.enrolled_courses || []),
+                        selectedCourse.course_id,
+                    ],
+                },
+            };
+
+            // Update both course and user data
+            await Promise.all([
+                updateCourse(id, updatedCourse),
+                updateUser(currentUser.uid, updatedUser),
+            ]);
+
+            setIsEnrolled(true);
+            navigate(`/enrolledcourse/${selectedCourse.course_id}`);
         } catch (error) {
-            console.error('Failed to update course enrollment number', error);
+            console.error('Failed to enroll in course:', error);
         }
     };
 
     {
         /* Calculate total duration */
     }
-    const totalDuration =
-        selectedCourse?.sections?.reduce((acc, section) => {
+    // Calculate total duration from video lessons
+    const calculateTotalDuration = (sections?: Section[]): number => {
+        if (!sections) return 0;
+
+        return sections.reduce((acc, section) => {
+            if (!section.lessons) return acc;
+
             return (
                 acc +
                 section.lessons.reduce((lessonAcc, lesson) => {
-                    if ('video_duration' in lesson) {
+                    if (lesson.lesson_type === 'video') {
                         return (
                             lessonAcc + (lesson as VideoLesson).video_duration
                         );
@@ -92,17 +215,28 @@ const SelectedCoursePage: React.FC = () => {
                     return lessonAcc;
                 }, 0)
             );
-        }, 0) || 0;
+        }, 0);
+    };
 
-    const totalQuizzes =
-        selectedCourse?.sections?.reduce((acc, section) => {
+    // Calculate total number of quizzes
+    const calculateTotalQuizzes = (sections?: Section[]): number => {
+        if (!sections) return 0;
+
+        return sections.reduce((acc, section) => {
+            if (!section.lessons) return acc;
+
             return (
                 acc +
                 section.lessons.filter(
                     (lesson) => lesson.lesson_type === 'quiz',
                 ).length
             );
-        }, 0) || 0;
+        }, 0);
+    };
+
+    const totalDuration = calculateTotalDuration(selectedCourse?.sections);
+    const totalQuizzes = calculateTotalQuizzes(selectedCourse?.sections);
+    const totalSections = selectedCourse?.sections?.length || 0;
 
     return (
         <div>
@@ -134,7 +268,9 @@ const SelectedCoursePage: React.FC = () => {
                                 'Course Instructor'
                             }
                             pricing={'FREE'}
-                            buttonText='Enroll'
+                            buttonText={
+                                isEnrolled ? 'Enrolled' : 'Not Enrolled'
+                            }
                             onButtonClick={() =>
                                 console.log('Navigating to Course Details page')
                             }
@@ -152,9 +288,13 @@ const SelectedCoursePage: React.FC = () => {
                             </div>
                             <button
                                 onClick={handleEnrollementClick}
-                                className='bg-secondary font-abhaya font-semibold text-white py-2 px-4 mt-4'
+                                className={`font-abhaya font-semibold text-white py-2 px-4 mt-4 ${
+                                    isEnrolled ? 'bg-primary' : 'bg-secondary'
+                                }`}
                             >
-                                Enroll Now
+                                {isEnrolled
+                                    ? 'Continue Learning'
+                                    : 'Enroll Now'}
                             </button>
                         </div>
                     </div>
@@ -164,19 +304,26 @@ const SelectedCoursePage: React.FC = () => {
                         <div className='flex flex-row items-center mr-8'>
                             <RiTimer2Line className='mr-2' />
                             <p className='mr-4'>
-                                {(totalDuration / 3600).toFixed(1)} hours
+                                {totalDuration > 0
+                                    ? `${(totalDuration / 3600).toFixed(
+                                          1,
+                                      )} hours`
+                                    : 'No duration'}
                             </p>
                         </div>
                         <div className='flex flex-row items-center mr-8'>
                             <HiOutlineDocumentText className='mr-2' />
                             <p className='mr-4'>
-                                {selectedCourse?.course_number_of_section || 0}{' '}
-                                sections
+                                {totalSections}{' '}
+                                {totalSections === 1 ? 'section' : 'sections'}
                             </p>
                         </div>
                         <div className='flex flex-row items-center'>
                             <MdQuiz className='mr-2' />
-                            <p className='mr-4'>{totalQuizzes} quizzes</p>
+                            <p className='mr-4'>
+                                {totalQuizzes}{' '}
+                                {totalQuizzes === 1 ? 'quiz' : 'quizzes'}
+                            </p>
                         </div>
                     </div>
                 </div>

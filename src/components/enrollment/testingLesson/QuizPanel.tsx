@@ -1,22 +1,29 @@
 // QuizPanel.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Quiz } from '../../../types/quiz';
 
-interface QuizPreviewProps {
+interface QuizPanelProps {
     quizData: Quiz;
     lessonId: string;
 }
 
 type QuizState = 'start' | 'in_progress' | 'completed';
 
-const QuizPreview: React.FC<QuizPreviewProps> = ({quizData, lessonId}) => {
+const QuizPanel: React.FC<QuizPanelProps> = ({quizData, lessonId}) => {
     const [quizState, setQuizState] = useState<QuizState>('start');
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [selectedAnswers, setSelectedAnswers] = useState<{
         [key: number]: number;
     }>({});
     const [score, setScore] = useState<number>(0);
+
+    useEffect(() => {
+        setQuizState('start');
+        setCurrentQuestion(0);
+        setSelectedAnswers({});
+        setScore(0);
+    }, [lessonId]);
 
     const handleStartQuiz = () => {
         setQuizState('in_progress');
@@ -40,83 +47,138 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({quizData, lessonId}) => {
 
     if (quizState === 'start') {
         return (
-            <div className='bg-white p-6 rounded-lg shadow-sm'>
-                <h2 className='text-2xl font-bold mb-4'>
-                    {quizData.quiz_title}
-                </h2>
-                <p className='mb-4'>
-                    Number of questions: {quizData.quiz_number_of_questions}
-                </p>
-                <button
-                    onClick={handleStartQuiz}
-                    className='px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90'
-                >
-                    Start Quiz
-                </button>
+            <div className='h-[525px] flex items-center justify-center bg-white'>
+                <div className='text-center max-w-lg mx-auto p-8 rounded-lg border border-gray'>
+                    <h2 className='text-3xl font-bold mb-6'>
+                        {quizData.quiz_title}
+                    </h2>
+                    <div className='bg-gray/10 rounded-lg p-6 mb-8'>
+                        <p className='text-xl'>
+                            Number of questions:{' '}
+                            {quizData.quiz_number_of_questions}
+                        </p>
+                    </div>
+                    <button
+                        onClick={handleStartQuiz}
+                        className='w-full py-4 bg-primary text-white text-lg font-semibold rounded-lg hover:bg-primary/90 transition-colors'
+                    >
+                        Start Quiz
+                    </button>
+                </div>
             </div>
         );
     }
 
     if (quizState === 'completed') {
         return (
-            <div className='bg-white p-6 rounded-lg shadow-sm'>
-                <h2 className='text-2xl font-bold mb-4'>Quiz Completed!</h2>
-                <p className='text-lg mb-4'>Your score: {score.toFixed(1)}%</p>
-                <div className='space-y-6'>
-                    {quizData.questions.map((question, index) => (
-                        <div key={index} className='p-4 border rounded-lg'>
-                            <p className='font-medium mb-2'>
-                                {question.question_text}
-                            </p>
-                            <p className='text-green-600'>
-                                Correct answer:{' '}
-                                {
-                                    question.question_options[
-                                        question.question_correct_answer_index
-                                    ]
-                                }
-                            </p>
-                            {selectedAnswers[index] !==
-                                question.question_correct_answer_index && (
-                                <p className='text-red-600'>
-                                    Your answer:{' '}
-                                    {
-                                        question.question_options[
-                                            selectedAnswers[index]
-                                        ]
-                                    }
-                                </p>
-                            )}
-                            <p className='text-gray-600 mt-2'>
-                                {question.question_answer_explanation}
-                            </p>
-                        </div>
-                    ))}
+            <div className='h-[525px] overflow-y-auto bg-white p-8'>
+                <div className='max-w-3xl mx-auto'>
+                    <h2 className='text-3xl font-bold mb-4'>Quiz Completed!</h2>
+                    <div
+                        className={`text-2xl font-semibold mb-8 p-6 rounded-lg ${
+                            score >= 70
+                                ? 'bg-primary/10 text-primary'
+                                : 'bg-delete/10 text-delete'
+                        }`}
+                    >
+                        Your score: {score.toFixed(1)}%
+                    </div>
+
+                    <div className='space-y-6'>
+                        {quizData.questions.map((question, index) => {
+                            const isCorrect =
+                                selectedAnswers[index] ===
+                                question.question_correct_answer_index;
+                            return (
+                                <div
+                                    key={index}
+                                    className='p-6 border rounded-lg bg-gray/5'
+                                >
+                                    <p className='text-lg font-medium mb-4'>
+                                        {question.question_text}
+                                    </p>
+
+                                    <div className='space-y-3'>
+                                        <div className='flex items-center space-x-2'>
+                                            <span className='text-primary font-medium'>
+                                                Correct answer:
+                                            </span>
+                                            <span className='text-primary'>
+                                                {
+                                                    question.question_options[
+                                                        question
+                                                            .question_correct_answer_index
+                                                    ]
+                                                }
+                                            </span>
+                                        </div>
+
+                                        {!isCorrect && (
+                                            <div className='flex items-center space-x-2'>
+                                                <span className='text-delete font-medium'>
+                                                    Your answer:
+                                                </span>
+                                                <span className='text-delete'>
+                                                    {
+                                                        question
+                                                            .question_options[
+                                                            selectedAnswers[
+                                                                index
+                                                            ]
+                                                        ]
+                                                    }
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <p className='mt-4 p-4 bg-secondary rounded text-white'>
+                                        {question.question_answer_explanation}
+                                    </p>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <button
+                        onClick={handleStartQuiz}
+                        className='mt-8 w-full py-4 bg-primary text-white text-lg font-semibold rounded-lg hover:bg-primary/90 transition-colors'
+                    >
+                        Retry Quiz
+                    </button>
                 </div>
-                <button
-                    onClick={handleStartQuiz}
-                    className='mt-6 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary/90'
-                >
-                    Retry Quiz
-                </button>
             </div>
         );
     }
 
     return (
-        <div className='h-[600px] space-y-6'>
-            <div className='bg-white p-6 rounded-lg shadow-sm'>
-                <h3 className='text-xl font-semibold mb-4'>
-                    Question {currentQuestion + 1} of{' '}
-                    {quizData.questions.length}
-                </h3>
+        <div className='h-[530px] bg-white p-8 flex flex-col'>
+            <div className='max-w-3xl mx-auto w-full'>
+                <div className='mb-8'>
+                    <h3 className='text-2xl font-bold mb-2'>
+                        Question {currentQuestion + 1} of{' '}
+                        {quizData.questions.length}
+                    </h3>
+                    <div className='w-full bg-gray/20 h-2 rounded-full'>
+                        <div
+                            className='bg-primary h-full rounded-full transition-all duration-300'
+                            style={{
+                                width: `${
+                                    ((currentQuestion + 1) /
+                                        quizData.questions.length) *
+                                    100
+                                }%`,
+                            }}
+                        />
+                    </div>
+                </div>
 
-                <div className='space-y-4'>
-                    <p className='text-lg'>
+                <div className='space-y-6'>
+                    <p className='text-xl font-medium'>
                         {quizData.questions[currentQuestion].question_text}
                     </p>
 
-                    <div className='space-y-3'>
+                    <div className='space-y-4'>
                         {quizData.questions[
                             currentQuestion
                         ].question_options.map((option, index) => (
@@ -128,12 +190,12 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({quizData, lessonId}) => {
                                         [currentQuestion]: index,
                                     })
                                 }
-                                className={`w-full p-3 text-left rounded-lg border transition-colors
+                                className={`w-full p-4 text-left rounded-lg border transition-all
                                     ${
                                         selectedAnswers[currentQuestion] ===
                                         index
-                                            ? 'bg-primary text-white'
-                                            : 'hover:bg-gray-50'
+                                            ? 'bg-primary text-white border-primary'
+                                            : 'hover:bg-gray/5 border-gray'
                                     }`}
                             >
                                 {option}
@@ -142,13 +204,13 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({quizData, lessonId}) => {
                     </div>
                 </div>
 
-                <div className='mt-6 flex justify-between'>
+                <div className='mt-auto pt-8 flex justify-between'>
                     <button
                         onClick={() =>
                             setCurrentQuestion((prev) => Math.max(0, prev - 1))
                         }
                         disabled={currentQuestion === 0}
-                        className='px-4 py-2 border rounded-lg disabled:opacity-50'
+                        className='px-6 py-3 border border-gray rounded-lg disabled:opacity-50 disabled:cursor-not-allowed'
                     >
                         Previous
                     </button>
@@ -163,7 +225,7 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({quizData, lessonId}) => {
                                 setCurrentQuestion((prev) => prev + 1);
                             }
                         }}
-                        className='px-4 py-2 bg-primary text-white rounded-lg'
+                        className='px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors'
                     >
                         {currentQuestion === quizData.questions.length - 1
                             ? 'Submit'
@@ -175,4 +237,4 @@ const QuizPreview: React.FC<QuizPreviewProps> = ({quizData, lessonId}) => {
     );
 };
 
-export default QuizPreview;
+export default QuizPanel;

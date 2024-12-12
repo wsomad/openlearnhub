@@ -46,7 +46,7 @@ const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
             break;
         case 'lg':
             cardSizeClass = 'w-[750px] h-[550px]';
-            imageSizeClass = 'h-[500px]';
+            imageSizeClass = 'h-[350px] min-h-[425px] max-h-[425px]';
             break;
         case 'xl':
             cardSizeClass = 'w-[full] h-[600px]';

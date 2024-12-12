@@ -89,16 +89,14 @@ const InstructorAuthComponent: React.FC = () => {
     };
 
     return (
-        <div className='min-h-screen flex flex-col items-center justify-center bg-white p-4'>
-            {/* Brand Text */}
-            <div className='font-abhaya text-center mb-2'>
-                <h1 className='text-6xl font-bold'>
-                    <span className='text-primary'>Learn</span>
+        <div className='min-h-screen relative flex flex-col items-center justify-center bg-white p-4'>
+            <div className='absolute top-4 left-8 font-abhaya'>
+                <h1 className='text-2xl font-bold'>
+                    <span className='text-primary'>OpenLearn</span>
                     <span className='text-tertiary'>Hub.</span>
                 </h1>
             </div>
 
-            {/* Main Form Container */}
             <div className='w-full max-w-lg bg-white p-8 rounded-lg'>
                 <form onSubmit={handleSubmit} className='space-y-6'>
                     <h2 className='font-abhaya text-4xl font-bold text-center mb-4'>
@@ -157,7 +155,6 @@ const InstructorAuthComponent: React.FC = () => {
                                 </option>
                             </select>
 
-                            {/* Selected Specializations */}
                             <div className='font-abhaya font-bold mt-3 flex flex-wrap gap-2'>
                                 {instructor.specialization_area?.map(
                                     (specialization) => (

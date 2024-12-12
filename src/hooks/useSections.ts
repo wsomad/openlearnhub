@@ -42,14 +42,36 @@ export const useSections = () => {
         section: Omit<Section, 'section_id'>,
     ): Promise<Section | undefined> => {
         try {
+            console.log(
+                '=== createSections: Received section with order ===',
+                section.section_order,
+            );
             const newSection = {
                 ...section,
                 section_id: section.section_title || '',
+                section_order: Number(section.section_order), // Ensure it's a number but keep original value
             };
+            console.log(
+                'Creating section with order:',
+                newSection.section_order,
+            );
+
             const addedSection = await addSections(course_id, newSection);
-            dispatch(setSection(addedSection));
+            console.log('Section created in Firebase:', addedSection); // Debug log
+            console.log(
+                '=== createSections: Section created with order ===',
+                addedSection.section_order,
+            );
+
+            // Return exact same section data
+            const finalSection = {
+                ...addedSection,
+                section_order: Number(section.section_order), // Ensure we keep the original order
+            };
+
+            dispatch(setSection(finalSection));
             console.log('Sections created successfully:');
-            return addedSection;
+            return finalSection;
         } catch (error) {
             console.error('Failed to create sections:', error);
         }
