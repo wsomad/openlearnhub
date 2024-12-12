@@ -98,7 +98,7 @@ OpenLearnHub is an e-learning platform with features like lessons in documents, 
      ```bash
      docker run build -t username/openlearnhub:latest
      ```
-- Start by building the image:
+- Run the Docker container:
      ```bash
      docker run -d -p 5173:5173 --name openlearnhub username/openlearnhub:latest
      ```
