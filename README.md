@@ -28,7 +28,8 @@ OpenLearnHub is an e-learning platform with features like lessons in documents, 
 ### 1. Prerequisites
 - [Node.js](https://nodejs.org/en) (v18 or higher)
 - [npm](https://nodejs.org/en/learn/getting-started/an-introduction-to-the-npm-package-manager) (v9 or higher)
-- [Docker](https://www.docker.com/) (not compulsory)
+- [Docker](https://www.docker.com/)
+- [Podman](https://podman.io/)
 
 ### 2. Installation
 ### Steps
@@ -93,16 +94,16 @@ OpenLearnHub is an e-learning platform with features like lessons in documents, 
      ```
    - Open your browser and navigate to `http://localhost:5173` to view your app.
 
-**6. Running with Docker (Optional)**
-   - Start by building the image:
+**6. Running with Podman**
+   - Start by pulling the image:
      ```bash
-     docker run build -t username/openlearnhub:latest
+     podman pull haikalsamari/openlearnhub
      ```
-- Run the Docker container:
+- Run the container:
      ```bash
-     docker run -d -p 5173:5173 --name openlearnhub username/openlearnhub:latest
+     podman run -d -p 8080:80 haikalsamari/openlearnhub
      ```
-- Go to `localhost:5173` to view the app.
+- Go to `localhost:8080` to view the app.
 
 ## Data Model
 ### 1. User Model (Student & Instructor)
