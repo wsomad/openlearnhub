@@ -116,7 +116,7 @@ The User model defines the structure for both students and instructors, created 
   username: "johndoe",
   firstname: "John",
   lastname: "Doe",
-  profile_image: "https://example.com/profiles/john.jpg",
+  profile_image: "https://api.dicebear.com/9.x/dylan/svg?seed=kwm91q0ds2",
   created_at: new Date("2024-01-15"),
   updated_at: new Date("2024-03-10"),
   student: {
@@ -125,9 +125,9 @@ The User model defines the structure for both students and instructors, created 
   },
   instructor: {
     total_courses_created: 5,
-    rating: 4.8,
+    rating: 4,
     years_of_experience: 8,
-    specialization_area: ["Web Development", "Mobile Development"],
+    specialization_area: ["Mobile Development"],
     profile_summary: "Experienced software engineer with expertise in full-stack development",
     social_links: {
       github: "https://github.com/johndoe",
@@ -147,9 +147,9 @@ The Course model defines the structure for courses, including sections that cont
   course_title: "Complete Web Development Bootcamp",
   course_description: "Learn modern web development from scratch to advanced",
   course_instructor: "John Doe",
-  course_pricing: 49.99,
-  course_type: "Development",
-  course_thumbnail_url: "https://example.com/course-thumbnail.jpg",
+  course_pricing: 0,
+  course_type: "Mobile Development",
+  course_thumbnail_url: "https://img.freepik.com/premium-psd/school-education-admission-youtube-thumbnail-web-banner-template_475351-411.jpg",
   course_requirements: [
     "Basic understanding of HTML & CSS",
     "JavaScript fundamentals",
@@ -158,9 +158,9 @@ The Course model defines the structure for courses, including sections that cont
   ready_for_publish: true,
   course_created_at: new Date("2024-01-15"),
   course_updated_at: new Date("2024-03-10"),
-  course_enrollment_number: 256,
+  course_enrollment_number: 20,
   course_number_of_section: 3,
-  instructor_id: "inst123",
+  instructor_id: "johndoe",
   sections: {
     "section1": {
       section_id: "section1",
