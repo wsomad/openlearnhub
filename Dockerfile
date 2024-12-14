@@ -27,6 +27,9 @@ RUN npm install
 # Copy application code
 COPY . .
 
+# Copy environment file
+COPY .env .env
+
 # Build the app for production
 RUN npm run build
 
