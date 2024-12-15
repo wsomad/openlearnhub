@@ -294,7 +294,7 @@ const ProfileView: React.FC = () => {
                                       buttonText='Edit'
                                       onButtonClick={() =>
                                           navigate(
-                                              `/selectedcourse/${course.course_id}`,
+                                              `/instructor/dashboard/${course.course_id}/edit`,
                                           )
                                       }
                                       size='sm'

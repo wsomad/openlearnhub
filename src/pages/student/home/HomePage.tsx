@@ -13,7 +13,7 @@ const HomePage: React.FC = () => {
     return (
         <div>
             <HeaderComponent />
-            <div className='flex flex-col justify-center items-center mt-12'>
+            <div className='flex flex-col justify-center items-center mt-12 mb-4'>
                 <h1 className='font-abhaya font-bold text-6xl'>
                     Find All{' '}
                     <span className='text-secondary'>Free Courses</span> You Can

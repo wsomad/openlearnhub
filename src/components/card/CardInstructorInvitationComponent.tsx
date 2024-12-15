@@ -3,8 +3,20 @@ import React from 'react';
 import { IoMdCheckmark } from 'react-icons/io';
 
 import lottieAnimation from '../../assets/animations/InstructorAnimation2.json';
+import { useUser } from '../../hooks/useUser';
 
 const CardInstructorInvitationComponent: React.FC = () => {
+    const {userRole, currentUser, toggleUserRole} = useUser();
+
+    const handleGetStarted = () => {
+        toggleUserRole();
+    };
+
+    // Only show for student users who haven't registered as instructor
+    if (userRole !== 'student' || currentUser?.instructor?.hasRegister) {
+        return null;
+    }
+
     const benefits = [
         'Contribute something to the community',
         'Polish your skills',
@@ -40,7 +52,10 @@ const CardInstructorInvitationComponent: React.FC = () => {
                             ))}
                         </ul>
 
-                        <button className='bg-primary font-abhaya text-white w-full my-2 py-2 hover:bg-blue-700 transition-colors'>
+                        <button
+                            onClick={handleGetStarted}
+                            className='bg-primary font-abhaya text-white w-full my-2 py-2 hover:bg-blue-700 transition-colors'
+                        >
                             Get Started
                         </button>
                     </div>

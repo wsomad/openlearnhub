@@ -1,13 +1,13 @@
-import React, {FormEvent, useState} from 'react';
-import {FaGoogle} from 'react-icons/fa';
-import {useSelector} from 'react-redux';
-import {toast} from 'react-toastify'; // Optional: Include toast notifications
+import React, { FormEvent, useState } from 'react';
+import { FaGoogle } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify'; // Optional: Include toast notifications
 
 import authImage from '../assets/images/authimage.png';
-import {useAuth} from '../hooks/useAuth';
-import {useUser} from '../hooks/useUser';
-import {Student, StudentType} from '../types/student';
-import {User} from '../types/user';
+import { useAuth } from '../hooks/useAuth';
+import { useUser } from '../hooks/useUser';
+import { Student, StudentType } from '../types/student';
+import { User } from '../types/user';
 
 const AuthComponent: React.FC = () => {
     const {signIn, signUp} = useAuth();
@@ -89,7 +89,7 @@ const AuthComponent: React.FC = () => {
                                             First Name
                                         </label>
                                         <input
-                                            className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                            className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                             type='text'
                                             placeholder='First Name'
                                             value={firstname}
@@ -104,7 +104,7 @@ const AuthComponent: React.FC = () => {
                                             Last Name
                                         </label>
                                         <input
-                                            className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                            className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                             type='text'
                                             placeholder='Last Name'
                                             value={lastname}
@@ -120,7 +120,7 @@ const AuthComponent: React.FC = () => {
                                         Username
                                     </label>
                                     <input
-                                        className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                        className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                         type='text'
                                         placeholder='Username'
                                         value={username}
@@ -139,7 +139,7 @@ const AuthComponent: React.FC = () => {
                                     Email
                                 </label>
                                 <input
-                                    className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                    className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                     type='email'
                                     placeholder='Email@example.com'
                                     value={email}
@@ -152,7 +152,7 @@ const AuthComponent: React.FC = () => {
                                     Password
                                 </label>
                                 <input
-                                    className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                    className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                     type='password'
                                     placeholder='Password'
                                     value={password}
@@ -166,7 +166,7 @@ const AuthComponent: React.FC = () => {
 
                         <div className='space-y-4'>
                             <button
-                                className='w-full py-3 bg-primary text-white text-lg active:scale-95 font-abhaya rounded transition-transform'
+                                className='w-full py-3 bg-primary text-white text-lg active:scale-95 font-abhaya transition-transform'
                                 type='submit'
                             >
                                 {isSignIn ? 'Sign In' : 'Sign Up'}
@@ -208,7 +208,7 @@ const AuthComponent: React.FC = () => {
 
                         <button
                             type='button'
-                            className='w-full flex items-center justify-center py-3 border border-gray-300 hover:bg-gray-50 rounded transition-colors'
+                            className='w-full flex items-center justify-center py-3 border border-gray-300 hover:bg-gray-50 transition-colors'
                             onClick={() => {
                                 /* Handle Google sign-in */
                             }}

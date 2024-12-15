@@ -84,7 +84,7 @@ const EnrolledCoursePage = () => {
                 <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8'>
                     {/* Main Content Area */}
                     <div className='lg:col-span-2 order-2 lg:order-1'>
-                        <div className='bg-white shadow-sm rounded-lg overflow-hidden'>
+                        <div className='bg-white shadow-md overflow-hidden'>
                             {selectedLesson ? (
                                 <div>
                                     <div className='p-4 md:p-6 border-b border-gray'>
@@ -188,7 +188,7 @@ const EnrolledCoursePage = () => {
                 {/* Course Information Section*/}
                 <div className='space-y-4 md:space-y-6 lg:space-y-8 mt-4 md:mt-6 lg:mt-8'>
                     {/* Course Header */}
-                    <div className='bg-white rounded-lg shadow-sm p-4 md:p-6 lg:p-8'>
+                    <div className='bg-white shadow-md p-4 md:p-6 lg:p-8'>
                         <h1 className='text-2xl md:text-3xl lg:text-4xl font-bold mb-2 md:mb-4'>
                             {selectedCourse?.course_title || 'Course Title'}
                         </h1>
@@ -199,7 +199,7 @@ const EnrolledCoursePage = () => {
                     </div>
 
                     {/* Course Requirements */}
-                    <div className='bg-white rounded-lg shadow-sm p-4 md:p-6 lg:p-8'>
+                    <div className='bg-white shadow-md p-4 md:p-6 lg:p-8'>
                         <CourseRequirements
                             course_id={selectedCourse?.course_id || ''}
                             course_requirements={
@@ -209,7 +209,7 @@ const EnrolledCoursePage = () => {
                     </div>
 
                     {/* Instructor Info */}
-                    <div className='bg-white rounded-lg shadow-sm p-4 md:p-6 lg:p-8'>
+                    <div className='bg-white shadow-md p-4 md:p-6 lg:p-8'>
                         <h2 className='text-xl md:text-2xl font-semibold mb-4'>
                             Instructor
                         </h2>

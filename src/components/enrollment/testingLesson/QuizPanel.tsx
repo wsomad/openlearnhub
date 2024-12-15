@@ -48,11 +48,11 @@ const QuizPanel: React.FC<QuizPanelProps> = ({quizData, lessonId}) => {
     if (quizState === 'start') {
         return (
             <div className='h-[525px] flex items-center justify-center bg-white'>
-                <div className='text-center max-w-lg mx-auto p-8 rounded-lg border border-gray'>
+                <div className='text-center max-w-lg mx-auto p-8 border border-gray'>
                     <h2 className='text-3xl font-bold mb-6'>
                         {quizData.quiz_title}
                     </h2>
-                    <div className='bg-gray/10 rounded-lg p-6 mb-8'>
+                    <div className='bg-gray/10 p-6 mb-8'>
                         <p className='text-xl'>
                             Number of questions:{' '}
                             {quizData.quiz_number_of_questions}
@@ -60,7 +60,7 @@ const QuizPanel: React.FC<QuizPanelProps> = ({quizData, lessonId}) => {
                     </div>
                     <button
                         onClick={handleStartQuiz}
-                        className='w-full py-4 bg-primary text-white text-lg font-semibold rounded-lg hover:bg-primary/90 transition-colors'
+                        className='w-full py-4 bg-primary text-white text-lg font-semibold hover:bg-primary/90 transition-colors'
                     >
                         Start Quiz
                     </button>
@@ -75,7 +75,7 @@ const QuizPanel: React.FC<QuizPanelProps> = ({quizData, lessonId}) => {
                 <div className='max-w-3xl mx-auto'>
                     <h2 className='text-3xl font-bold mb-4'>Quiz Completed!</h2>
                     <div
-                        className={`text-2xl font-semibold mb-8 p-6 rounded-lg ${
+                        className={`text-2xl font-semibold mb-8 p-6 ${
                             score >= 70
                                 ? 'bg-primary/10 text-primary'
                                 : 'bg-delete/10 text-delete'
@@ -92,7 +92,7 @@ const QuizPanel: React.FC<QuizPanelProps> = ({quizData, lessonId}) => {
                             return (
                                 <div
                                     key={index}
-                                    className='p-6 border rounded-lg bg-gray/5'
+                                    className='p-6 border bg-gray/5'
                                 >
                                     <p className='text-lg font-medium mb-4'>
                                         {question.question_text}
@@ -132,7 +132,7 @@ const QuizPanel: React.FC<QuizPanelProps> = ({quizData, lessonId}) => {
                                         )}
                                     </div>
 
-                                    <p className='mt-4 p-4 bg-secondary rounded text-white'>
+                                    <p className='mt-4 p-4 bg-secondary text-white'>
                                         {question.question_answer_explanation}
                                     </p>
                                 </div>
@@ -142,7 +142,7 @@ const QuizPanel: React.FC<QuizPanelProps> = ({quizData, lessonId}) => {
 
                     <button
                         onClick={handleStartQuiz}
-                        className='mt-8 w-full py-4 bg-primary text-white text-lg font-semibold rounded-lg hover:bg-primary/90 transition-colors'
+                        className='mt-8 w-full py-4 bg-primary text-white text-lg font-semibold hover:bg-primary/90 transition-colors'
                     >
                         Retry Quiz
                     </button>
@@ -190,7 +190,7 @@ const QuizPanel: React.FC<QuizPanelProps> = ({quizData, lessonId}) => {
                                         [currentQuestion]: index,
                                     })
                                 }
-                                className={`w-full p-4 text-left rounded-lg border transition-all
+                                className={`w-full p-4 text-left border transition-all
                                     ${
                                         selectedAnswers[currentQuestion] ===
                                         index
@@ -210,7 +210,7 @@ const QuizPanel: React.FC<QuizPanelProps> = ({quizData, lessonId}) => {
                             setCurrentQuestion((prev) => Math.max(0, prev - 1))
                         }
                         disabled={currentQuestion === 0}
-                        className='px-6 py-3 border border-gray rounded-lg disabled:opacity-50 disabled:cursor-not-allowed'
+                        className='px-6 py-3 border border-gray disabled:opacity-50 disabled:cursor-not-allowed'
                     >
                         Previous
                     </button>
@@ -225,7 +225,7 @@ const QuizPanel: React.FC<QuizPanelProps> = ({quizData, lessonId}) => {
                                 setCurrentQuestion((prev) => prev + 1);
                             }
                         }}
-                        className='px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors'
+                        className='px-6 py-3 bg-primary text-white hover:bg-primary/90 transition-colors'
                     >
                         {currentQuestion === quizData.questions.length - 1
                             ? 'Submit'

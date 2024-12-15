@@ -101,7 +101,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                             type='url'
                             value={documentUrl}
                             onChange={(e) => setDocumentUrl(e.target.value)}
-                            className='w-full border p-2 rounded'
+                            className='w-full border p-2'
                             placeholder='Enter document URL'
                         />
                     </div>
@@ -115,7 +115,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                             type='url'
                             value={videoUrl}
                             onChange={(e) => setVideoUrl(e.target.value)}
-                            className='w-full border p-2 rounded'
+                            className='w-full border p-2'
                             placeholder='Enter YouTube URL'
                         />
                         {videoDuration > 0 && (
@@ -144,7 +144,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                             type='text'
                             value={quizTitle}
                             onChange={(e) => setQuizTitle(e.target.value)}
-                            className='w-full border p-2 rounded'
+                            className='w-full border p-2'
                             placeholder='Enter quiz title'
                         />
                     </div>
@@ -155,7 +155,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                     {quizQuestions.map((question, qIndex) => (
                         <div
                             key={question.question_id}
-                            className='bg-white p-6 rounded-lg border shadow-sm relative group'
+                            className='bg-white p-6 border shadow-sm relative group'
                         >
                             {/* Question Number Badge */}
                             <div className='absolute -top-3 -left-3 bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-medium shadow-sm'>
@@ -175,13 +175,13 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                                 e.target.value,
                                             )
                                         }
-                                        className='flex-1 w-full border p-2 rounded'
+                                        className='flex-1 w-full border p-2'
                                         placeholder='Enter your question'
                                     />
                                     <button
                                         type='button'
                                         onClick={() => deleteQuestion(qIndex)}
-                                        className='p-2 text-gray-400 hover:text-red-500 rounded-lg transition-colors'
+                                        className='p-2 bg-delete text-white rounded-md'
                                         title='Delete question'
                                     >
                                         <Trash2 className='w-5 h-5' />
@@ -197,8 +197,8 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                                 className={`relative rounded-lg border ${
                                                     question.question_correct_answer_index ===
                                                     oIndex
-                                                        ? 'border-green-500 bg-green-50'
-                                                        : 'border-gray-200'
+                                                        ? 'border-add bg-add'
+                                                        : 'border-black'
                                                 }`}
                                             >
                                                 <div className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400'>
@@ -248,7 +248,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                                     Number(e.target.value),
                                                 )
                                             }
-                                            className='w-full border p-2 rounded'
+                                            className='w-full border p-2'
                                         >
                                             {question.question_options.map(
                                                 (_, index) => (
@@ -282,7 +282,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                                 )
                                             }
                                             rows={1}
-                                            className='w-full border p-2 rounded'
+                                            className='w-full border p-2'
                                             placeholder='Why is this the correct answer?'
                                         />
                                     </div>
@@ -296,7 +296,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                 <button
                     type='button'
                     onClick={createQuestion}
-                    className='w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2'
+                    className='w-full py-3 border-2 border-dashed border-gray-300 text-gray-600 hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2'
                 >
                     <svg
                         className='w-5 h-5'
@@ -396,7 +396,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
 
     return (
         <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
-            <div className='bg-white rounded-lg w-[1000px] max-h-[90vh] flex flex-col'>
+            <div className='bg-white rounded-md w-[1000px] max-h-[90vh] flex flex-col'>
                 {/* Header */}
                 <div className='p-6 border-b'>
                     <h2 className='text-xl font-bold'>
@@ -421,7 +421,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                         onChange={(e) =>
                                             setLessonTitle(e.target.value)
                                         }
-                                        className='w-full border p-2 rounded'
+                                        className='w-full border p-2'
                                         placeholder='Enter lesson title'
                                         required
                                     />
@@ -436,7 +436,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                         onChange={(e) =>
                                             setLessonType(e.target.value as any)
                                         }
-                                        className='w-full border p-2 rounded'
+                                        className='w-full border p-2'
                                         disabled={!!lessonToEdit}
                                     >
                                         <option value='document'>

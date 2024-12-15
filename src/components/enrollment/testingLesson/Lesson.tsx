@@ -1,13 +1,13 @@
-import {ChevronDown, ChevronRight, Pencil, Trash2} from 'lucide-react';
-import React, {useEffect, useState} from 'react';
-import {FaPlus} from 'react-icons/fa';
+import { ChevronDown, ChevronRight, Pencil, Trash2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { FaPlus } from 'react-icons/fa';
 
-import {useCourses} from '../../../hooks/useCourses';
-import {useLessons} from '../../../hooks/useLessons';
-import {useSections} from '../../../hooks/useSections';
-import {useUser} from '../../../hooks/useUser';
-import {LessonBase} from '../../../types/lesson';
-import {Section} from '../../../types/section';
+import { useCourses } from '../../../hooks/useCourses';
+import { useLessons } from '../../../hooks/useLessons';
+import { useSections } from '../../../hooks/useSections';
+import { useUser } from '../../../hooks/useUser';
+import { LessonBase } from '../../../types/lesson';
+import { Section } from '../../../types/section';
 import SectionModal from '../../modal/SectionModal';
 import DeleteModal from './DeleteModal';
 import LessonModal from './LessonModal';

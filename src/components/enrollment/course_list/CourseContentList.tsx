@@ -1,12 +1,12 @@
-import {useEffect, useState} from 'react';
-import {FaPlus} from 'react-icons/fa';
+import { useEffect, useState } from 'react';
+import { FaPlus } from 'react-icons/fa';
 
-import {useCourses} from '../../../hooks/useCourses';
-import {useLessons} from '../../../hooks/useLessons';
-import {useSections} from '../../../hooks/useSections';
-import {useUser} from '../../../hooks/useUser';
-import {LessonBase} from '../../../types/lesson';
-import {Section} from '../../../types/section';
+import { useCourses } from '../../../hooks/useCourses';
+import { useLessons } from '../../../hooks/useLessons';
+import { useSections } from '../../../hooks/useSections';
+import { useUser } from '../../../hooks/useUser';
+import { LessonBase } from '../../../types/lesson';
+import { Section } from '../../../types/section';
 import AddSectionModal from '../../modal/SectionModal';
 import CourseContentView from './CourseContentView';
 
@@ -210,52 +210,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     };
 
     return (
-        // <div className='w-full bg-white shadow-sm rounded-lg'>
-        //     <div className='p-6'>
-        //         <div className='flex justify-between items-center'>
-        //             <h2 className='text-2xl font-bold'>Course Content</h2>
-        //             {canEditCourse() && (
-        //                 <button
-        //                     type='button'
-        //                     className='bg-primary text-white px-4 py-2 flex items-center space-x-2 hover:bg-secondary-dark transition-colors'
-        //                     onClick={openCreateSectionModal}
-        //                 >
-        //                     <FaPlus className='w-3 h-3' />
-        //                     <span>New Section</span>
-        //                 </button>
-        //             )}
-        //         </div>
-        //         <hr className='mt-6'></hr>
-        //     </div>
-
-        //     <div className='p-6'>
-        //         <CourseContentView
-        //             course_id={course_id || ''}
-        //             isDraft={isDraft}
-        //             canEdit={canEditCourse()}
-        //             sectionsOrder={sectionsOrder || []}
-        //             setSectionsOrder={setSectionsOrder || (() => {})}
-        //             onSaveOrder={onSaveOrder || (() => {})}
-        //             onDeleteSection={handleDeleteSection}
-        //             onEditSectionTitle={handleEditSectionTitle}
-        //             onAddLesson={handleAddLesson}
-        //             onEditLesson={handleEditLesson}
-        //             onDeleteLesson={handleDeleteLesson}
-        //             onLessonSelect={onLessonSelect}
-        //         />
-
-        //         {isModalOpen && (
-        //             <AddSectionModal
-        //                 isOpen={isModalOpen}
-        //                 isDraft={isDraft}
-        //                 onClose={closeSectionModal}
-        //                 onSubmit={handleAddSection}
-        //             />
-        //         )}
-        //     </div>
-        // </div>
-
-        <div className='w-full bg-white shadow-sm rounded-lg'>
+        <div className='w-full bg-white shadow-md'>
             <div className='p-6'>
                 <div className='flex justify-between items-center'>
                     <h2 className='text-2xl font-bold'>Course Content</h2>
@@ -289,7 +244,6 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                     onLessonSelect={onLessonSelect}
                 />
 
-                {/* Modal should stay here */}
                 {isModalOpen && (
                     <AddSectionModal
                         isOpen={isModalOpen}

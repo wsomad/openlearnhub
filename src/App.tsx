@@ -75,20 +75,6 @@ const App: React.FC = () => {
                     path='/enrolledcourse/:id'
                     element={<EnrolledCoursePage />}
                 />
-                {/* <Route
-                        path='edit/:viewMode'
-                        element={<ProfileComponent />}
-                    /> */}
-                {/* </Route> */}
-                {/* Test Routes */}
-                <Route
-                    path='/test'
-                    // <EnrolledCoursePage></EnrolledCoursePage>
-                    // <SelectedCoursePage></SelectedCoursePage>
-                    // <ListEnrolledCoursePage></ListEnrolledCoursePage>
-                    // <HomePage></HomePage>
-                    // element={<TestComponent></TestComponent>}
-                />
             </Routes>
         </>
     );

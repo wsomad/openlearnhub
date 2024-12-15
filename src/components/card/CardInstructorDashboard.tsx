@@ -106,26 +106,30 @@ const CardInstructorDashboard: React.FC = () => {
 
     return (
         <>
-            <div className='space-y-6 min-h-screen bg-gray-50 p-4 sm:p-6'>
-                <p className='font-abhaya text-xl sm:text-2xl font-bold text-primary'>
+            <div className='space-y-4 min-h-screen bg-gray-50 p-4 lg:p-6'>
+                <p className='font-abhaya text-xl lg:text-2xl font-bold text-primary mb-4 lg:mb-6'>
                     {currentUser?.instructor?.total_courses_created || 0}{' '}
                     Courses Created
                 </p>
-                <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6'>
+
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-4 lg:gap-6'>
                     <Link
                         to='/instructor/dashboard/course/create'
-                        className='bg-white border-2 border-dashed border-gray-300 p-4 flex flex-col items-center justify-center space-y-3 hover:border-primary hover:bg-gray-50 transition-colors cursor-pointer min-h-[250px] rounded-lg shadow-sm'
+                        className='bg-white border-2 border-dashed border-gray-300 overflow-hidden shadow-sm hover:shadow-md transition-shadow h-full flex items-center justify-center p-4 lg:p-6'
                     >
-                        <div className='w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary/10 flex items-center justify-center'>
-                            <FaPlus className='w-5 h-5 sm:w-6 sm:h-6 text-primary' />
+                        <div className='flex flex-col items-center space-y-2 lg:space-y-3'>
+                            <div className='w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-primary/10 flex items-center justify-center'>
+                                <FaPlus className='w-5 h-5 lg:w-6 lg:h-6 text-primary' />
+                            </div>
+                            <h3 className='text-lg lg:text-xl font-semibold font-abhaya text-primary'>
+                                New Course
+                            </h3>
+                            <p className='text-sm lg:text-base text-gray-500 text-center font-abhaya'>
+                                Create a new course
+                            </p>
                         </div>
-                        <h3 className='text-xl sm:text-2xl font-semibold font-abhaya text-primary'>
-                            New Course
-                        </h3>
-                        <p className='text-gray-500 text-center text-sm sm:text-base font-abhaya'>
-                            Create a new course
-                        </p>
                     </Link>
+
                     {renderedCourses}
                 </div>
             </div>

@@ -18,6 +18,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
     const [queryText, setQueryText] = useState<string>('');
     const [results, setResults] = useState<Course[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
     const {searchCourse} = useCourses();
     const {currentUser, userRole} = useUser();
     const dispatch = useDispatch();
@@ -28,12 +29,20 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
         dispatch(clearSearchCourseResults());
     }, [dispatch, userRole]);
 
+    useEffect(() => {
+        const closeDropdown = () => setIsOpen(false);
+        document.addEventListener('click', closeDropdown);
+
+        return () => document.removeEventListener('click', closeDropdown);
+    }, []);
+
     // Handle any changes in search input.
     const handleInputChange = (
         event: React.ChangeEvent<HTMLInputElement>,
     ): void => {
         const value = event.target.value;
         setQueryText(value);
+        setIsOpen(true);
         if (value) {
             searchCoursesHandler(value);
         } else {
@@ -84,12 +93,18 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
 
         setQueryText('');
         setResults([]);
+        setIsOpen(false);
+    };
+
+    const handleSearchClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
     };
 
     return (
         <div
+            onClick={handleSearchClick}
             className={`relative ${
-                variant === 'centered' ? 'w-full mx-auto' : 'w-full'
+                variant === 'centered' ? 'w-3/4 mx-auto' : 'w-full'
             }`}
         >
             <SearchBar
@@ -97,13 +112,9 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
                 handleInputChange={handleInputChange}
                 variant={variant}
             />
-            {queryText && (
+            {queryText && isOpen && (
                 <div
-                    className={`absolute ${
-                        variant === 'centered'
-                            ? 'w-full left-1/2 transform -translate-x-1/2'
-                            : 'w-full'
-                    } mt-2 bg-white border border-gray shadow-lg max-h-60 overflow-auto top-full`}
+                    className={`absolute w-full mt-2 bg-white border border-gray shadow-lg max-h-60 overflow-auto z-50`}
                 >
                     {loading ? (
                         <div className='text-center py-2 text-gray'>
@@ -121,7 +132,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
                                         <img
                                             src={course.course_thumbnail_url}
                                             alt={course.course_title}
-                                            className={`w-15 h-8 object-cover `}
+                                            className='w-15 h-8 object-cover'
                                         />
                                         {course.course_title}
                                     </div>
