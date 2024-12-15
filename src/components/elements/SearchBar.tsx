@@ -7,7 +7,6 @@ interface SearchBarProps {
     variant?: 'centered' | 'full';
 }
 
-// sa
 const SearchBar = ({
     query,
     handleInputChange,
