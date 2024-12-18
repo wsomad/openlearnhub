@@ -17,7 +17,7 @@ const InstructorAuthComponent: React.FC = () => {
         specialization_area: [],
         years_of_experience: 0,
         total_courses_created: 0,
-        rating: 1,
+        averageRating: 0,
         social_links: {github: '', linkedin: ''},
     });
 
@@ -28,16 +28,41 @@ const InstructorAuthComponent: React.FC = () => {
         }
     }, [currentUser, navigate]);
 
+    // const handleChange = (
+    //     e: React.ChangeEvent<
+    //         HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    //     >,
+    // ) => {
+    //     const {name, value} = e.target;
+    //     setInstructor((prev) => ({
+    //         ...prev,
+    //         [name]: value,
+    //     }));
+    // };
+
     const handleChange = (
         e: React.ChangeEvent<
             HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
         >,
     ) => {
         const {name, value} = e.target;
-        setInstructor((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+
+        // Special handling for social links
+        if (name === 'github' || name === 'linkedin') {
+            setInstructor((prev) => ({
+                ...prev,
+                social_links: {
+                    ...prev.social_links,
+                    [name]: value,
+                },
+            }));
+        } else {
+            // Handle other fields normally
+            setInstructor((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
     };
 
     const handleSpecializationChange = (

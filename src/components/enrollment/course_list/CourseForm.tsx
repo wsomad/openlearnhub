@@ -1,23 +1,23 @@
-import {useEffect, useState} from 'react';
-import {FaPlus} from 'react-icons/fa';
-import {useDispatch} from 'react-redux';
-import {useNavigate} from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { FaPlus } from 'react-icons/fa';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
-import {useCourses} from '../../../hooks/useCourses';
-import {useLessons} from '../../../hooks/useLessons';
-import {useSections} from '../../../hooks/useSections';
-import {useUser} from '../../../hooks/useUser';
-import {clearSingleCourse} from '../../../store/slices/courseSlice';
-import {clearSections} from '../../../store/slices/sectionSlice';
-import {Course} from '../../../types/course';
-import {SpecializationArea} from '../../../types/instructor';
+import { useCourses } from '../../../hooks/useCourses';
+import { useLessons } from '../../../hooks/useLessons';
+import { useSections } from '../../../hooks/useSections';
+import { useUser } from '../../../hooks/useUser';
+import { clearSingleCourse } from '../../../store/slices/courseSlice';
+import { clearSections } from '../../../store/slices/sectionSlice';
+import { Course } from '../../../types/course';
+import { SpecializationArea } from '../../../types/instructor';
 import {
-    DocumentLesson,
-    LessonBase,
-    QuizLesson,
-    VideoLesson,
+	DocumentLesson,
+	LessonBase,
+	QuizLesson,
+	VideoLesson,
 } from '../../../types/lesson';
-import {Section} from '../../../types/section';
+import { Section } from '../../../types/section';
 import CourseContentList from './CourseContentList';
 
 interface CourseFormProps {
@@ -470,7 +470,7 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
                 const courseToCreate = {
                     ...courseData,
                     course_id: courseData.course_title,
-                    ready_for_publish: false,
+                    ready_for_publish: readyForPublish,
                 };
                 await createCourse(courseToCreate);
 

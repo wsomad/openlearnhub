@@ -1,12 +1,13 @@
+import 'react-toastify/dist/ReactToastify.css';
+import '../toast.css';
+
 import React, { FormEvent, useState } from 'react';
 import { FaGoogle } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
-import { toast } from 'react-toastify'; // Optional: Include toast notifications
+import { toast, ToastContainer } from 'react-toastify';
 
-import authImage from '../assets/images/authimage.png';
 import { useAuth } from '../hooks/useAuth';
 import { useUser } from '../hooks/useUser';
-import { Student, StudentType } from '../types/student';
 import { User } from '../types/user';
 
 const AuthComponent: React.FC = () => {
@@ -16,25 +17,31 @@ const AuthComponent: React.FC = () => {
     const [username, setUsername] = useState('');
     const [firstname, setFirstName] = useState('');
     const [lastname, setLastName] = useState('');
-    const [student, setStudent] = useState({
-        student_type: '',
-    });
-    const [instructor, setInstructor] = useState({});
     const [isSignIn, setSignIn] = useState(true);
     const {userRole} = useUser();
-    const currentState = useSelector((state) => state);
-    console.log('Current State from Selector:', currentState);
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (isSignIn) {
             try {
                 await signIn(email, password, userRole);
-                toast.success("Welcome back! You've signed in.");
-            } catch (error) {
-                toast.error(
-                    'Failed to sign in. Please check your credentials.',
-                );
+                toast.success('Successfully logged in!', {
+                    position: 'top-right',
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                });
+            } catch (error: any) {
+                const errorMessage =
+                    error.code === 'auth/wrong-password' ||
+                    error.code === 'auth/user-not-found'
+                        ? 'Incorrect email/password, try again!'
+                        : 'An error occurred during sign in. Please try again.';
+
+                toast.error(errorMessage, {
+                    position: 'top-right',
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                });
                 console.error('Error during sign-in:', error);
             }
         } else {
@@ -56,10 +63,25 @@ const AuthComponent: React.FC = () => {
 
             try {
                 await signUp(defaultUserProfile);
-                toast.success('Account created successfully! Please sign in.');
-                setSignIn(true);
-            } catch (error) {
-                toast.error('Failed to create account. Please try again.');
+                toast.success('Account created successfully! Please sign in.', {
+                    position: 'top-right',
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                });
+                setTimeout(() => {
+                    setSignIn(true);
+                }, 1000);
+            } catch (error: any) {
+                const errorMessage =
+                    error.code === 'auth/email-already-in-use'
+                        ? 'Failed to create account. Please try again.'
+                        : 'Email is already registered. Please use a different email.';
+
+                toast.error(errorMessage, {
+                    position: 'top-right',
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                });
                 console.error('Error during sign-up:', error);
             }
         }
@@ -67,7 +89,12 @@ const AuthComponent: React.FC = () => {
 
     return (
         <div className='min-h-screen bg-white relative'>
-            <div className='absolute top-4 left-4 font-abhaya'>
+            <ToastContainer style={{fontFamily: '"Abhaya Libre", serif'}} />
+
+            <div
+                className='absolute top-4 left-4 font-abhaya cursor-pointer'
+                onClick={() => setSignIn(true)}
+            >
                 <h1 className='text-2xl font-bold'>
                     <span className='text-primary'>OpenLearn</span>
                     <span className='text-tertiary'>Hub.</span>

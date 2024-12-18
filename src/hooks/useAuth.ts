@@ -1,21 +1,22 @@
-import {useEffect} from 'react';
-import {useDispatch, useSelector} from 'react-redux';
-import {setUser, clearUser} from '../store/slices/userSlice';
-import {auth} from '../config/FirebaseConfiguration';
-import {addUser, getUserById} from '../services/firestore/UserService';
 import {
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
-    signOut,
-    User as FirebaseUser,
+	createUserWithEmailAndPassword,
+	onAuthStateChanged,
+	signInWithEmailAndPassword,
+	signOut,
+	User as FirebaseUser,
 } from 'firebase/auth';
-import {useNavigate} from 'react-router-dom';
-import {AppDispatch, RootState} from '../store/store';
-import {User} from '../types/user';
-import {dicebearStyle} from '../types/avatar';
-import {generatedAvatarUrl} from '../api/dicebearApi';
-import {clearCourses} from '../store/slices/courseSlice';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+
+import { generatedAvatarUrl } from '../api/dicebearApi';
+import { auth } from '../config/FirebaseConfiguration';
+import { addUser, getUserById } from '../services/firestore/UserService';
+import { clearCourses } from '../store/slices/courseSlice';
+import { clearUser, setUser } from '../store/slices/userSlice';
+import { AppDispatch, RootState } from '../store/store';
+import { dicebearStyle } from '../types/avatar';
+import { User } from '../types/user';
 
 export const useAuth = () => {
     const dispatch = useDispatch<AppDispatch>();
@@ -25,7 +26,11 @@ export const useAuth = () => {
         (state: RootState) => state.user.isAuthenticated,
     );
 
-    const signIn = async (email: string, password: string, role: 'student' | 'instructor'): Promise<void> => {
+    const signIn = async (
+        email: string,
+        password: string,
+        role: 'student' | 'instructor',
+    ): Promise<void> => {
         try {
             const userCredential = await signInWithEmailAndPassword(
                 auth,
@@ -40,16 +45,21 @@ export const useAuth = () => {
                     currentUser.uid,
                 )) as User;
                 dispatch(setUser({...userProfile, role}));
-                navigate('/home');
+                setTimeout(() => {
+                    navigate('/home');
+                }, 2000);
             } else {
                 dispatch(clearUser());
             }
         } catch (error) {
             console.error('Sign In Error:', (error as Error).message);
+            throw error;
         }
     };
 
-    const signUp = async (userProfile: Omit<User, 'uid'> & {password: string}): Promise<void> => {
+    const signUp = async (
+        userProfile: Omit<User, 'uid'> & {password: string},
+    ): Promise<void> => {
         const {email, password} = userProfile;
 
         try {
@@ -71,6 +81,7 @@ export const useAuth = () => {
             navigate('/auth');
         } catch (error: unknown) {
             console.error('Sign Up Error:', (error as Error).message);
+            throw error;
         }
     };
 
@@ -124,9 +135,9 @@ export const useAuth = () => {
             auth,
             async (firebaseUser: FirebaseUser | null) => {
                 if (firebaseUser) {
-                    const userProfile = (
-                        await getUserById(firebaseUser.uid)
-                    ) as User;
+                    const userProfile = (await getUserById(
+                        firebaseUser.uid,
+                    )) as User;
                     dispatch(setUser(userProfile));
                 } else {
                     dispatch(clearUser());

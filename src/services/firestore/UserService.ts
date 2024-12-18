@@ -1,14 +1,15 @@
 import {
-    collection,
-    doc,
-    setDoc,
-    getDoc,
-    updateDoc,
-    deleteDoc,
+	collection,
+	deleteDoc,
+	doc,
+	getDoc,
+	setDoc,
+	updateDoc,
 } from 'firebase/firestore';
-import {db} from '../../config/FirebaseConfiguration';
-import {User} from '../../types/user';
-import {uploadUserAvatar} from '../storage/UserStorage';
+
+import { db } from '../../config/FirebaseConfiguration';
+import { User } from '../../types/user';
+import { uploadUserAvatar } from '../storage/UserStorage';
 
 const userCollection = collection(db, 'users');
 
@@ -56,11 +57,13 @@ export const updateUserById = async (
 
         await updateDoc(userDocRef, {
             ...updatedUser,
-            ...(updatedUser.student ? { student: updatedUser.student } : {}),
-            ...(updatedUser.instructor ? { instructor: updatedUser.instructor } : {}),
+            ...(updatedUser.student ? {student: updatedUser.student} : {}),
+            ...(updatedUser.instructor
+                ? {instructor: updatedUser.instructor}
+                : {}),
         });
 
-        console.log('What is user profile ima?', userAvatar)
+        console.log('What is user profile ima?', userAvatar);
 
         return {
             uid,
@@ -97,61 +100,34 @@ export const updateUserAvatar = async (
     }
 };
 
+// Additional function in UserService.ts
+export const updateInstructorRating = async (
+    instructorId: string,
+    studentId: string,
+    rating: number | null, // null when removing rating
+): Promise<void> => {
+    const userDocRef = doc(userCollection, instructorId);
 
-// export const updateUserById = async (
-//     uid: string,
-//     updatedUser: Partial<User>,
-//     avatarUrl?: string,
-// ): Promise<User | undefined> => {
-//     try {
-//         let userAvatar = updatedUser.profile_image;
+    const instructorDoc = await getDoc(userDocRef);
+    const currentData = instructorDoc.data() as User;
 
-//         if (avatarUrl) {
-//             userAvatar = await updateUserAvatar(uid, avatarUrl);
-//         }
+    const currentRatings = currentData.instructor?.ratings || {};
 
-//         const userDocRef = doc(userCollection, uid);
+    if (rating === null) {
+        delete currentRatings[studentId];
+    } else {
+        currentRatings[studentId] = rating;
+    }
 
-//         // Fetch the current user data
-//         const userSnapshot = await getDoc(userDocRef);
-//         if (!userSnapshot.exists()) {
-//             throw new Error(`User with ID ${uid} does not exist.`);
-//         }
+    // Calculate new average
+    const ratings = Object.values(currentRatings);
+    const averageRating =
+        ratings.length > 0
+            ? ratings.reduce((a, b) => a + b, 0) / ratings.length
+            : 0;
 
-//         const currentUserData = userSnapshot.data();
-
-//         // Merge updated data for student and instructor fields if they exist
-//         const updatedData = {
-//             ...updatedUser,
-//             ...(updatedUser.student
-//                 ? {
-//                       student: {
-//                           ...(currentUserData.student || {}), // Existing student data or empty object
-//                           ...updatedUser.student, // Updated fields
-//                       },
-//                   }
-//                 : {}),
-//             ...(updatedUser.instructor
-//                 ? {
-//                       instructor: {
-//                           ...(currentUserData.instructor || {}), // Existing instructor data or empty object
-//                           ...updatedUser.instructor, // Updated fields
-//                       },
-//                   }
-//                 : {}),
-//         };
-
-//         // Update the document
-//         await updateDoc(userDocRef, updatedData);
-
-//         console.log('User updated successfully:', updatedData);
-
-//         return {
-//             uid,
-//             ...updatedUser,
-//             profile_image: userAvatar || updatedUser.profile_image,
-//         } as User;
-//     } catch (error) {
-//         console.error('Failed to update user: ', error);
-//     }
-// };
+    await updateDoc(userDocRef, {
+        'instructor.ratings': currentRatings,
+        'instructor.averageRating': averageRating,
+    });
+};

@@ -22,38 +22,31 @@ const CardInstructorDashboard: React.FC = () => {
         null,
     );
 
-    // Run side effect to fetch all courses created by the instructor.
     useEffect(() => {
         const loadInstructorData = async () => {
-            if (!currentUser || !userRole) return;
+            if (!currentUser?.uid || !userRole) return;
+
+            // First fetch all courses
             await fetchAllCourses(
-                currentUser?.uid,
+                currentUser.uid,
                 'instructor',
                 'creator',
                 'newest',
             );
-        };
-        loadInstructorData();
-    }, [currentUser, userRole]);
 
-    // Run side effect to update instructor's total courses created.
-    useEffect(() => {
-        if (!allCourses || !currentUser?.uid) {
-            return;
-        }
-        const calculateTotalCourses = allCourses.filter(
-            (course) => course.instructor_id === currentUser.uid,
-        );
-        const totalCourses = calculateTotalCourses.length;
-        const loadInstructorData = async () => {
-            if (currentUser.uid) {
+            // Then update the total count only if we have courses
+            if (allCourses) {
+                const totalCourses = allCourses.filter(
+                    (course) => course.instructor_id === currentUser.uid,
+                ).length;
+
                 await updateUser(currentUser.uid, {
                     'instructor.total_courses_created': totalCourses,
                 } as Partial<User>);
             }
         };
         loadInstructorData();
-    }, [allCourses, currentUser, userRole]);
+    }, [currentUser, userRole, allCourses]);
 
     // Handle click for delete course.
     const handleDeleteClick = (courseId: string) => {

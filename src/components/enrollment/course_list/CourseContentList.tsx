@@ -7,7 +7,7 @@ import { useSections } from '../../../hooks/useSections';
 import { useUser } from '../../../hooks/useUser';
 import { LessonBase } from '../../../types/lesson';
 import { Section } from '../../../types/section';
-import AddSectionModal from '../../modal/SectionModal';
+import SectionModal from '../../modal/SectionModal';
 import CourseContentView from './CourseContentView';
 
 interface CourseContentListProps {
@@ -22,6 +22,7 @@ interface CourseContentListProps {
     onSectionDelete: (sectionId: string) => void;
     onLessonChange: (sectionId: string, lesson: LessonBase) => void;
     onLessonDelete: (sectionId: string, lessonId: string) => void;
+    customHeight?: string;
 }
 
 const CourseContentList: React.FC<CourseContentListProps> = ({
@@ -36,6 +37,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     onSectionDelete,
     onLessonChange,
     onLessonDelete,
+    customHeight,
 }) => {
     const {selectedCourse} = useCourses();
     const {
@@ -210,8 +212,8 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     };
 
     return (
-        <div className='w-full bg-white shadow-md'>
-            <div className='p-6'>
+        <div className='w-full bg-white shadow-md flex flex-col'>
+            <div className='p-6 flex-none'>
                 <div className='flex justify-between items-center'>
                     <h2 className='text-2xl font-bold'>Course Content</h2>
                     {canEditCourse() && (
@@ -228,7 +230,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                 <hr className='mt-6'></hr>
             </div>
 
-            <div className='p-6 max-h-[calc(100vh-400px)] overflow-y-auto'>
+            <div className={`p-6 ${customHeight} overflow-y-auto`}>
                 <CourseContentView
                     course_id={course_id || ''}
                     isDraft={isDraft}
@@ -245,7 +247,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
                 />
 
                 {isModalOpen && (
-                    <AddSectionModal
+                    <SectionModal
                         isOpen={isModalOpen}
                         isDraft={isDraft}
                         onClose={closeSectionModal}

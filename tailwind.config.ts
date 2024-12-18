@@ -14,6 +14,7 @@ export default {
             white: '#FFFFFF',
             gray: '#D3D3D3',
             lightgray: '#DCDCDC',
+            yellow: '#fcd34d',
             background: '#EDF4F2',
             add: '#7C8363',
             edit: '#065B77',

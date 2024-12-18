@@ -5,6 +5,7 @@ import {
 	addUser,
 	deleteUserById,
 	getUserById,
+	updateInstructorRating,
 	updateUserById,
 } from '../services/firestore/UserService';
 import {
@@ -139,22 +140,9 @@ export const useUser = () => {
                     );
                     navigate('/instructor/auth');
                     return;
-                    // // Update `hasRegister` to true after successful registration
-                    // const updatedUser = await updateUserById(currentUser.uid, {
-                    //     role: 'instructor',
-                    //     'instructor.hasRegister': true
-                    // } as Partial<User>);
-
-                    // if (updatedUser) {
-                    //     dispatch(modifyUser(updatedUser));
-                    //     navigate('/instructor/dashboard'); // Redirect to dashboard after successful registration
-                    //     console.log('User successfully registered as instructor.');
-                    // }
-                    // return;
                 }
             } else {
                 // Handle switching back to student role
-                //const newRole = 'student';
                 const updatedUser = await updateUserById(currentUser.uid, {
                     role: newRole,
                 });
@@ -171,33 +159,26 @@ export const useUser = () => {
         }
     };
 
-    // const toggleUserRole = async (): Promise<User | null> => {
-    //     if (!currentUser) {
-    //         return null;
-    //     }
-    //     const newRole = currentUser.role === 'student' ? 'instructor' : 'student';
+    const rateInstructor = async (
+        instructorId: string,
+        rating: number | null,
+    ): Promise<void> => {
+        if (!currentUser?.uid || currentUser.uid === instructorId) {
+            console.error('Cannot rate: Invalid user or self-rating attempt');
+            return;
+        }
 
-    //     try {
-    //         if (currentUser.role !== newRole) {
-    //             const updatedUser = await updateUserById(currentUser.uid, {
-    //                 role: newRole,
-    //             });
-    //             if (updatedUser) {
-    //                 dispatch(modifyUser(updatedUser));
-    //                 dispatch(clearSingleCourse());
-    //                 dispatch(clearCourses());
-    //                 dispatch(clearSearchCourseResults());
-    //                 return updatedUser;
-    //             }
-    //             console.log('Current user role:', newRole);
-    //         } else {
-    //             console.log(`User is already a ${newRole}`);
-    //         }
-    //     } catch (error) {
-    //         console.error(`Failed to change role to ${newRole}: `, error);
-    //     }
-    //     return null;
-    // };
+        try {
+            await updateInstructorRating(instructorId, currentUser.uid, rating);
+            // Fetch updated instructor data
+            const updatedInstructor = await getUserById(instructorId);
+            if (updatedInstructor) {
+                dispatch(modifyUser(updatedInstructor));
+            }
+        } catch (error) {
+            console.error('Failed to update rating:', error);
+        }
+    };
 
     return {
         currentUser,
@@ -207,5 +188,6 @@ export const useUser = () => {
         fetchUserById,
         updateUser,
         deleteUser,
+        rateInstructor,
     };
 };

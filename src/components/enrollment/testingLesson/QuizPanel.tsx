@@ -1,4 +1,3 @@
-// QuizPanel.tsx
 import { useEffect, useState } from 'react';
 
 import { Quiz } from '../../../types/quiz';

@@ -27,12 +27,8 @@ const App: React.FC = () => {
                         <ProtectedRoute>
                             <HomePage />
                         </ProtectedRoute>
-                        //<HomePage />
                     }
-                >
-                    {/* <Route path='/auth' element={<AuthPage />} />
-                    <Route path='/home' element={<HomePage />} /> */}
-                </Route>
+                ></Route>
                 {/* Authentication path */}
                 <Route path='/auth' element={<AuthPage />} />
                 <Route path='/home' element={<HomePage />} />

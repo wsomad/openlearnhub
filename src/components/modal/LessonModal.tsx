@@ -1,12 +1,12 @@
 import { Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
-import { useCourses } from '../../../hooks/useCourses';
-import { useLessons } from '../../../hooks/useLessons';
-import { useQuestions } from '../../../hooks/useQuestions';
-import { LessonBase } from '../../../types/lesson';
-import DocumentPreview from './DocumentPreview';
-import VideoPreview from './VideoPreview';
+import { useCourses } from '../../hooks/useCourses';
+import { useLessons } from '../../hooks/useLessons';
+import { useQuestions } from '../../hooks/useQuestions';
+import { LessonBase } from '../../types/lesson';
+import DocumentPreview from '../enrollment/testingLesson/DocumentPreview';
+import VideoPreview from '../enrollment/testingLesson/VideoPreview';
 
 interface LessonModalProps {
     sectionId: string;

@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 import CourseContentList from '../../../components/enrollment/course_list/CourseContentList';
 import CourseRequirements from '../../../components/enrollment/CourseRequirements';
 import DocumentPreview from '../../../components/enrollment/testingLesson/DocumentPreview';
+import InstructorRating from '../../../components/enrollment/testingLesson/InstructorRating';
 import QuizPanel from '../../../components/enrollment/testingLesson/QuizPanel';
 import VideoPreview from '../../../components/enrollment/testingLesson/VideoPreview';
 import HeaderComponent from '../../../components/HeaderComponent';
@@ -134,7 +135,7 @@ const EnrolledCoursePage = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className='h-[300px] sm:h-[400px] md:h-[500px] lg:h-[660px] flex items-center justify-center p-4'>
+                                <div className='h-[250px] sm:h-[300px] md:h-[400px] lg:h-[660px] flex items-center justify-center p-4'>
                                     <div className='text-center max-w-md mx-auto'>
                                         <div className='text-gray mb-4'>
                                             <svg
@@ -166,7 +167,7 @@ const EnrolledCoursePage = () => {
 
                     {/* Course Content Sidebar */}
                     <div className='lg:col-span-1 order-1 lg:order-2'>
-                        <div className='sticky top-4'>
+                        <div className='sticky top-4 h-fits'>
                             <CourseContentList
                                 course_id={id || ''}
                                 sectionsOrder={[...allSections].sort(
@@ -180,6 +181,7 @@ const EnrolledCoursePage = () => {
                                 onSectionDelete={() => {}}
                                 onLessonChange={() => {}}
                                 onLessonDelete={() => {}}
+                                customHeight='h-[450px] sm:h-[500px] md:h-[600px] lg:h-[500px] xl:h-[calc(100vh-365px)]'
                             />
                         </div>
                     </div>
@@ -219,6 +221,14 @@ const EnrolledCoursePage = () => {
                         >
                             {selectedCourse?.course_instructor}
                         </Link>
+
+                        <InstructorRating
+                            instructorId={selectedCourse?.instructor_id || ''}
+                            disabled={
+                                currentUser?.uid ===
+                                selectedCourse?.instructor_id
+                            }
+                        />
                     </div>
                 </div>
             </div>

@@ -8,9 +8,9 @@ import { useSections } from '../../../hooks/useSections';
 import { useUser } from '../../../hooks/useUser';
 import { LessonBase } from '../../../types/lesson';
 import { Section } from '../../../types/section';
+import DeleteModal from '../../modal/DeleteModal';
+import LessonModal from '../../modal/LessonModal';
 import SectionModal from '../../modal/SectionModal';
-import DeleteModal from './DeleteModal';
-import LessonModal from './LessonModal';
 
 interface LessonProps {
     section: Section;

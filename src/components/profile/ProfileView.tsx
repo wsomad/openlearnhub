@@ -10,7 +10,6 @@ import CardCourseComponent from '../card/CardCourseComponent';
 import ProfileComponent from './ProfileComponent';
 
 const ProfileView: React.FC = () => {
-    //const currentCourses = isStudent ? courses.enrolled : courses.created;
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const {allCourses, fetchAllCourses} = useCourses();
     const {currentUser, userRole, fetchUserById} = useUser();
@@ -212,11 +211,11 @@ const ProfileView: React.FC = () => {
                                                         >
                                                             {currentUser
                                                                 ?.instructor
-                                                                ?.rating &&
+                                                                ?.averageRating &&
                                                             index <
                                                                 currentUser
                                                                     .instructor
-                                                                    .rating ? (
+                                                                    .averageRating ? (
                                                                 <FaStar className='text-secondary' /> // Solid star
                                                             ) : (
                                                                 <FaRegStar className='text-gray' /> // Outlined star
