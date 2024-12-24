@@ -1,6 +1,7 @@
+// App.tsx
 import 'react-toastify/dist/ReactToastify.css';
 
-import { BrowserRouter as Navigate, Route, Routes } from 'react-router-dom';
+import {BrowserRouter as Navigate, Route, Routes} from 'react-router-dom';
 
 import AuthPage from './pages/auth/AuthPage';
 import InstructorAuthPage from './pages/auth/InstructorAuthPage';
