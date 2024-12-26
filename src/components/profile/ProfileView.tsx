@@ -1,16 +1,15 @@
-import React, {useEffect, useState} from 'react';
-import {FaGithub, FaLinkedin, FaRegStar, FaStar} from 'react-icons/fa';
-import defaultProfilePicture from '../../assets/images/userProfile.png';
-import {useUser} from '../../hooks/useUser';
-import { useCourses } from '../../hooks/useCourses';
-import CardDashboard from '../CardInstructor';
-import CardCourseComponent from '../card/CardCourseComponent';
+import { Timestamp } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
+import { FaGithub, FaLinkedin, FaRegStar, FaStar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+
+import defaultProfilePicture from '../../assets/images/userProfile.png';
+import { useCourses } from '../../hooks/useCourses';
+import { useUser } from '../../hooks/useUser';
+import CardCourseComponent from '../card/CardCourseComponent';
 import ProfileComponent from './ProfileComponent';
 
-
 const ProfileView: React.FC = () => {
-    //const currentCourses = isStudent ? courses.enrolled : courses.created;
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const {allCourses, fetchAllCourses} = useCourses();
     const {currentUser, userRole, fetchUserById} = useUser();
@@ -34,8 +33,9 @@ const ProfileView: React.FC = () => {
 
     useEffect(() => {
         const loadCourses = async () => {
-            const filterType = isStudent ? 'default' : 'creator';
+            const filterType = isStudent ? 'enrollment' : 'creator';
             const readyForPublish = isStudent ? true : false;
+
             if (currentUser?.uid) {
                 await fetchAllCourses(
                     currentUser.uid,
@@ -43,9 +43,9 @@ const ProfileView: React.FC = () => {
                     filterType,
                     'newest',
                     readyForPublish,
-                )
+                );
             }
-        }
+        };
         loadCourses();
     }, [currentUser?.uid, userRole]);
 
@@ -60,18 +60,15 @@ const ProfileView: React.FC = () => {
     return (
         <div>
             <div className='profile-view max-w-screen-xl mx-auto px-0.5'>
-                {/* <h2 className='text-5xl font-bold my-6'>
-                    {currentUser.username}'s {userRole ? 'Student' : 'Instructor'}{' '}
-                    Profile
-                </h2> */}
-                {/* border border-gray */}
-
                 <div className='flex items-start justify-start my-6'>
                     <div
                         className={`relative w-40 h-40 rounded-full overflow-hidden mr-10 border-2 border-primary`}
                     >
                         <img
-                            src={currentUser.profile_image || defaultProfilePicture}
+                            src={
+                                currentUser.profile_image ||
+                                defaultProfilePicture
+                            }
                             alt={`${currentUser.firstname}'s Profile`}
                             className='w-full h-full object-cover'
                         />
@@ -85,9 +82,13 @@ const ProfileView: React.FC = () => {
                             {/* Only instructor has this */}
                             {isInstructor ? (
                                 <div className='flex flex-row ml-4 items-center justify-center'>
-                                    {currentUser?.instructor?.social_links?.github && (
+                                    {currentUser?.instructor?.social_links
+                                        ?.github && (
                                         <a
-                                            href={currentUser.instructor.social_links.github}
+                                            href={
+                                                currentUser.instructor
+                                                    .social_links.github
+                                            }
                                             target='_blank'
                                             rel='noopener noreferrer'
                                             className='mr-2'
@@ -96,9 +97,13 @@ const ProfileView: React.FC = () => {
                                         </a>
                                     )}
 
-                                    {currentUser?.instructor?.social_links?.linkedin && (
+                                    {currentUser?.instructor?.social_links
+                                        ?.linkedin && (
                                         <a
-                                            href={currentUser?.instructor?.social_links?.linkedin}
+                                            href={
+                                                currentUser?.instructor
+                                                    ?.social_links?.linkedin
+                                            }
                                             target='_blank'
                                             rel='noopener noreferrer'
                                         >
@@ -127,13 +132,28 @@ const ProfileView: React.FC = () => {
                                             Joined At
                                         </p>
                                         <p className='text-lg font-semibold text-gray-700'>
-                                            {currentUser.created_at
-                                                .toDate()
-                                                .toLocaleDateString('en-uk', {
-                                                    year: 'numeric',
-                                                    month: 'long',
-                                                    day: 'numeric',
-                                                })}
+                                            {currentUser.created_at instanceof
+                                            Timestamp
+                                                ? currentUser.created_at
+                                                      .toDate()
+                                                      .toLocaleDateString(
+                                                          'en-uk',
+                                                          {
+                                                              year: 'numeric',
+                                                              month: 'long',
+                                                              day: 'numeric',
+                                                          },
+                                                      )
+                                                : (
+                                                      currentUser.created_at as Date
+                                                  ).toLocaleDateString(
+                                                      'en-uk',
+                                                      {
+                                                          year: 'numeric',
+                                                          month: 'long',
+                                                          day: 'numeric',
+                                                      },
+                                                  )}
                                         </p>
                                     </div>
                                     <div className='flex flex-row items-center'>
@@ -141,7 +161,9 @@ const ProfileView: React.FC = () => {
                                             Education Level
                                         </p>
                                         <p className='text-lg font-semibold text-black'>
-                                            {currentUser?.student?.student_type || 'No Education Level'}
+                                            {currentUser?.student
+                                                ?.student_type ||
+                                                'No Education Level'}
                                         </p>
                                     </div>
                                 </>
@@ -153,8 +175,14 @@ const ProfileView: React.FC = () => {
                                                 Specialization
                                             </p>
                                             <p className='text-lg font-semibold text-gray-700'>
-                                                {currentUser?.instructor?.specialization_area && currentUser.instructor.specialization_area.length > 0
-                                                    ? currentUser.instructor.specialization_area.join(' | ')
+                                                {currentUser?.instructor
+                                                    ?.specialization_area &&
+                                                currentUser.instructor
+                                                    .specialization_area
+                                                    .length > 0
+                                                    ? currentUser.instructor.specialization_area.join(
+                                                          ' | ',
+                                                      )
                                                     : 'No specialization areas available'}
                                             </p>
                                         </div>
@@ -175,22 +203,26 @@ const ProfileView: React.FC = () => {
                                                 Rating
                                             </p>
                                             <p className='flex flex-row text-lg font-semibold text-black'>
-                                                {[...Array(5)].map((_, index) => (
-                                                    <span
-                                                        key={index}
-                                                        className='text-yellow-500 text-xl'
-                                                    >
-                                                        {currentUser?.instructor
-                                                            ?.rating &&
-                                                        index <
-                                                            currentUser.instructor
-                                                                .rating ? (
-                                                            <FaStar className='text-secondary' /> // Solid star
-                                                        ) : (
-                                                            <FaRegStar className='text-gray' /> // Outlined star
-                                                        )}
-                                                    </span>
-                                                ))}
+                                                {[...Array(5)].map(
+                                                    (_, index) => (
+                                                        <span
+                                                            key={index}
+                                                            className='text-yellow-500 text-xl'
+                                                        >
+                                                            {currentUser
+                                                                ?.instructor
+                                                                ?.averageRating &&
+                                                            index <
+                                                                currentUser
+                                                                    .instructor
+                                                                    .averageRating ? (
+                                                                <FaStar className='text-secondary' /> // Solid star
+                                                            ) : (
+                                                                <FaRegStar className='text-gray' /> // Outlined star
+                                                            )}
+                                                        </span>
+                                                    ),
+                                                )}
                                             </p>
                                         </div>
                                     </>
@@ -213,7 +245,7 @@ const ProfileView: React.FC = () => {
                 {/* Instructor Summary Section */}
                 {isInstructor && currentUser.instructor && (
                     <div className='flex flex-row gap-6 mt-8'>
-                        <div className='w-2/3 bg-white p-4 border border-gray'>
+                        <div className='w-full bg-white p-4 border border-gray'>
                             <h3 className='text-2xl font-semibold text-gray-800 mb-4'>
                                 Profile Summary
                             </h3>
@@ -232,56 +264,48 @@ const ProfileView: React.FC = () => {
                         {isStudent ? 'Enrolled Courses' : 'Created Courses'}
                     </h3>
                     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-                        {isStudent? allCourses.map((course) => (
-                            <CardCourseComponent
-                                key={course.course_id}
-                                thumbnail={course.course_thumbnail_url}
-                                title={course.course_title}
-                                instructor={course.course_instructor}
-                                pricing={course.course_pricing}
-                                buttonText='Continue'
-                                onButtonClick={() =>
-                                    navigate(`/selectedcourse/${course.course_id}`)
-                                }
-                                size='sm'
-                            />
-                        )) : allCourses.map((course) => (
-                            // <CardDashboard
-                            //     key={course.course_id}
-                            //     courseId={course.course_id}
-                            //     thumbnailUrl={course.course_thumbnail_url}
-                            //     title={course.course_title}
-                            //     description={course.course_description}
-                            //     sectionsNumber={course.course_number_of_section}
-                            //     pricing={course.course_pricing}
-                            //     enrollmentNumber={course.course_enrollment_number || 0}
-                            // />
-                            <CardCourseComponent
-                                key={course.course_id}
-                                thumbnail={course.course_thumbnail_url}
-                                title={course.course_title}
-                                instructor={course.course_instructor}
-                                enrolledStudents={course.course_enrollment_number}
-                                buttonText='Edit'
-                                onButtonClick={() =>
-                                    navigate(`/selectedcourse/${course.course_id}`)
-                                }
-                                size='sm'
-                            />
-                        ))}
+                        {isStudent
+                            ? allCourses.map((course) => (
+                                  <CardCourseComponent
+                                      key={course.course_id}
+                                      thumbnail={course.course_thumbnail_url}
+                                      title={course.course_title}
+                                      instructor={course.course_instructor}
+                                      pricing={course.course_pricing}
+                                      buttonText='Continue'
+                                      onButtonClick={() =>
+                                          navigate(
+                                              `/selectedcourse/${course.course_id}`,
+                                          )
+                                      }
+                                      size='sm'
+                                  />
+                              ))
+                            : allCourses.map((course) => (
+                                  <CardCourseComponent
+                                      key={course.course_id}
+                                      thumbnail={course.course_thumbnail_url}
+                                      title={course.course_title}
+                                      instructor={course.course_instructor}
+                                      enrolledStudents={
+                                          course.course_enrollment_number
+                                      }
+                                      buttonText='Edit'
+                                      onButtonClick={() =>
+                                          navigate(
+                                              `/instructor/dashboard/${course.course_id}/edit`,
+                                          )
+                                      }
+                                      size='sm'
+                                  />
+                              ))}
                     </div>
                 </div>
             </div>
             {isModalOpen && (
                 <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
                     <div className='bg-white p-6 rounded-lg max-w-lg w-full relative'>
-                        <ProfileComponent
-                            //userProfile={userProfile}
-                            //viewMode={viewMode}
-                            onClose={toggleModal}
-                            //onProfileUpdate={handleProfileUpdate}
-                            //statistics={statistics}
-                        />
+                        <ProfileComponent onClose={toggleModal} />
                     </div>
                 </div>
             )}
@@ -290,100 +314,3 @@ const ProfileView: React.FC = () => {
 };
 
 export default ProfileView;
-
-
-// interface ProfileViewProps {
-    //viewMode: ViewMode;
-    //userProfile: User;
-    //toggleModal: () => void;
-    //isInstructor: boolean;
-    // courses: {
-    //     enrolled: Course[];
-    //     created: Course[];
-    // };
-// }
-
-// {
-    //viewMode,
-    //userProfile,
-    //toggleModal,
-    //isInstructor,
-    //courses,
-// }
-
-{/* Profile Stats Grid */}
-            {/* <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8'>
-                {isStudent ? (
-                    <>
-                        <div className='flex flex-col'>
-                            <p className='text-md font-medium text-gray-500'>
-                                Email
-                            </p>
-                            <p className='text-lg font-semibold text-gray-700'>
-                                {currentUser.email}
-                            </p>
-                        </div>
-                        <div className='flex flex-col'>
-                            <p className='text-md font-medium text-gray-500'>
-                                Joined At
-                            </p>
-                            <p className='text-lg font-semibold text-gray-700'>
-                                {currentUser.created_at
-                                    .toDate()
-                                    .toLocaleDateString('en-uk', {
-                                        year: 'numeric',
-                                        month: 'numeric',
-                                        day: 'numeric',
-                                    })}
-                            </p>
-                        </div>
-                        <div className='flex flex-col'>
-                            <p className='text-md font-medium text-gray-500'>
-                                Student Type
-                            </p>
-                            <p className='text-lg font-semibold text-gray-700'>
-                                {currentUser?.student?.student_type}
-                            </p>
-                        </div>
-                    </>
-                ) : (
-                    currentUser.instructor && (
-                        <>
-                            <div className='flex flex-col'>
-                                <p className='text-md font-medium text-gray-500 flex items-center space-x-2'>
-                                    <SiCoursera />
-                                    <span>Courses Created</span>{' '}
-                                </p>
-                                <p className='text-lg font-semibold text-gray-700'>
-                                    {
-                                        currentUser.instructor
-                                            .total_courses_created
-                                    }
-                                </p>
-                            </div>
-                            <div className='flex flex-col'>
-                                <p className='text-md font-medium text-gray-500 flex items-center space-x-2'>
-                                    <GiGiftOfKnowledge />{' '}
-                                    <span>Specialization</span>
-                                </p>
-                                <p className='text-lg font-semibold text-gray-700'>
-                                    Nothing
-                                </p>
-                            </div>
-
-                            <div className='flex flex-col'>
-                                <p className='text-md font-medium text-gray-500 flex items-center space-x-2'>
-                                    <PiMapPinSimpleAreaFill />{' '}
-                                    <span>Experience</span>
-                                </p>
-                                <p className='text-lg font-semibold text-gray-700'>
-                                    {currentUser.instructor.years_of_experience}{' '}
-                                    years
-                                </p>
-                            </div>
-                        </>
-                    )
-                )}
-            </div> */}
-
-            {/* <hr className='border-t gray mb-8 opacity-15' /> */}

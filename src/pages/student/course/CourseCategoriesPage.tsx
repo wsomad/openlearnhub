@@ -1,16 +1,19 @@
-import { useEffect, useState } from "react";
-import { useCourses } from "../../../hooks/useCourses";
-import { useUser } from "../../../hooks/useUser";
-import { Course } from "../../../types/course";
-import HeaderComponent from "../../../components/HeaderComponent";
-import CardCategories from "../../../components/card/CardCategories";
+import { useEffect, useState } from 'react';
+
+import CardCategories from '../../../components/card/CardCategories';
+import HeaderComponent from '../../../components/HeaderComponent';
+import { useCourses } from '../../../hooks/useCourses';
+import { useUser } from '../../../hooks/useUser';
+import { Course } from '../../../types/course';
 
 const CourseCategoriesPage: React.FC = () => {
-    const { allCourses, fetchAllCourses } = useCourses();
-    const { currentUser, userRole } = useUser();
+    const {allCourses, fetchAllCourses} = useCourses();
+    const {currentUser, userRole} = useUser();
     const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
     const [courseTypes, setCourseTypes] = useState<string[]>([]);
-    const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'popular'>('newest');
+    const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'popular'>(
+        'newest',
+    );
 
     useEffect(() => {
         const loadCourses = async () => {
@@ -22,7 +25,7 @@ const CourseCategoriesPage: React.FC = () => {
                     sortBy,
                     true,
                     undefined,
-                    courseTypes
+                    courseTypes,
                 );
                 setFilteredCourses(courses);
                 console.log('Course categories', courses);
@@ -32,8 +35,12 @@ const CourseCategoriesPage: React.FC = () => {
     }, [currentUser, userRole, courseTypes, sortBy]);
 
     const handleCourseType = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const { value, checked } = event.target;
-        setCourseTypes((checkType) => (checked ? [...checkType, value] : checkType.filter((type) => type !== value)));
+        const {value, checked} = event.target;
+        setCourseTypes((checkType) =>
+            checked
+                ? [...checkType, value]
+                : checkType.filter((type) => type !== value),
+        );
     };
 
     return (

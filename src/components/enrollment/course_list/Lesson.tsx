@@ -8,9 +8,9 @@ import { useSections } from '../../../hooks/useSections';
 import { useUser } from '../../../hooks/useUser';
 import { LessonBase } from '../../../types/lesson';
 import { Section } from '../../../types/section';
-import AddSectionModal from '../../modal/AddSectionModal';
-import DeleteModal from './DeleteModal';
-import LessonModal from './LessonModal';
+import DeleteModal from '../../modal/DeleteModal';
+import LessonModal from '../../modal/LessonModal';
+import SectionModal from '../../modal/SectionModal';
 
 interface LessonProps {
     section: Section;
@@ -69,11 +69,19 @@ const Lesson: React.FC<LessonProps> = ({
     useEffect(() => {
         const loadLessons = async () => {
             if (section.section_id && selectedCourse?.course_id) {
-                const sectionLessons = await fetchLessonsForSection(
-                    section.section_id,
-                    selectedCourse.course_id,
-                );
-                setLessons(sectionLessons);
+                try {
+                    const sectionLessons = await fetchLessonsForSection(
+                        section.section_id,
+                        selectedCourse.course_id,
+                    );
+                    // Ensure we initialize with an empty array if no lessons
+                    setLessons(sectionLessons || []);
+                } catch (error) {
+                    console.error('Error loading lessons:', error);
+                    setLessons([]); // Initialize with empty array on error
+                }
+            } else {
+                setLessons([]); // Initialize with empty array if no section/course
             }
         };
         loadLessons();
@@ -92,16 +100,6 @@ const Lesson: React.FC<LessonProps> = ({
         setSelectedSection(section);
     };
 
-    // Handles section deletion with event prevention
-    // const confirmSectionDeletion = async (e?: React.MouseEvent) => {
-    //     if (e) {
-    //         e.preventDefault();
-    //         e.stopPropagation();
-    //     }
-
-    //     onDeleteSection(section.section_id);
-    //     setIsDeleteSectionModalOpen(false);
-    // };
     const confirmSectionDeletion = async (e?: React.MouseEvent) => {
         if (e) {
             e.preventDefault();
@@ -152,19 +150,18 @@ const Lesson: React.FC<LessonProps> = ({
         setIsAddLessonOpen(true);
     };
 
-    // Modifying the lesson's data in LessonModal 'edit' mode.
     const handleUpdateSection = (
         updatedSection: Omit<Section, 'section_id' | 'lessons' | 'quizzes'>,
     ) => {
-        if (isDraft) {
-            // For draft mode, pass the existing section ID
-            onEditSectionTitle(section.section_id, {
-                ...updatedSection,
-                course_id: section.course_id, // Maintain course_id if it exists
-            });
-        } else {
-            onEditSectionTitle(section.section_id, updatedSection);
-        }
+        const sectionUpdate = {
+            ...updatedSection,
+            section_id: section.section_id,
+            course_id: selectedCourse?.course_id || section.course_id,
+            section_order: section.section_order,
+        };
+
+        console.log('Updating section with:', sectionUpdate);
+        onEditSectionTitle(section.section_id, sectionUpdate);
         setIsEditSectionOpen(false);
     };
 
@@ -177,36 +174,64 @@ const Lesson: React.FC<LessonProps> = ({
     };
 
     const handleAddLesson = async (section_id: string, lesson: LessonBase) => {
+        let newLesson: LessonBase;
         try {
-            const newLesson = {
+            const uniqueId = `temp-${section_id}-${Date.now()}-${Math.random()
+                .toString(36)
+                .substring(2, 9)}`;
+
+            // Initialize lessons array if undefined
+            const currentLessons = lessons || [];
+
+            // Get the next order number
+            const nextOrder =
+                Math.max(0, ...currentLessons.map((l) => l.lesson_order || 0)) +
+                1;
+
+            newLesson = {
                 ...lesson,
-                lesson_id: isDraft ? `draft-${Date.now()}` : lesson.lesson_id,
+                lesson_id: lesson.lesson_id || uniqueId,
                 section_id: section_id,
+                lesson_order: nextOrder,
             };
+
+            // Update local state
+            setLessons((prev) => [...(prev || []), newLesson]);
+
+            // Propagate to parent
             await onAddLesson(section_id, newLesson);
-            setLessons((prev) => [...prev, newLesson]);
-            setIsAddLessonOpen(false); // Close modal after successful add
+            setIsAddLessonOpen(false);
         } catch (error) {
             console.error('Failed to add lesson:', error);
+            // Rollback on error
+            setLessons((prev) =>
+                prev.filter((l) => l.lesson_id !== newLesson.lesson_id),
+            );
         }
     };
 
     const handleEditLesson = async (section_id: string, lesson: LessonBase) => {
         try {
-            // Maintain the original lesson ID when editing
             const updatedLesson = {
                 ...lesson,
-                lesson_id: selectedLesson?.lesson_id || '', // Keep original ID
+                lesson_id: selectedLesson?.lesson_id || lesson.lesson_id,
                 section_id: section_id,
             };
+
+            setLessons((prev) => {
+                const updated = prev.map((l) =>
+                    l.lesson_id === updatedLesson.lesson_id ? updatedLesson : l,
+                );
+                // Ensure proper ordering is maintained
+                return updated
+                    .sort((a, b) => a.lesson_order - b.lesson_order)
+                    .map((lesson, idx) => ({
+                        ...lesson,
+                        lesson_order: idx + 1,
+                    }));
+            });
+
             await onEditLesson(section_id, updatedLesson);
-            setLessons((prev) =>
-                prev.map((l) =>
-                    l.lesson_id === selectedLesson?.lesson_id
-                        ? updatedLesson
-                        : l,
-                ),
-            );
             setIsAddLessonOpen(false);
         } catch (error) {
             console.error('Failed to edit lesson:', error);
@@ -220,18 +245,17 @@ const Lesson: React.FC<LessonProps> = ({
         try {
             await onDeleteLesson(section_id, lesson_id);
 
-            // Update local state immediately
-            setLessons((prev) => prev.filter((l) => l.lesson_id !== lesson_id));
+            setLessons((prev) => {
+                // Remove the deleted lesson and reorder remaining ones
+                const remaining = prev.filter((l) => l.lesson_id !== lesson_id);
+                return remaining.map((lesson, idx) => ({
+                    ...lesson,
+                    lesson_order: idx + 1,
+                }));
+            });
+
             setIsDeleteModalOpen(false);
             setLessonToDelete(null);
-
-            // If in draft mode, ensure the UI updates even if Firebase operation isn't performed
-            if (isDraft) {
-                const updatedLessons = lessons.filter(
-                    (l) => l.lesson_id !== lesson_id,
-                );
-                setLessons(updatedLessons);
-            }
         } catch (error) {
             console.error('Failed to delete lesson:', error);
         }
@@ -296,60 +320,67 @@ const Lesson: React.FC<LessonProps> = ({
             {isExpanded && (
                 <div className='bg-gray-50 shadow-sm'>
                     {lessons.length > 0 ? (
-                        lessons.map((lesson, idx) => (
-                            <div
-                                key={lesson.lesson_id}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (!canEdit) {
-                                        onLessonSelect?.(lesson);
-                                    }
-                                }}
-                                className={`p-4 bg-gray-50 hover:bg-gray-100 rounded flex justify-between items-center transition-colors ${
-                                    !canEdit ? 'cursor-pointer' : ''
-                                }`}
-                            >
-                                <div className='flex-1 ml-10'>
-                                    <p className='font-medium'>
-                                        {idx + 1}. {lesson.lesson_title}
-                                    </p>
-                                    <p className='text-sm text-gray-600 capitalize'>
-                                        {lesson.lesson_type}
-                                    </p>
-                                </div>
-                                {canEdit && (
-                                    <div
-                                        className='flex gap-2'
-                                        onClick={(e) => e.stopPropagation()} // Prevent lesson selection when clicking buttons
-                                    >
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                openEditLessonModal(lesson);
-                                            }}
-                                            className='p-2 text-gray-600 hover:text-primary rounded-lg transition-colors'
-                                            title='Edit lesson'
-                                        >
-                                            <Pencil className='w-5 h-5' />
-                                        </button>
-                                        <button
-                                            type='button'
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                openDeleteLessonModal(
-                                                    lesson,
-                                                    e,
-                                                );
-                                            }}
-                                            className='p-2 text-gray-600 hover:text-red-500 rounded-lg transition-colors'
-                                            title='Delete lesson'
-                                        >
-                                            <Trash2 className='w-5 h-5' />
-                                        </button>
+                        lessons.map((lesson, idx) => {
+                            // Generate a consistent and unique key for each lesson
+                            const lessonKey = lesson.lesson_id
+                                ? lesson.lesson_id
+                                : `temp-${section.section_id}-${idx}-${lesson.lesson_title}`;
+
+                            return (
+                                <div
+                                    key={lessonKey}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (!canEdit) {
+                                            onLessonSelect?.(lesson);
+                                        }
+                                    }}
+                                    className={`p-4 bg-gray-50 hover:bg-gray-100 rounded flex justify-between items-center transition-colors ${
+                                        !canEdit ? 'cursor-pointer' : ''
+                                    }`}
+                                >
+                                    <div className='flex-1 ml-10'>
+                                        <p className='font-medium'>
+                                            {idx + 1}. {lesson.lesson_title}
+                                        </p>
+                                        <p className='text-sm text-gray-600 capitalize'>
+                                            {lesson.lesson_type}
+                                        </p>
                                     </div>
-                                )}
-                            </div>
-                        ))
+                                    {canEdit && (
+                                        <div
+                                            className='flex gap-2'
+                                            onClick={(e) => e.stopPropagation()} // Prevent lesson selection when clicking buttons
+                                        >
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openEditLessonModal(lesson);
+                                                }}
+                                                className='p-2 text-gray-600 hover:text-primary rounded-lg transition-colors'
+                                                title='Edit lesson'
+                                            >
+                                                <Pencil className='w-5 h-5' />
+                                            </button>
+                                            <button
+                                                type='button'
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openDeleteLessonModal(
+                                                        lesson,
+                                                        e,
+                                                    );
+                                                }}
+                                                className='p-2 text-gray-600 hover:text-red-500 rounded-lg transition-colors'
+                                                title='Delete lesson'
+                                            >
+                                                <Trash2 className='w-5 h-5' />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })
                     ) : (
                         <div className='p-4 text-center text-gray-500'>
                             No lessons available in this section
@@ -412,7 +443,7 @@ const Lesson: React.FC<LessonProps> = ({
             )}
 
             {isEditSectionOpen && (
-                <AddSectionModal
+                <SectionModal
                     isOpen={isEditSectionOpen}
                     onClose={() => setIsEditSectionOpen(false)}
                     onSubmit={handleUpdateSection}

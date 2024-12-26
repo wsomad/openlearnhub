@@ -13,7 +13,7 @@ const HomePage: React.FC = () => {
     return (
         <div>
             <HeaderComponent />
-            <div className='flex flex-col justify-center items-center mt-12'>
+            <div className='flex flex-col justify-center items-center mt-12 mb-4'>
                 <h1 className='font-abhaya font-bold text-6xl'>
                     Find All{' '}
                     <span className='text-secondary'>Free Courses</span> You Can
@@ -25,7 +25,7 @@ const HomePage: React.FC = () => {
                     competitive.
                 </p>
             </div>
-            <SearchComponent />
+            <SearchComponent variant='centered' />
             <hr className='border-t gray mt-12 opacity-15' />
             <div className='px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12'>
                 <div className='max-w-screen-xl w-full mx-auto'>

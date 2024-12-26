@@ -1,0 +1,20 @@
+.Toastify__toast {
+    font-family: 'Abhaya Libre', serif !important;
+    background: white !important;
+    color: black !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Progress bar color for success toast */
+.Toastify__toast--success .Toastify__progress-bar {
+    background: #31473a !important;
+}
+
+/* Progress bar color for error toast */
+.Toastify__toast--error .Toastify__progress-bar {
+    background: #d3494e !important;
+}
+
+.Toastify__close-button {
+    color: black !important;
+}

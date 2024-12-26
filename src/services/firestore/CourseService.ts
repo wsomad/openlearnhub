@@ -1,20 +1,21 @@
 import {
-    doc,
-    setDoc,
-    getDoc,
-    getDocs,
-    updateDoc,
-    deleteDoc,
-    collection,
-    DocumentData,
-    QuerySnapshot,
-    query,
-    where,
-    orderBy,
-    limit,
+	collection,
+	deleteDoc,
+	doc,
+	DocumentData,
+	getDoc,
+	getDocs,
+	limit,
+	orderBy,
+	query,
+	QuerySnapshot,
+	setDoc,
+	updateDoc,
+	where,
 } from 'firebase/firestore';
-import {db} from '../../config/FirebaseConfiguration';
-import {Course} from '../../types/course';
+
+import { db } from '../../config/FirebaseConfiguration';
+import { Course } from '../../types/course';
 
 // Reference to `courses` collection (root reference for courses).
 const coursesCollection = collection(db, 'courses');
@@ -100,40 +101,60 @@ export const getAllCourses = async (
     sortBy?: 'newest' | 'oldest' | 'popular',
     readyForPublish?: boolean,
     limitCount?: number,
-    courseType?: string[]
+    courseType?: string[],
 ): Promise<Course[]> => {
     try {
         let coursesQuery = query(coursesCollection);
 
         // Apply filters based on filterType
         if (filterType === 'creator' && userRole === 'instructor') {
-            coursesQuery = query(coursesCollection, where('instructor_id', '==', uid));
+            coursesQuery = query(
+                coursesCollection,
+                where('instructor_id', '==', uid),
+            );
+        } else if (filterType === 'enrollment' && userRole === 'student') {
+            console.log('Applying enrollment filter for student:', uid);
+            coursesQuery = query(
+                coursesCollection,
+                where('enrolled_students', 'array-contains', uid),
+            );
         } else if (filterType === 'default' && userRole === 'student') {
             if (readyForPublish) {
                 coursesQuery = query(
                     coursesCollection,
-                    where('ready_for_publish', '==', true)
+                    where('ready_for_publish', '==', true),
                 );
             } else {
-                console.warn('Fetching default courses: readyForPublish is undefined.');
+                console.warn(
+                    'Fetching default courses: readyForPublish is undefined.',
+                );
             }
         }
 
         // Apply course type filter
         if (courseType && courseType.length > 0) {
-            coursesQuery = query(coursesQuery, where('course_type', 'in', courseType)); // Use the "in" operator for multiple values
+            coursesQuery = query(
+                coursesQuery,
+                where('course_type', 'in', courseType),
+            ); // Use the "in" operator for multiple values
         }
 
         // Apply sorting based on sortBy
         if (sortBy === 'newest') {
-            coursesQuery = query(coursesQuery, orderBy('course_created_at', 'desc'));
+            coursesQuery = query(
+                coursesQuery,
+                orderBy('course_created_at', 'desc'),
+            );
         } else if (sortBy === 'oldest') {
-            coursesQuery = query(coursesQuery, orderBy('course_created_at', 'asc'));
+            coursesQuery = query(
+                coursesQuery,
+                orderBy('course_created_at', 'asc'),
+            );
         } else if (sortBy === 'popular') {
             coursesQuery = query(
                 coursesQuery,
                 where('course_enrollment_number', '>', 0),
-                orderBy('course_enrollment_number', 'desc')
+                orderBy('course_enrollment_number', 'desc'),
             );
         }
 

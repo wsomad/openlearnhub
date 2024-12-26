@@ -1,30 +1,45 @@
-import {useDispatch, useSelector} from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
-    addCourse,
-    getAllCourses,
-    getCourseById,
-    updateCourseById,
-    deleteCourseById,
-    searchSpecificCourse,
+	addCourse,
+	deleteCourseById,
+	getAllCourses,
+	getCourseById,
+	searchSpecificCourse,
+	updateCourseById,
 } from '../services/firestore/CourseService';
 import {
-    setCourse,
-    setCourses,
-    modifyCourse,
-    setSearchCourseResult,
-    setPopularCourses,
-    clearCourse,
-    clearCourses,
-    clearSingleCourse,
+	deleteLessonById,
+	getAllLessons,
+} from '../services/firestore/LessonService';
+import {
+	deleteSectionById,
+	getAllSections,
+} from '../services/firestore/SectionService';
+import {
+	clearCourse,
+	clearCourses,
+	clearSingleCourse,
+	modifyCourse,
+	setCourse,
+	setCourses,
+	setPopularCourses,
+	setSearchCourseResult,
 } from '../store/slices/courseSlice';
 import { RootState } from '../store/store';
-import {Course} from '../types/course';
+import { Course } from '../types/course';
 
 export const useCourses = () => {
     const dispatch = useDispatch();
-    const selectedCourse = useSelector((state: RootState) => state.courses.selectedCourse);
-    const allCourses = useSelector((state: RootState) => state.courses.allCourses);
-    const popularCourses = useSelector((state: RootState) => state.courses.popularCourses);
+    const selectedCourse = useSelector(
+        (state: RootState) => state.courses.selectedCourse,
+    );
+    const allCourses = useSelector(
+        (state: RootState) => state.courses.allCourses,
+    );
+    const popularCourses = useSelector(
+        (state: RootState) => state.courses.popularCourses,
+    );
     const currentUser = useSelector((state: RootState) => state.user.user);
     const userRole = useSelector((state: RootState) => state.user.userRole);
     const isInstructor = userRole === 'instructor';
@@ -43,7 +58,10 @@ export const useCourses = () => {
         try {
             const addedCourse = await addCourse(course);
             dispatch(setCourse(addedCourse));
-            console.log('Successfully create course with this data:', addedCourse);
+            console.log(
+                'Successfully create course with this data:',
+                addedCourse,
+            );
         } catch (error) {
             console.error('Failed to create new course:', error);
         }
@@ -55,7 +73,11 @@ export const useCourses = () => {
      * @param uid - Based on user ID.
      * @param userRole - Based on user role.
      */
-    const fetchCourseById = async (course_id: string, uid: string | null, userRole: 'student' | 'instructor'): Promise<void> => {
+    const fetchCourseById = async (
+        course_id: string,
+        uid: string | null,
+        userRole: 'student' | 'instructor',
+    ): Promise<void> => {
         try {
             const course = await getCourseById(course_id, userRole, uid);
 
@@ -75,7 +97,7 @@ export const useCourses = () => {
         sortBy?: 'newest' | 'oldest' | 'popular',
         readyForPublish?: boolean,
         limitCount?: number,
-        courseType?: string[]
+        courseType?: string[],
     ): Promise<Course[]> => {
         try {
             const coursesQuery = await getAllCourses(
@@ -85,11 +107,12 @@ export const useCourses = () => {
                 sortBy,
                 readyForPublish,
                 limitCount,
-                courseType // Pass course type filter
+                courseType, // Pass course type filter
             );
 
             if (coursesQuery) {
-                if (sortBy === 'popular') { // Check if we're fetching popular courses
+                if (sortBy === 'popular') {
+                    // Check if we're fetching popular courses
                     dispatch(setPopularCourses(coursesQuery)); // Dispatch popular courses to Redux
                 } else {
                     dispatch(setCourses(coursesQuery)); // Dispatch regular courses to Redux
@@ -110,7 +133,11 @@ export const useCourses = () => {
      * @param user_role - Based on user role.
      * @returns
      */
-    const searchCourse = async (search_query: string, uid: string, user_role: 'student' | 'instructor'): Promise<Course[]> => {
+    const searchCourse = async (
+        search_query: string,
+        uid: string,
+        user_role: 'student' | 'instructor',
+    ): Promise<Course[]> => {
         try {
             const resultSearch = await searchSpecificCourse(
                 search_query,
@@ -138,7 +165,10 @@ export const useCourses = () => {
      * @param course_id - Based on course ID.
      * @param update_course - Based on updated course object.
      */
-    const updateCourse = async (course_id: string, update_course: Partial<Course>): Promise<void> => {
+    const updateCourse = async (
+        course_id: string,
+        update_course: Partial<Course>,
+    ): Promise<void> => {
         try {
             const updated = await updateCourseById(course_id, update_course);
             if (updated) {
@@ -160,15 +190,70 @@ export const useCourses = () => {
      * @param course_id | Based on course ID.
      * @returns
      */
+    // const deleteCourse = async (course_id: string): Promise<void> => {
+    //     if (!isInstructor) {
+    //         console.warn('Only instructors can delete courses.');
+    //         return;
+    //     }
+    //     try {
+    //         await deleteCourseById(course_id);
+    //         dispatch(clearCourse(course_id));
+    //         console.log('Successfully delete this course.');
+    //     } catch (error) {
+    //         console.error('Failed to delete course:', error);
+    //     }
+    // };
+
     const deleteCourse = async (course_id: string): Promise<void> => {
         if (!isInstructor) {
             console.warn('Only instructors can delete courses.');
             return;
         }
+
         try {
+            console.log('Starting course deletion process...');
+
+            // 1. Get all sections for this course
+            const sections = await getAllSections(course_id);
+            console.log(`Found ${sections.length} sections to delete`);
+
+            // 2. For each section, delete its lessons first
+            for (const section of sections) {
+                try {
+                    // Get lessons for this section
+                    const lessons = await getAllLessons(
+                        course_id,
+                        section.section_id,
+                    );
+                    console.log(
+                        `Found ${lessons.length} lessons in section ${section.section_id}`,
+                    );
+
+                    // Delete each lesson
+                    for (const lesson of lessons) {
+                        await deleteLessonById(
+                            course_id,
+                            section.section_id,
+                            lesson.lesson_id,
+                        );
+                        console.log(`Deleted lesson ${lesson.lesson_id}`);
+                    }
+
+                    // Delete the section
+                    await deleteSectionById(course_id, section.section_id);
+                    console.log(`Deleted section ${section.section_id}`);
+                } catch (error) {
+                    console.error(
+                        `Error deleting content in section ${section.section_id}:`,
+                        error,
+                    );
+                }
+            }
+
+            // 3. Finally delete the course
             await deleteCourseById(course_id);
             dispatch(clearCourse(course_id));
-            console.log('Successfully delete this course.');
+            console.log('Successfully deleted course and all its content');
         } catch (error) {
             console.error('Failed to delete course:', error);
         }
@@ -179,14 +264,14 @@ export const useCourses = () => {
      */
     const deleteAllCourses = () => {
         dispatch(clearCourses());
-    }
+    };
 
     /**
      * Clear single course state.
      */
     const deleteSingleCourse = () => {
         dispatch(clearSingleCourse());
-    }
+    };
 
     return {
         selectedCourse,
@@ -204,7 +289,6 @@ export const useCourses = () => {
         deleteSingleCourse,
     };
 };
-
 
 // /**
 //      * Fetch all courses.

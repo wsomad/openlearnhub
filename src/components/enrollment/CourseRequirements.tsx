@@ -5,7 +5,6 @@ import { useUser } from '../../hooks/useUser';
 
 interface CourseRequirementsProps {
     course_id: string | null;
-    //selectedCourse: Course | null;
     course_requirements: string[] | [];
 }
 
@@ -19,25 +18,28 @@ const CourseRequirements: React.FC<CourseRequirementsProps> = ({
 
     useEffect(() => {
         const loadCourse = async () => {
-            if (course_id) {
-                await fetchCourseById(course_id);
+            if (course_id && currentUser?.uid) {
+                await fetchCourseById(course_id, currentUser.uid, userRole);
                 console.log('Currently in selected course page.');
                 setLoading(false);
             }
         };
         loadCourse();
-    }, [currentUser, userRole]);
+    }, [course_id, currentUser?.uid, userRole]);
 
-    const renderedRequirements = course_requirements.map((requirement) => {
-        return <li key={course_id}>{requirement}</li>;
-    });
+    const renderedRequirements = course_requirements.map(
+        (requirement, index) => {
+            return (
+                <li key={`${course_id}-requirement-${index}`}>{requirement}</li>
+            );
+        },
+    );
 
     return (
         <div>
             <h2 className='font-abhaya px-6 text-2xl font-bold mb-2 mt-6'>
                 Course Requirements
             </h2>
-            {/* <hr className='border-t gray opacity-15 my-3 mx-6' /> */}
             <ul className='font-abhaya  px-6 text-lg list-disc list-inside mt-4'>
                 {renderedRequirements}
             </ul>

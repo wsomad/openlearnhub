@@ -142,11 +142,11 @@ const DocumentPreview: React.FC<DocumentPreviewProps> = ({url, height}) => {
                     <p className='text-red-500'>{error}</p>
                 </div>
             )}
-            {!url && !error && !isLoading && (
+            {/* {!url && !error && !isLoading && (
                 <div className='flex items-center justify-center h-full text-gray-500'>
                     Enter a valid document URL to see preview
                 </div>
-            )}
+            )} */}
             {url && !error && previewReady && renderPreview()}
         </div>
     );

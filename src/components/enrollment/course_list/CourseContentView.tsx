@@ -66,24 +66,51 @@ const CourseContentView: React.FC<CourseContentViewProps> = ({
     const {currentUser, userRole} = useUser();
 
     // Handle drag function to rearrange the position of section.
+    // const handleDragEnd = async (event: DragEndEvent): Promise<void> => {
+    //     if (!canEdit) return;
+
+    //     const {active, over} = event;
+
+    //     if (active.id !== over?.id) {
+    //         const oldIndex = sectionsOrder?.findIndex(
+    //             (item) => item.section_id === active.id,
+    //         );
+    //         const newIndex = sectionsOrder?.findIndex(
+    //             (item) => item.section_id === over?.id,
+    //         );
+    //         const newOrder: Section[] | [] = arrayMove(
+    //             sectionsOrder || [],
+    //             oldIndex || 0,
+    //             newIndex || 0,
+    //         );
+    //         setSectionsOrder(newOrder); // Update the state via prop
+    //     }
+    // };
     const handleDragEnd = async (event: DragEndEvent): Promise<void> => {
         if (!canEdit) return;
-
         const {active, over} = event;
 
         if (active.id !== over?.id) {
-            const oldIndex = sectionsOrder?.findIndex(
-                (item) => item.section_id === active.id,
-            );
-            const newIndex = sectionsOrder?.findIndex(
-                (item) => item.section_id === over?.id,
-            );
-            const newOrder: Section[] | [] = arrayMove(
-                sectionsOrder || [],
-                oldIndex || 0,
-                newIndex || 0,
-            );
-            setSectionsOrder(newOrder); // Update the state via prop
+            setSectionsOrder((prev) => {
+                const oldIndex = prev.findIndex(
+                    (item) => item.section_id === active.id,
+                );
+                const newIndex = prev.findIndex(
+                    (item) => item.section_id === over?.id,
+                );
+
+                // Create new array and update section_order for each item
+                const reorderedSections = arrayMove(
+                    prev,
+                    oldIndex,
+                    newIndex,
+                ).map((section, idx) => ({
+                    ...section,
+                    section_order: idx + 1,
+                }));
+
+                return reorderedSections;
+            });
         }
     };
 

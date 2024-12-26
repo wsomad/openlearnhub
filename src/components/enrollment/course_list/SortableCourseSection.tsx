@@ -7,7 +7,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useUser } from '../../../hooks/useUser';
 import { LessonBase } from '../../../types/lesson';
 import { Section } from '../../../types/section';
-import Lesson from '../testingLesson/Lesson';
+import Lesson from './Lesson';
 
 interface SortableCourseSectionProps {
     section: Section;

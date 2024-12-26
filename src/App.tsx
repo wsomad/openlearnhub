@@ -1,6 +1,7 @@
+// App.tsx
 import 'react-toastify/dist/ReactToastify.css';
 
-import { BrowserRouter as Navigate, Route, Routes } from 'react-router-dom';
+import {BrowserRouter as Navigate, Route, Routes} from 'react-router-dom';
 
 import AuthPage from './pages/auth/AuthPage';
 import InstructorAuthPage from './pages/auth/InstructorAuthPage';
@@ -27,12 +28,8 @@ const App: React.FC = () => {
                         <ProtectedRoute>
                             <HomePage />
                         </ProtectedRoute>
-                        //<HomePage />
                     }
-                >
-                    {/* <Route path='/auth' element={<AuthPage />} />
-                    <Route path='/home' element={<HomePage />} /> */}
-                </Route>
+                ></Route>
                 {/* Authentication path */}
                 <Route path='/auth' element={<AuthPage />} />
                 <Route path='/home' element={<HomePage />} />
@@ -74,20 +71,6 @@ const App: React.FC = () => {
                 <Route
                     path='/enrolledcourse/:id'
                     element={<EnrolledCoursePage />}
-                />
-                {/* <Route
-                        path='edit/:viewMode'
-                        element={<ProfileComponent />}
-                    /> */}
-                {/* </Route> */}
-                {/* Test Routes */}
-                <Route
-                    path='/test'
-                    // <EnrolledCoursePage></EnrolledCoursePage>
-                    // <SelectedCoursePage></SelectedCoursePage>
-                    // <ListEnrolledCoursePage></ListEnrolledCoursePage>
-                    // <HomePage></HomePage>
-                    // element={<TestComponent></TestComponent>}
                 />
             </Routes>
         </>

@@ -5,7 +5,8 @@ import { Link, useParams } from 'react-router-dom';
 import CourseContentList from '../../../components/enrollment/course_list/CourseContentList';
 import CourseRequirements from '../../../components/enrollment/CourseRequirements';
 import DocumentPreview from '../../../components/enrollment/testingLesson/DocumentPreview';
-import QuizPreview from '../../../components/enrollment/testingLesson/QuizPanel';
+import InstructorRating from '../../../components/enrollment/testingLesson/InstructorRating';
+import QuizPanel from '../../../components/enrollment/testingLesson/QuizPanel';
 import VideoPreview from '../../../components/enrollment/testingLesson/VideoPreview';
 import HeaderComponent from '../../../components/HeaderComponent';
 import { useCourses } from '../../../hooks/useCourses';
@@ -20,15 +21,12 @@ import {
 } from '../../../types/lesson';
 
 const EnrolledCoursePage = () => {
-    const {selectedCourse, fetchCourseById} = useCourses();
-    const {allSections, fetchAllSections, clearAllSections} = useSections();
+    const {selectedCourse, fetchCourseById, deleteSingleCourse} = useCourses();
+    const {allSections, fetchAllSections, resetSectionsState} = useSections();
     const {currentUser, userRole} = useUser();
     const {id} = useParams();
     const [loading, setLoading] = useState(true);
     const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
-    const currentState = useSelector((state) => state);
-    console.log('[Enrolled Page] Current State from Selector:', currentState);
-
     const [selectedLessonType, setSelectedLessonType] = useState<
         'video' | 'document' | 'quiz' | null
     >(null);
@@ -47,10 +45,6 @@ const EnrolledCoursePage = () => {
         const loadSections = async () => {
             if (id) {
                 await fetchAllSections(id);
-                console.log(
-                    `Successfully fetch all sections under ${id} course.`,
-                    allSections,
-                );
             }
         };
         loadSections();
@@ -73,10 +67,17 @@ const EnrolledCoursePage = () => {
         }
     };
 
+    useEffect(() => {
+        return () => {
+            deleteSingleCourse();
+            resetSectionsState();
+        };
+    }, []);
+
     if (loading) {
         return (
             <div className='min-h-screen flex items-center justify-center bg-gray-50'>
-                <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500'></div>
+                <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary'></div>
             </div>
         );
     }
@@ -86,20 +87,21 @@ const EnrolledCoursePage = () => {
             <HeaderComponent />
 
             {/* Main Content */}
-            <div className='max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8'>
+            <div className='max-w-screen-2xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8'>
                 {/* Course Content Grid */}
-                <div className='grid grid-cols-1 lg:grid-cols-3 gap-8 h-full'>
-                    <div className='lg:col-span-2 order-2 lg:order-1 h-full'>
-                        <div className='bg-white shadow-sm overflow-hidden h-full'>
+                <div className='grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8'>
+                    {/* Main Content Area */}
+                    <div className='lg:col-span-2 order-2 lg:order-1'>
+                        <div className='bg-white shadow-md overflow-hidden'>
                             {selectedLesson ? (
                                 <div>
-                                    <div className='p-6 border-b border-gray-100'>
-                                        <h2 className='text-2xl font-semibold text-gray-900'>
+                                    <div className='p-4 md:p-6 border-b border-gray'>
+                                        <h2 className='text-xl md:text-2xl font-semibold text-gray-900'>
                                             Lesson {selectedLesson.lesson_order}
                                             : {selectedLesson.lesson_title}
                                         </h2>
                                     </div>
-                                    <div className='p-6'>
+                                    <div className='p-4 md:p-6'>
                                         {selectedLessonType === 'video' && (
                                             <div className='aspect-w-16 aspect-h-9'>
                                                 <VideoPreview
@@ -109,7 +111,7 @@ const EnrolledCoursePage = () => {
                                                         ).video_url
                                                     }
                                                     onDurationChange={() => {}}
-                                                    height='h-[600px]'
+                                                    height='h-[300px] sm:h-[400px] md:h-[500px] lg:h-[533px]'
                                                 />
                                             </div>
                                         )}
@@ -121,38 +123,28 @@ const EnrolledCoursePage = () => {
                                                         selectedLesson as DocumentLesson
                                                     ).document_url
                                                 }
-                                                height='h-[600px]'
+                                                height='h-[300px] sm:h-[400px] md:h-[500px] lg:h-[533px]'
                                             />
                                         )}
 
                                         {selectedLessonType === 'quiz' && (
-                                            <div>
-                                                {(selectedLesson as QuizLesson)
-                                                    .quiz ? (
-                                                    <QuizPreview
-                                                        quizData={
-                                                            (
-                                                                selectedLesson as QuizLesson
-                                                            ).quiz
-                                                        }
-                                                        lessonId={
-                                                            selectedLesson.lesson_id
-                                                        }
-                                                    />
-                                                ) : (
-                                                    <div className='p-4 text-red-500'>
-                                                        Error loading quiz data.
-                                                        Please try again.
-                                                    </div>
-                                                )}
-                                            </div>
+                                            <QuizPanel
+                                                quizData={
+                                                    (
+                                                        selectedLesson as QuizLesson
+                                                    ).quiz
+                                                }
+                                                lessonId={
+                                                    selectedLesson.lesson_id
+                                                }
+                                            />
                                         )}
                                     </div>
                                 </div>
                             ) : (
-                                <div className='h-full flex items-center justify-center'>
-                                    <div className='text-center'>
-                                        <div className='text-gray-400 mb-4'>
+                                <div className='h-[250px] sm:h-[300px] md:h-[400px] lg:h-[660px] flex items-center justify-center p-4'>
+                                    <div className='text-center max-w-md mx-auto'>
+                                        <div className='text-gray mb-4'>
                                             <svg
                                                 className='mx-auto h-12 w-12'
                                                 fill='none'
@@ -167,10 +159,10 @@ const EnrolledCoursePage = () => {
                                                 />
                                             </svg>
                                         </div>
-                                        <h3 className='text-xl font-medium text-gray-900 mb-2'>
+                                        <h3 className='text-lg md:text-xl font-medium text-gray-900 mb-2'>
                                             Ready to start learning?
                                         </h3>
-                                        <p className='text-gray-500'>
+                                        <p className='text-gray'>
                                             Select a lesson from the course
                                             content to begin
                                         </p>
@@ -180,36 +172,43 @@ const EnrolledCoursePage = () => {
                         </div>
                     </div>
 
+                    {/* Course Content Sidebar */}
                     <div className='lg:col-span-1 order-1 lg:order-2'>
-                        <CourseContentList
-                            course_id={id || ''}
-                            sectionsOrder={allSections}
-                            setSectionsOrder={(sections) => {}}
-                            onSaveOrder={() => {}}
-                            onLessonSelect={handleLessonSelect}
-                            selectedLessonId={selectedLesson?.lesson_id}
-                            onSectionChange={() => {}}
-                            onSectionDelete={() => {}}
-                            onLessonChange={() => {}}
-                            onLessonDelete={() => {}}
-                        />
+                        <div className='sticky top-4 h-fits'>
+                            <CourseContentList
+                                course_id={id || ''}
+                                sectionsOrder={[...allSections].sort(
+                                    (a, b) => a.section_order - b.section_order,
+                                )}
+                                setSectionsOrder={(sections) => {}}
+                                onSaveOrder={() => {}}
+                                onLessonSelect={handleLessonSelect}
+                                selectedLessonId={selectedLesson?.lesson_id}
+                                onSectionChange={() => {}}
+                                onSectionDelete={() => {}}
+                                onLessonChange={() => {}}
+                                onLessonDelete={() => {}}
+                                customHeight='h-[450px] sm:h-[500px] md:h-[600px] lg:h-[500px] xl:h-[calc(100vh-365px)]'
+                            />
+                        </div>
                     </div>
                 </div>
 
-                <div className='space-y-8 mt-8'>
+                {/* Course Information Section*/}
+                <div className='space-y-4 md:space-y-6 lg:space-y-8 mt-4 md:mt-6 lg:mt-8'>
                     {/* Course Header */}
-                    <div className='bg-white rounded-xl shadow-sm p-6'>
-                        <h1 className='text-4xl font-bold text-gray-900 mb-4'>
+                    <div className='bg-white shadow-md p-4 md:p-6 lg:p-8'>
+                        <h1 className='text-2xl md:text-3xl lg:text-4xl font-bold mb-2 md:mb-4'>
                             {selectedCourse?.course_title || 'Course Title'}
                         </h1>
-                        <p className='text-lg text-gray-600'>
+                        <p className='text-base md:text-lg'>
                             {selectedCourse?.course_description ||
                                 'Course Description'}
                         </p>
                     </div>
 
                     {/* Course Requirements */}
-                    <div className='bg-white rounded-xl shadow-sm p-6'>
+                    <div className='bg-white shadow-md p-4 md:p-6 lg:p-8'>
                         <CourseRequirements
                             course_id={selectedCourse?.course_id || ''}
                             course_requirements={
@@ -219,8 +218,8 @@ const EnrolledCoursePage = () => {
                     </div>
 
                     {/* Instructor Info */}
-                    <div className='bg-white rounded-xl shadow-sm p-6'>
-                        <h2 className='font-abhaya text-2xl font-semibold mb-4'>
+                    <div className='bg-white shadow-md p-4 md:p-6 lg:p-8'>
+                        <h2 className='text-xl md:text-2xl font-semibold mb-4'>
                             Instructor
                         </h2>
                         <Link
@@ -229,6 +228,14 @@ const EnrolledCoursePage = () => {
                         >
                             {selectedCourse?.course_instructor}
                         </Link>
+
+                        <InstructorRating
+                            instructorId={selectedCourse?.instructor_id || ''}
+                            disabled={
+                                currentUser?.uid ===
+                                selectedCourse?.instructor_id
+                            }
+                        />
                     </div>
                 </div>
             </div>

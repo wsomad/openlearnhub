@@ -1,8 +1,8 @@
-import {useEffect, useState} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-import {useAuth} from '../hooks/useAuth';
-import {useUser} from '../hooks/useUser';
+import { useAuth } from '../hooks/useAuth';
+import { useUser } from '../hooks/useUser';
 
 interface Category {
     name: string;
@@ -24,6 +24,7 @@ const HeaderComponent: React.FC = () => {
         useState<boolean>(false);
     const [IsUserDropdownOpen, setIsUserDropdownOpen] =
         useState<boolean>(false);
+    const {updateUser} = useUser();
     // const currentState = useSelector((state) => state);
     // console.log('Current State from Selector:', currentState);
 
@@ -44,7 +45,9 @@ const HeaderComponent: React.FC = () => {
             ? [
                   {
                       name: 'Switch to Instructor',
-                      path: currentUser?.instructor?.hasRegister ? '/instructor/dashboard' : '/instructor/auth',
+                      path: currentUser?.instructor?.hasRegister
+                          ? '/instructor/dashboard'
+                          : '/instructor/auth',
                       onClick: async () => {
                           await toggleUserRole();
                       },
@@ -109,6 +112,9 @@ const HeaderComponent: React.FC = () => {
     // Handle navigation of sign out process.
     const handleSignOut = async () => {
         try {
+            if (currentUser && userRole === 'instructor') {
+                await updateUser(currentUser.uid, {role: 'student'});
+            }
             await signUserOut();
             navigate('/auth');
         } catch (error) {
@@ -136,7 +142,11 @@ const HeaderComponent: React.FC = () => {
             <header className='flex items-center justify-between p-4 px-10 bg-white shadow-sm'>
                 <div className='flex items-center space-x-4'>
                     <Link
-                        to='/home'
+                        to={
+                            userRole === 'instructor'
+                                ? '/instructor/dashboard'
+                                : '/home'
+                        }
                         className='text-2xl font-bold no-underline'
                     >
                         <span className='font-abhaya text-2xl text-primary'>
@@ -151,7 +161,7 @@ const HeaderComponent: React.FC = () => {
                         <div className='relative'>
                             <button
                                 onClick={toggleCategoriesDropdown}
-                                className='font-abhaya font-semibold ml-4 text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors'
+                                className='font-abhaya font-semibold ml-4 mt-1 text-lg px-4 py-2 rounded-md hover:bg-gray-100 transition-colors'
                                 aria-expanded={IsCategoriesDropdownOpen}
                             >
                                 Courses
@@ -159,22 +169,15 @@ const HeaderComponent: React.FC = () => {
 
                             {IsCategoriesDropdownOpen && (
                                 <div
-                                    className='absolute bg-white mt-2 text-black shadow-lg z-20 w-48 ml-5'
+                                    className='absolute bg-white mt-2 text-black shadow-lg z-20 w-48 ml-8'
                                     onClick={toggleCategoriesDropdown}
                                 >
                                     <ul className='py-1'>
-                                        {/* {categories.map((category) => (
-                                            <li key={category.name}>
-                                                <Link
-                                                    to={category.path}
-                                                    className='font-abhaya font-semibold block px-4 py-2 text-md text-black hover:bg-gray-100 underline'
-                                                >
-                                                    {category.name}
-                                                </Link>
-                                            </li>
-                                        ))} */}
                                         <li>
-                                            <Link to="/categories" className="font-abhaya font-semibold px-4 py-2 text-md text-black hover:bg-gray-100">
+                                            <Link
+                                                to='/categories'
+                                                className='font-abhaya font-semibold px-4 py-2 text-md text-black hover:bg-gray-100'
+                                            >
                                                 Browse Categories
                                             </Link>
                                         </li>
@@ -240,28 +243,6 @@ const HeaderComponent: React.FC = () => {
                                                 </button>
                                             </li>
                                         ))}
-
-                                        {/* Add "Go to Student/Instructor Page" Option
-                                        {currentRole === 'instructor' && (
-                                            <li>
-                                                <button
-                                                    onClick={() =>
-                                                        handleViewSwitch(
-                                                            userType ===
-                                                                'student'
-                                                                ? '/instructor/dashboard'
-                                                                : '/courses/enrolled',
-                                                        )
-                                                    }
-                                                    className='w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-abhaya'
-                                                >
-                                                    Go to{' '}
-                                                    {userType === 'student'
-                                                        ? 'Instructor Page'
-                                                        : 'Student Page'}
-                                                </button>
-                                            </li>
-                                        )} */}
 
                                         <li>
                                             <button

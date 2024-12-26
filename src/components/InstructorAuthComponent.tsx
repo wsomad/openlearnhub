@@ -17,7 +17,7 @@ const InstructorAuthComponent: React.FC = () => {
         specialization_area: [],
         years_of_experience: 0,
         total_courses_created: 0,
-        rating: 1,
+        averageRating: 0,
         social_links: {github: '', linkedin: ''},
     });
 
@@ -28,16 +28,41 @@ const InstructorAuthComponent: React.FC = () => {
         }
     }, [currentUser, navigate]);
 
+    // const handleChange = (
+    //     e: React.ChangeEvent<
+    //         HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    //     >,
+    // ) => {
+    //     const {name, value} = e.target;
+    //     setInstructor((prev) => ({
+    //         ...prev,
+    //         [name]: value,
+    //     }));
+    // };
+
     const handleChange = (
         e: React.ChangeEvent<
             HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
         >,
     ) => {
         const {name, value} = e.target;
-        setInstructor((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
+
+        // Special handling for social links
+        if (name === 'github' || name === 'linkedin') {
+            setInstructor((prev) => ({
+                ...prev,
+                social_links: {
+                    ...prev.social_links,
+                    [name]: value,
+                },
+            }));
+        } else {
+            // Handle other fields normally
+            setInstructor((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
     };
 
     const handleSpecializationChange = (
@@ -89,16 +114,14 @@ const InstructorAuthComponent: React.FC = () => {
     };
 
     return (
-        <div className='min-h-screen flex flex-col items-center justify-center bg-white p-4'>
-            {/* Brand Text */}
-            <div className='font-abhaya text-center mb-2'>
-                <h1 className='text-6xl font-bold'>
-                    <span className='text-primary'>Learn</span>
+        <div className='min-h-screen relative flex flex-col items-center justify-center bg-white p-4'>
+            <div className='absolute top-4 left-8 font-abhaya'>
+                <h1 className='text-2xl font-bold'>
+                    <span className='text-primary'>OpenLearn</span>
                     <span className='text-tertiary'>Hub.</span>
                 </h1>
             </div>
 
-            {/* Main Form Container */}
             <div className='w-full max-w-lg bg-white p-8 rounded-lg'>
                 <form onSubmit={handleSubmit} className='space-y-6'>
                     <h2 className='font-abhaya text-4xl font-bold text-center mb-4'>
@@ -111,7 +134,7 @@ const InstructorAuthComponent: React.FC = () => {
                                 Email
                             </label>
                             <input
-                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                 type='email'
                                 value={currentUser?.email}
                                 disabled
@@ -124,7 +147,7 @@ const InstructorAuthComponent: React.FC = () => {
                             </label>
                             <textarea
                                 name='profile_summary'
-                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded h-32'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary h-32'
                                 placeholder='Write a brief summary about yourself'
                                 value={instructor.profile_summary}
                                 onChange={handleChange}
@@ -138,7 +161,7 @@ const InstructorAuthComponent: React.FC = () => {
                             </label>
                             <select
                                 name='specialization_area'
-                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                 onChange={handleSpecializationChange}
                                 value=''
                             >
@@ -157,13 +180,12 @@ const InstructorAuthComponent: React.FC = () => {
                                 </option>
                             </select>
 
-                            {/* Selected Specializations */}
                             <div className='font-abhaya font-bold mt-3 flex flex-wrap gap-2'>
                                 {instructor.specialization_area?.map(
                                     (specialization) => (
                                         <div
                                             key={specialization}
-                                            className='flex items-center gap-2 bg-gray px-3 py-1.5 rounded-full text-sm'
+                                            className='flex items-center gap-2 bg-gray px-3 py-1.5 text-sm'
                                         >
                                             <span>{specialization}</span>
                                             <button
@@ -189,7 +211,7 @@ const InstructorAuthComponent: React.FC = () => {
                             </label>
                             <input
                                 name='years_of_experience'
-                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                 type='number'
                                 placeholder='Years of Experience'
                                 value={instructor.years_of_experience || ''}
@@ -204,7 +226,7 @@ const InstructorAuthComponent: React.FC = () => {
                             </label>
                             <input
                                 name='github'
-                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                 type='url'
                                 placeholder='GitHub Profile'
                                 value={instructor.social_links?.github}
@@ -218,7 +240,7 @@ const InstructorAuthComponent: React.FC = () => {
                             </label>
                             <input
                                 name='linkedin'
-                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary rounded'
+                                className='w-full border border-gray-300 p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                                 type='url'
                                 placeholder='LinkedIn Profile'
                                 value={instructor.social_links?.linkedin}
@@ -227,12 +249,21 @@ const InstructorAuthComponent: React.FC = () => {
                         </div>
                     </div>
 
-                    <button
-                        className='w-full py-3 bg-primary text-white text-lg active:scale-95 font-abhaya rounded transition-transform'
-                        type='submit'
-                    >
-                        Proceed to Instructor
-                    </button>
+                    <div className='flex gap-4'>
+                        <button
+                            onClick={() => navigate('/')}
+                            type='button'
+                            className='w-1/3 py-3 bg-gray text-white font-abhaya transition-colors'
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            className='w-2/3 py-3 bg-primary text-white text-lg active:scale-95 font-abhaya transition-transform'
+                            type='submit'
+                        >
+                            Register as Instructor
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>

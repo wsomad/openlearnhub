@@ -38,7 +38,7 @@ const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
     switch (size) {
         case 'sm':
             cardSizeClass = 'w-[290px] h-[300px]';
-            imageSizeClass = 'h-[250px]';
+            imageSizeClass = 'h-[190px]';
             break;
         case 'md':
             cardSizeClass = 'w-[380px] h-[300px]';
@@ -46,7 +46,7 @@ const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
             break;
         case 'lg':
             cardSizeClass = 'w-[750px] h-[550px]';
-            imageSizeClass = 'h-[500px]';
+            imageSizeClass = 'h-[350px] min-h-[425px] max-h-[425px]';
             break;
         case 'xl':
             cardSizeClass = 'w-[full] h-[600px]';
@@ -65,17 +65,6 @@ const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
                 alt={title}
                 className={`w-full ${imageSizeClass} object-cover `}
             />
-            {/* <CardCourseDetails
-                title={title}
-                instructor={instructor} // Use course properties here
-                size={size}
-                pricing={pricing}
-                hoursDuration={hoursDuration}
-                numSections={numSections}
-                numLectures={numLectures}
-                buttonText={buttonText}
-                onButtonClick={onButtonClick}
-            /> */}
             <div
                 className={`p-3 border border-gray w-full flex flex-col justify-between flex-grow`}
             >

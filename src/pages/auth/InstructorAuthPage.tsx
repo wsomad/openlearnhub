@@ -1,9 +1,11 @@
-import InstructorAuthComponent from "../../components/InstructorAuthComponent";
+import InstructorAuthComponent from '../../components/InstructorAuthComponent';
 
 const InstructorAuthPage: React.FC = () => {
-    return <div>
-        <InstructorAuthComponent></InstructorAuthComponent>
-    </div>
-}
+    return (
+        <div>
+            <InstructorAuthComponent></InstructorAuthComponent>
+        </div>
+    );
+};
 
 export default InstructorAuthPage;

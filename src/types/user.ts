@@ -1,6 +1,8 @@
-import {Instructor} from './instructor';
-import {Student} from './student';
+import { Timestamp } from 'firebase/firestore';
+
 import UserProfile from '../assets/images/userProfile.png';
+import { Instructor } from './instructor';
+import { Student } from './student';
 
 export type UserRole = 'student' | 'instructor';
 
@@ -12,8 +14,8 @@ export interface User {
     email: string;
     password: string;
     role: UserRole;
-    created_at: Date;
-    updated_at: Date;
+    created_at: Date | Timestamp;
+    updated_at: Date | Timestamp;
     profile_image: string | typeof UserProfile;
     student?: Student;
     instructor?: Instructor;

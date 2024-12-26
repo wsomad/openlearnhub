@@ -30,7 +30,6 @@ const CardCategories: React.FC = () => {
                     courseTypes,
                 );
                 setFilteredCourses(courses);
-                console.log('Course categories', courses);
             }
         };
         loadCourses();
@@ -58,62 +57,52 @@ const CardCategories: React.FC = () => {
             }
             size='sm'
         />
-        // <div
-        //     key={course.course_id}
-        //     className="course-card bg-white shadow-lg p-6 rounded-lg border"
-        // >
-        //     <h3 className="text-xl font-semibold">{course.course_title}</h3>
-        //     <p className="text-gray-700 mt-2">{course.course_description}</p>
-        //     <p className="text-sm text-gray-500 mt-2">
-        //         Enrolled: {course.course_enrollment_number}
-        //     </p>
-        //     <p className="text-sm text-gray-500">Type: {course.course_type}</p>
-        //     <p className="text-sm text-gray-500">
-        //         Created At: {new Date(course.course_created_at).toLocaleDateString()}
-        //     </p>
-        // </div>
     ));
 
     return (
         <div className='font-abhaya w-full mx-auto p-4'>
-            {/* Flex Container for Filters and Courses */}
-            <div className='flex flex-row'>
+            <div className='flex'>
                 {/* Filter Section */}
-                <div className='filters pl-6 w-full lg:w-1/5'>
-                    <div className='filter mb-6'>
-                        <label className='block text-lg font-semibold'>
+                <div className='min-h-screen w-64 border-r border-gray'>
+                    {/* Course Type Section */}
+                    <div className='mb-4'>
+                        <h2 className='text-lg font-semibold mb-4'>
                             Course Type
-                        </label>
-                        <div className='space-y-2 mt-2'>
+                        </h2>
+                        <div className='space-y-2 mb-4'>
                             {[
                                 'Web Development',
                                 'Machine Learning',
                                 'Mobile Development',
                                 'Cybersecurity',
                             ].map((type) => (
-                                <label key={type} className='flex items-center'>
+                                <label
+                                    key={type}
+                                    className='flex items-center cursor-pointer'
+                                >
                                     <input
                                         type='checkbox'
                                         value={type}
                                         checked={courseTypes.includes(type)}
                                         onChange={handleCourseType}
-                                        className='mr-2 leading-tight'
+                                        className='form-checkbox h-4 w-4 text-primary border-gray rounded'
                                     />
-                                    {type}
+                                    <span className='ml-2'>{type}</span>
                                 </label>
                             ))}
                         </div>
+                        <div className='border-b border-gray'></div>
                     </div>
-                    <div className='filter'>
-                        <label className='block text-lg font-semibold'>
-                            Sort By
-                        </label>
-                        <div className='space-y-2 mt-2'>
+
+                    {/* Sort By Section */}
+                    <div className='mb-4'>
+                        <h2 className='text-lg font-semibold mb-4'>Sort By</h2>
+                        <div className='space-y-2 mb-4'>
                             {['newest', 'oldest', 'popular'].map(
                                 (sortOption) => (
                                     <label
                                         key={sortOption}
-                                        className='flex items-center'
+                                        className='flex items-center cursor-pointer'
                                     >
                                         <input
                                             type='radio'
@@ -127,23 +116,47 @@ const CardCategories: React.FC = () => {
                                                         | 'popular',
                                                 )
                                             }
-                                            className='mr-2 leading-tight'
+                                            className='form-radio h-4 w-4 text-primary border-gray'
                                         />
-                                        {sortOption.charAt(0).toUpperCase() +
-                                            sortOption.slice(1)}
+                                        <span className='ml-2'>
+                                            {sortOption
+                                                .charAt(0)
+                                                .toUpperCase() +
+                                                sortOption.slice(1)}
+                                        </span>
                                     </label>
                                 ),
                             )}
                         </div>
+                        <div className='border-b border-gray'></div>
                     </div>
                 </div>
 
-                {/* Courses Section */}
-                <div>
-                    <SearchComponent />
-                    <div className='mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6'>
+                {/* Main Content Section */}
+                <div className='flex-1 pl-6'>
+                    {/* Search Bar Container */}
+                    <div className='w-full mb-4'>
+                        <SearchComponent variant='full' />
+                    </div>
+
+                    {/* Course Grid */}
+                    <div
+                        className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                        style={{
+                            columnGap: '1px',
+                            rowGap: '24px',
+                        }}
+                    >
                         {renderedCourse}
                     </div>
+
+                    {filteredCourses.length === 0 && (
+                        <div className='text-center py-8'>
+                            <p className='text-gray'>
+                                No courses found matching your criteria.
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

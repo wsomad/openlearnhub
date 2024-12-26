@@ -17,41 +17,23 @@ const CourseDashboardPage: React.FC = () => {
     }, [dispatch]);
 
     return (
-        // <div>
-        //     <HeaderComponent></HeaderComponent>
-        //     <div className='px-10 flex flex-col'>
-        //         <h1 className='text-5xl font-bold font-abhaya mb-2'>
-        //             Instructor Dashboard
-        //         </h1>
-        //         <p className='font-abhaya text-xl text-gray-600'>
-        //             Start contribute something to community.
-        //         </p>
-        //     </div>
-        //     <SearchComponent></SearchComponent>
-        //     <div className='px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12'>
-        //         <div className='mx-auto'>
-        //             <>
-        //             <CardInstructorDashboard></CardInstructorDashboard>
-        //             </>
-        //         </div>
-        //     </div>
-        // </div>
-
-        <div>
+        <div className='min-h-screen bg-gray-50'>
             <HeaderComponent />
-            <div className='max-w-screen-xl mx-auto px-2 sm:px-4 lg:px-0'>
-                <div className='py-8'>
-                    <h1 className='text-4xl sm:text-5xl font-bold font-abhaya mb-2'>
+            <div className='max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-0'>
+                <div className='py-6 sm:py-8'>
+                    <h1 className='text-3xl sm:text-4xl md:text-5xl font-bold font-abhaya mb-2'>
                         Instructor Dashboard
                     </h1>
-                    <p className='font-abhaya text-lg sm:text-xl text-gray-600'>
+                    <p className='font-abhaya text-base sm:text-lg md:text-xl text-gray-600'>
                         Start contribute something to community.
                     </p>
                 </div>
-                <div className='mb-6'>
-                    <SearchComponent />
+                <div className='mb-6 w-full'>
+                    <SearchComponent variant='full' />
                 </div>
-                <CardInstructorDashboard />
+                <div className='pb-8'>
+                    <CardInstructorDashboard />
+                </div>
             </div>
         </div>
     );

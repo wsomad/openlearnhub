@@ -17,39 +17,39 @@ import { Section } from '../../types/section';
  * @param course_id
  * @param section_data
  */
-export const addSections = async (
-    course_id: string,
-    section_data: Section, // Use a plural name for clarity
-): Promise<Section> => {
-    try {
-        const sectionDocRef = doc(
-            collection(db, `courses/${course_id}/sections`),
-            section_data.section_title,
-        );
-        console.log('Section ID:', sectionDocRef.id); // Will print the section_title used as the ID
+// export const addSections = async (
+//     course_id: string,
+//     section_data: Section, // Use a plural name for clarity
+// ): Promise<Section> => {
+//     try {
+//         const sectionDocRef = doc(
+//             collection(db, `courses/${course_id}/sections`),
+//             section_data.section_title,
+//         );
+//         console.log('Section ID:', sectionDocRef.id); // Will print the section_title used as the ID
 
-        // Add the section data to Firestore
-        await setDoc(sectionDocRef, {
-            ...section_data, // Spread the section data to store it in Firestore
-            section_id: sectionDocRef.id, // Make sure to store the course_id if needed
-        });
+//         // Add the section data to Firestore
+//         await setDoc(sectionDocRef, {
+//             ...section_data, // Spread the section data to store it in Firestore
+//             section_id: sectionDocRef.id, // Make sure to store the course_id if needed
+//         });
 
-        console.log(
-            `Successfully added section with title ${section_data.section_title} to course ${course_id}.`,
-        );
-        // const addedSections: Section[] = [];
-        // // Loop through each section and add it to Firestore
-        // for (const section of sections_data) {
-        //     // Use the section_title as the document ID for each section
+//         console.log(
+//             `Successfully added section with title ${section_data.section_title} to course ${course_id}.`,
+//         );
+//         // const addedSections: Section[] = [];
+//         // // Loop through each section and add it to Firestore
+//         // for (const section of sections_data) {
+//         //     // Use the section_title as the document ID for each section
 
-        // }
-        // return addedSections; // Return the array of added sections
-        return section_data;
-    } catch (error) {
-        console.error('Error adding sections:', error);
-        throw error;
-    }
-};
+//         // }
+//         // return addedSections; // Return the array of added sections
+//         return section_data;
+//     } catch (error) {
+//         console.error('Error adding sections:', error);
+//         throw error;
+//     }
+// };
 
 // export const addSection = async (
 //     course_id: string,
@@ -78,6 +78,32 @@ export const addSections = async (
 //         throw error;
 //     }
 // };
+
+export const addSections = async (
+    course_id: string,
+    section_data: Section,
+): Promise<Section> => {
+    try {
+        const sectionDocRef = doc(
+            collection(db, `courses/${course_id}/sections`),
+            section_data.section_title,
+        );
+
+        // Maintain exact same data including order
+        const sectionToAdd = {
+            ...section_data,
+            section_id: sectionDocRef.id,
+            section_order: Number(section_data.section_order), // Keep original order
+        };
+
+        await setDoc(sectionDocRef, sectionToAdd);
+
+        return sectionToAdd; // Return with original order
+    } catch (error) {
+        console.error('Error adding sections:', error);
+        throw error;
+    }
+};
 
 /**
  * Get specific section under specific course.

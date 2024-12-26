@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { IoCloseOutline } from 'react-icons/io5';
+import React, {useEffect, useState} from 'react';
+import {IoCloseOutline} from 'react-icons/io5';
 
-import { useCourses } from '../../hooks/useCourses';
-import { useSections } from '../../hooks/useSections';
-import { Section } from '../../types/section';
+import {useCourses} from '../../hooks/useCourses';
+import {useSections} from '../../hooks/useSections';
+import {Section} from '../../types/section';
 
-interface AddSectionModalProps {
+interface SectionModalProps {
     isOpen: boolean;
     isDraft?: boolean;
     onClose: () => void;
@@ -15,7 +15,7 @@ interface AddSectionModalProps {
     sectionToEdit?: Section;
 }
 
-const AddSectionModal: React.FC<AddSectionModalProps> = ({
+const SectionModal: React.FC<SectionModalProps> = ({
     isOpen,
     isDraft,
     onClose,
@@ -32,28 +32,6 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
         }
     }, [sectionToEdit]);
 
-    // const handleSubmit = (): void => {
-    //     if (!sectionTitle.trim()) {
-    //         alert('Section title is required.');
-    //         return;
-    //     }
-
-    //     const newSection = {
-    //         section_title: sectionTitle,
-    //         section_order:
-    //             sectionToEdit?.section_order || allSections.length + 1,
-    //         course_id: selectedCourse?.course_id || '',
-    //         section_id: isDraft
-    //             ? `draft-section-${Date.now()}`
-    //             : sectionToEdit?.section_id || '', // Add section_id for drafts
-    //     };
-
-    //     onSubmit(newSection);
-    //     onClose();
-    //     deleteSelectedSection();
-    //     setSectionTitle('');
-    // };
-
     const handleSubmit = (): void => {
         if (!sectionTitle.trim()) {
             alert('Section title is required.');
@@ -62,11 +40,11 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
 
         const newSection = {
             section_title: sectionTitle,
-            section_order: sectionToEdit?.section_order || 0,
             course_id: selectedCourse?.course_id || '',
-            section_id: isDraft
-                ? `draft-section-${Date.now()}`
-                : sectionToEdit?.section_id || '',
+            section_order: 0,
+            // section_id: isDraft
+            //     ? `draft-section-${Date.now()}`
+            //     : sectionToEdit?.section_id || '',
         };
 
         onSubmit(newSection);
@@ -127,4 +105,4 @@ const AddSectionModal: React.FC<AddSectionModalProps> = ({
     );
 };
 
-export default AddSectionModal;
+export default SectionModal;

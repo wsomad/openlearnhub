@@ -1,5 +1,4 @@
-// CreateCoursePage.tsx
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import CourseForm from '../../../components/enrollment/course_list/CourseForm';
 import HeaderComponent from '../../../components/HeaderComponent';
@@ -21,7 +20,7 @@ const CreateCoursePage: React.FC = () => {
                 <div className='grid grid-cols-1 gap-8'>
                     <div className='bg-white shadow-sm'>
                         <div className='py-6'>
-                            <CourseForm isDraft={true}></CourseForm>
+                            <CourseForm isDraft={true} />
                         </div>
                     </div>
                 </div>

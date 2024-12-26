@@ -137,13 +137,13 @@ const VideoPreview: React.FC<VideoPreviewProps> = ({
                     </div>
                 )}
             </div>
-            {url && !error && (
+            {/* {url && !error && (
                 <p className='text-sm text-gray-600'>
                     {isLoading
                         ? 'Loading video...'
                         : 'Video loaded successfully'}
                 </p>
-            )}
+            )} */}
         </div>
     );
 };
