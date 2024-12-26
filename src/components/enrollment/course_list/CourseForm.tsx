@@ -144,11 +144,29 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
     }, [courseId, currentUser, userRole]);
 
     // Separate cleanup for course when component unmounts completely
+    // useEffect(() => {
+    //     return () => {
+    //         dispatch(clearSingleCourse());
+    //     };
+    // }, []);
+
     useEffect(() => {
+        if (!courseId) {
+            deleteSingleCourse();
+            dispatch(clearSingleCourse());
+            dispatch(clearSections());
+            resetSectionsState();
+            resetLessonsState();
+            setSectionsOrder([]);
+        }
+
         return () => {
             dispatch(clearSingleCourse());
+            dispatch(clearSections());
+            resetSectionsState();
+            resetLessonsState();
         };
-    }, []);
+    }, [courseId]);
 
     // Run side effect to fetch all lessons based on `courseId` and `section_id`.
     useEffect(() => {

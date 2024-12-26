@@ -21,8 +21,8 @@ import {
 } from '../../../types/lesson';
 
 const EnrolledCoursePage = () => {
-    const {selectedCourse, fetchCourseById} = useCourses();
-    const {allSections, fetchAllSections} = useSections();
+    const {selectedCourse, fetchCourseById, deleteSingleCourse} = useCourses();
+    const {allSections, fetchAllSections, resetSectionsState} = useSections();
     const {currentUser, userRole} = useUser();
     const {id} = useParams();
     const [loading, setLoading] = useState(true);
@@ -66,6 +66,13 @@ const EnrolledCoursePage = () => {
                 setSelectedLessonType(null);
         }
     };
+
+    useEffect(() => {
+        return () => {
+            deleteSingleCourse();
+            resetSectionsState();
+        };
+    }, []);
 
     if (loading) {
         return (
