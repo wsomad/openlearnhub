@@ -20,7 +20,7 @@ const CourseDashboardPage: React.FC = () => {
         <div className='min-h-screen bg-gray-50'>
             <HeaderComponent />
             <div className='max-w-screen-xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-0'>
-                <div className='py-6 sm:py-8'>
+                <div className='py-6 sm:py-8 pl-6'>
                     <h1 className='text-3xl sm:text-4xl md:text-5xl font-bold font-abhaya mb-2'>
                         Instructor Dashboard
                     </h1>
@@ -28,7 +28,7 @@ const CourseDashboardPage: React.FC = () => {
                         Start contribute something to community.
                     </p>
                 </div>
-                <div className='mb-6 w-full'>
+                <div className='mb-6 w-full px-6'>
                     <SearchComponent variant='full' />
                 </div>
                 <div className='pb-8'>

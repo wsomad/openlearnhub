@@ -188,7 +188,7 @@ const EnrolledCoursePage = () => {
                                 onSectionDelete={() => {}}
                                 onLessonChange={() => {}}
                                 onLessonDelete={() => {}}
-                                customHeight='h-[450px] sm:h-[500px] md:h-[600px] lg:h-[500px] xl:h-[calc(100vh-365px)]'
+                                customHeight='h-[300px] sm:h-[400px] md:h-[500px] lg:h-[555px]'
                             />
                         </div>
                     </div>

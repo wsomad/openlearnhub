@@ -37,7 +37,7 @@ const CardCourseComponent: React.FC<CardCourseComponentProps> = ({
 
     switch (size) {
         case 'sm':
-            cardSizeClass = 'w-[290px] h-[300px]';
+            cardSizeClass = 'w-full h-[300px]';
             imageSizeClass = 'h-[190px]';
             break;
         case 'md':
