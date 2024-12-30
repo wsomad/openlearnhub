@@ -103,7 +103,11 @@ const AuthComponent: React.FC = () => {
 
             <div className='min-h-screen flex flex-col items-center justify-center p-4'>
                 <div className='w-full max-w-lg bg-white p-8 rounded-lg'>
-                    <form onSubmit={handleSubmit} className='space-y-6'>
+                    <form
+                        role='form'
+                        onSubmit={handleSubmit}
+                        className='space-y-6'
+                    >
                         <h2 className='font-abhaya text-4xl font-bold text-center mb-4'>
                             {isSignIn ? 'Sign In' : 'Sign Up'}
                         </h2>

@@ -23,8 +23,10 @@ export const useQuestions = () => {
      * Adds a new question to the quiz
      */
     const createQuestion = () => {
-        const newQuestion = createNewQuestion(quizQuestions.length);
+        const currentLength = quizQuestions ? quizQuestions.length : 0;
+        const newQuestion = createNewQuestion(currentLength);
         dispatch(modifyQuestionAdd(newQuestion));
+        return newQuestion;
     };
 
     /**

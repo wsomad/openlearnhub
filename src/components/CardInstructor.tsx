@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase/firestore';
 import React, { useState } from 'react';
 import { BsThreeDots } from 'react-icons/bs';
 import { Link } from 'react-router-dom';
@@ -7,7 +8,7 @@ interface CardIntrustorProps {
     thumbnailUrl: string;
     title: string;
     description: string;
-    updatedAt: Date;
+    updatedAt: Date | Timestamp;
     readyForPublish: boolean;
     onDelete: (id: string) => void;
 }
@@ -61,7 +62,10 @@ const CardInstructor: React.FC<CardIntrustorProps> = ({
                             Last Updated At
                         </p>
                         <p className='text-sm lg:text-base font-semibold font-abhaya truncate'>
-                            {updatedAt.toDate().toLocaleDateString('en-uk', {
+                            {(updatedAt instanceof Date
+                                ? updatedAt
+                                : updatedAt.toDate()
+                            ).toLocaleDateString('en-uk', {
                                 year: 'numeric',
                                 month: 'short',
                                 day: 'numeric',

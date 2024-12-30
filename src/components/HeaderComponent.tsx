@@ -211,6 +211,7 @@ const HeaderComponent: React.FC = () => {
                                     onClick={toggleUserDropdown}
                                     className='font-abhaya font-semibold text-lg py-2 hover:bg-gray-100 transition-colors flex items-center space-x-2'
                                     aria-expanded={IsUserDropdownOpen}
+                                    data-testid='user-menu-button'
                                 >
                                     <img
                                         src={currentUser?.profile_image}

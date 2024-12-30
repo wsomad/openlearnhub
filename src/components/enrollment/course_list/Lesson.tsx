@@ -262,7 +262,10 @@ const Lesson: React.FC<LessonProps> = ({
     };
 
     return (
-        <div className='mb-6 ml-4'>
+        <div
+            className='mb-6 ml-4'
+            data-testid={`section-${section.section_id}`}
+        >
             <div className='bg-gray-100 p-4 shadow-sm'>
                 <div className='flex justify-between items-center'>
                     <div
@@ -277,7 +280,10 @@ const Lesson: React.FC<LessonProps> = ({
                             )}
                         </div>
                         <div>
-                            <h3 className='text-lg font-semibold'>
+                            <h3
+                                className='text-lg font-semibold'
+                                data-testid={`section-title-${section.section_id}`}
+                            >
                                 {index}. {section.section_title}
                             </h3>
                             <p className='text-sm text-gray-600'>
@@ -309,6 +315,8 @@ const Lesson: React.FC<LessonProps> = ({
                                 type='button'
                                 onClick={openAddLessonModal}
                                 className='bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors'
+                                data-testid='add-lesson-button'
+                                aria-label='Add Lesson'
                             >
                                 <FaPlus className='w-3 h-3' />
                             </button>

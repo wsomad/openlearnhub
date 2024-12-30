@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import {
 	closestCenter,
@@ -54,6 +54,10 @@ const CourseContentView: React.FC<CourseContentViewProps> = ({
     onDeleteLesson,
     onLessonSelect,
 }) => {
+    // useEffect(() => {
+    //     console.log('CourseContentView - sectionsOrder:', sectionsOrder);
+    // }, [sectionsOrder]);
+
     const sensors = useSensors(
         useSensor(PointerSensor, {activationConstraint: {distance: 8}}),
         useSensor(KeyboardSensor, {
@@ -61,31 +65,6 @@ const CourseContentView: React.FC<CourseContentViewProps> = ({
         }),
     );
 
-    const {selectedSection, allSections, fetchAllSections, updateSection} =
-        useSections();
-    const {currentUser, userRole} = useUser();
-
-    // Handle drag function to rearrange the position of section.
-    // const handleDragEnd = async (event: DragEndEvent): Promise<void> => {
-    //     if (!canEdit) return;
-
-    //     const {active, over} = event;
-
-    //     if (active.id !== over?.id) {
-    //         const oldIndex = sectionsOrder?.findIndex(
-    //             (item) => item.section_id === active.id,
-    //         );
-    //         const newIndex = sectionsOrder?.findIndex(
-    //             (item) => item.section_id === over?.id,
-    //         );
-    //         const newOrder: Section[] | [] = arrayMove(
-    //             sectionsOrder || [],
-    //             oldIndex || 0,
-    //             newIndex || 0,
-    //         );
-    //         setSectionsOrder(newOrder); // Update the state via prop
-    //     }
-    // };
     const handleDragEnd = async (event: DragEndEvent): Promise<void> => {
         if (!canEdit) return;
         const {active, over} = event;
@@ -111,25 +90,6 @@ const CourseContentView: React.FC<CourseContentViewProps> = ({
 
                 return reorderedSections;
             });
-        }
-    };
-
-    // Handle save function to save section order.
-    const handleSaveOrder = async () => {
-        try {
-            const updatedData = sectionsOrder?.map((section) => ({
-                section_id: section.section_id,
-                section_order: section.section_order,
-            }));
-
-            await updateSection(
-                course_id,
-                selectedSection?.section_id || '',
-                updatedData,
-            );
-            console.log('Sections order saved to Firestore:', updatedData);
-        } catch (error) {
-            console.error('Error saving section order:', error);
         }
     };
 

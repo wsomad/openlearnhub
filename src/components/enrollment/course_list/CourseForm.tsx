@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -55,7 +55,7 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
     const [sectionsOrder, setSectionsOrder] = useState<Section[]>([]);
     const [error, setError] = useState<string | null>(null);
 
-    const [isUnmounting, setIsUnmounting] = useState(false);
+    // const [isUnmounting, setIsUnmounting] = useState(false);
 
     // Declare initial state to create a new course.
     const [courseData, setCourseData] = useState<Course>({
@@ -113,42 +113,26 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
     }, [courseId]);
 
     useEffect(() => {
-        if (!currentUser || !userRole) return;
+        if (!currentUser || !userRole || !courseId) return;
 
         const loadSection = async () => {
             try {
-                if (courseId) {
-                    await fetchAllSections(courseId);
-                } else {
-                    setSectionsOrder([]);
-                    dispatch(clearSections());
-                    resetSectionsState();
-                    resetLessonsState();
-                }
+                await fetchAllSections(courseId);
             } catch (error) {
                 console.error('Failed to fetch a list of sections:', error);
             }
         };
 
-        if (!isUnmounting) {
-            loadSection();
-        }
+        loadSection();
+    }, [courseId, currentUser, userRole, fetchAllSections]);
 
-        return () => {
-            setIsUnmounting(true);
+    useEffect(() => {
+        if (!courseId) {
             dispatch(clearSections());
             resetSectionsState();
             resetLessonsState();
-            setSectionsOrder([]);
-        };
-    }, [courseId, currentUser, userRole]);
-
-    // Separate cleanup for course when component unmounts completely
-    // useEffect(() => {
-    //     return () => {
-    //         dispatch(clearSingleCourse());
-    //     };
-    // }, []);
+        }
+    }, [courseId, dispatch, resetSectionsState, resetLessonsState]);
 
     useEffect(() => {
         if (!courseId) {
@@ -199,37 +183,27 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
     }, [selectedCourse]);
 
     useEffect(() => {
-        if (!courseId) {
-            setSectionsOrder([]);
-            dispatch(clearSections());
-            resetSectionsState();
-            resetLessonsState();
-        }
+        // Only update if we have sections in allSections
+        if (allSections?.length > 0) {
+            setSectionsOrder((prev) => {
+                // Keep existing temporary sections
+                const tempSections = prev.filter((s) =>
+                    s.section_id.startsWith('temp-'),
+                );
+                const persistedSections = allSections.filter(
+                    (s) => !s.section_id.startsWith('temp-'),
+                );
 
-        return () => {
-            setIsUnmounting(true);
-            deleteSingleCourse();
-            dispatch(clearSingleCourse());
-            dispatch(clearSections());
-            resetSectionsState();
-            resetLessonsState();
-            setSectionsOrder([]);
-            setPendingChanges({
-                sections: [],
-                deletedSections: [],
-                lessons: [],
-                deletedLessons: [],
+                // Combine and sort all sections
+                const combinedSections = [
+                    ...tempSections,
+                    ...persistedSections,
+                ].sort(
+                    (a, b) => (a.section_order || 0) - (b.section_order || 0),
+                );
+
+                return combinedSections;
             });
-        };
-    }, [courseId]);
-
-    // Run this side effect to sort section order.
-    useEffect(() => {
-        if (allSections && allSections.length > 0) {
-            const sortedSections = [...allSections].sort(
-                (a, b) => (a.section_order || 0) - (b.section_order || 0),
-            );
-            setSectionsOrder(sortedSections);
         }
     }, [allSections]);
 
@@ -276,23 +250,27 @@ const CourseForm: React.FC<CourseFormProps> = ({courseId}) => {
 
     const onSectionChange = async (section: Section) => {
         setSectionsOrder((prev) => {
-            return prev.map((s) =>
-                s.section_id === section.section_id ? {...s, ...section} : s,
+            const existingIndex = prev.findIndex(
+                (s) => s.section_id === section.section_id,
             );
+            if (existingIndex >= 0) {
+                return prev.map((s, idx) =>
+                    idx === existingIndex ? {...s, ...section} : s,
+                );
+            }
+            return [...prev, section];
         });
 
         setPendingChanges((prev) => {
             const existingIndex = prev.sections.findIndex(
                 (s) => s.section_id === section.section_id,
             );
-
             const updatedSections =
                 existingIndex >= 0
-                    ? prev.sections.map((s, index) =>
-                          index === existingIndex ? section : s,
+                    ? prev.sections.map((s, idx) =>
+                          idx === existingIndex ? section : s,
                       )
                     : [...prev.sections, section];
-
             return {
                 ...prev,
                 sections: updatedSections,

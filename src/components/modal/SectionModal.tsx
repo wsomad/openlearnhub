@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import {IoCloseOutline} from 'react-icons/io5';
+import React, { useEffect, useState } from 'react';
+import { IoCloseOutline } from 'react-icons/io5';
 
-import {useCourses} from '../../hooks/useCourses';
-import {useSections} from '../../hooks/useSections';
-import {Section} from '../../types/section';
+import { useCourses } from '../../hooks/useCourses';
+import { useSections } from '../../hooks/useSections';
+import { Section } from '../../types/section';
 
 interface SectionModalProps {
     isOpen: boolean;
@@ -75,10 +75,14 @@ const SectionModal: React.FC<SectionModalProps> = ({
                     </div>
 
                     <div>
-                        <label className='font-abhaya text-lg font-medium mb-1 block'>
+                        <label
+                            htmlFor='section_title'
+                            className='font-abhaya text-lg font-medium mb-1 block'
+                        >
                             Section Title
                         </label>
                         <input
+                            id='section_title'
                             className='w-full border border-gray p-3 bg-transparent font-abhaya focus:outline-none focus:ring-2 focus:ring-primary'
                             type='text'
                             placeholder='Section Title'

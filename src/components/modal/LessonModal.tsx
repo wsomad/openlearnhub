@@ -86,8 +86,9 @@ const LessonModal: React.FC<LessonModalProps> = ({
 
     useEffect(() => {
         if (lessonType === 'quiz' && !lessonToEdit) {
-            clearQuestionsState(); // Clear quiz questions when switching to quiz type
-            setQuizTitle(''); // Reset quiz title
+            clearQuestionsState();
+            setQuizTitle('');
+            createQuestion();
         }
     }, [lessonType]);
 
@@ -132,8 +133,16 @@ const LessonModal: React.FC<LessonModalProps> = ({
     };
 
     const renderQuizForm = () => {
+        if (!quizQuestions || quizQuestions.length === 0) {
+            console.log('No quiz questions, returning null');
+            return null;
+        }
         return (
-            <div className='space-y-6'>
+            <div
+                className='space-y-6'
+                role='complementary'
+                aria-label='quiz form'
+            >
                 {/* Quiz Title Section - Matching Lesson Title style */}
                 <div className='space-y-4'>
                     <div>
@@ -156,6 +165,8 @@ const LessonModal: React.FC<LessonModalProps> = ({
                         <div
                             key={question.question_id}
                             className='bg-white p-6 border shadow-sm relative group'
+                            role='group'
+                            aria-label={`Question ${qIndex + 1}`}
                         >
                             {/* Question Number Badge */}
                             <div className='absolute -top-3 -left-3 bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center font-medium shadow-sm'>
@@ -234,10 +245,14 @@ const LessonModal: React.FC<LessonModalProps> = ({
 
                                 <div className='grid grid-cols-2 gap-4 pt-4'>
                                     <div>
-                                        <label className='block mb-1 font-medium'>
+                                        <label
+                                            htmlFor={`correct-answer-${qIndex}`}
+                                            className='block mb-1 font-medium'
+                                        >
                                             Correct Answer
                                         </label>
                                         <select
+                                            id={`correct-answer-${qIndex}`}
                                             value={
                                                 question.question_correct_answer_index
                                             }
@@ -295,7 +310,9 @@ const LessonModal: React.FC<LessonModalProps> = ({
                 {/* Add Question Button */}
                 <button
                     type='button'
-                    onClick={createQuestion}
+                    onClick={async () => {
+                        await createQuestion();
+                    }}
                     className='w-full py-3 border-2 border-dashed border-gray-300 text-gray-600 hover:border-primary hover:text-primary transition-colors flex items-center justify-center gap-2'
                 >
                     <svg
@@ -322,6 +339,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
         e.stopPropagation();
 
         try {
+            // console.log('Submitting lesson for section:', sectionId);
             let lessonData: LessonBase;
             // Generate ID upfront to ensure it's never empty
             const uniqueId = isDraft
@@ -378,13 +396,13 @@ const LessonModal: React.FC<LessonModalProps> = ({
                 };
             }
 
-            console.log('=== LessonModal: Submitting lesson ===', lessonData);
+            // console.log('=== LessonModal: Submitting lesson ===', lessonData);
 
             try {
                 await onSubmit(lessonData);
-                console.log(
-                    '=== LessonModal: Lesson submitted successfully ===',
-                );
+                // console.log(
+                //     '=== LessonModal: Lesson submitted successfully ===',
+                // );
                 onClose();
             } catch (error) {
                 console.error('Failed to submit lesson:', error);
@@ -428,16 +446,21 @@ const LessonModal: React.FC<LessonModalProps> = ({
                                 </div>
 
                                 <div>
-                                    <label className='block mb-1 font-medium'>
+                                    <label
+                                        htmlFor='lesson_type'
+                                        className='block mb-1 font-medium'
+                                    >
                                         Lesson Type
                                     </label>
                                     <select
+                                        id='lesson_type'
                                         value={lessonType}
                                         onChange={(e) =>
                                             setLessonType(e.target.value as any)
                                         }
                                         className='w-full border p-2'
                                         disabled={!!lessonToEdit}
+                                        data-testid='lesson-type-select'
                                     >
                                         <option value='document'>
                                             Document
@@ -485,6 +508,7 @@ const LessonModal: React.FC<LessonModalProps> = ({
                         <button
                             type='button'
                             onClick={handleSubmit}
+                            data-testid='submit-lesson-button'
                             className='px-4 py-2 bg-primary text-white rounded hover:bg-primary/90'
                         >
                             {lessonToEdit ? 'Save Changes' : 'Add Lesson'}

@@ -55,26 +55,26 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     const [isConfirmModalOpen, setIsConfirmModalOpen] =
         useState<boolean>(false);
 
-    // Initialize local state management for section.
-    const [sectionData, setSectionData] = useState<Section[]>([
-        {
-            section_id: '',
-            course_id: '',
-            lessons: [],
-            section_order: 0,
-            section_title: '',
-        },
-    ]);
+    // // Initialize local state management for section.
+    // const [sectionData, setSectionData] = useState<Section[]>([
+    //     {
+    //         section_id: '',
+    //         course_id: '',
+    //         lessons: [],
+    //         section_order: 0,
+    //         section_title: '',
+    //     },
+    // ]);
 
-    // Run this side effect to set local state management with existing `allSections`.
-    useEffect(() => {
-        if (allSections) {
-            const sortedSections = [...allSections].sort(
-                (a, b) => a.section_order - b.section_order,
-            );
-            setSectionData(sortedSections);
-        }
-    }, [allSections]);
+    // // Run this side effect to set local state management with existing `allSections`.
+    // useEffect(() => {
+    //     if (allSections) {
+    //         const sortedSections = [...allSections].sort(
+    //             (a, b) => a.section_order - b.section_order,
+    //         );
+    //         setSectionData(sortedSections);
+    //     }
+    // }, [allSections]);
 
     // Edit function based on role and uid.
     const canEditCourse = (): boolean => {
@@ -92,29 +92,30 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     // Close modal function for modal of content.
     const closeSectionModal = (): void => setIsModalOpen(false);
 
-    // Handle delete function to delete section.
-
     const [tempIdCounter, setTempIdCounter] = useState(0);
     const handleAddSection = async (
         newSection: Omit<Section, 'section_id' | 'lessons'>,
     ): Promise<void> => {
         if (!canEditCourse()) return;
 
-        setTempIdCounter((prev) => prev + 1);
-
-        const nextOrder = sectionsOrder.length + 1;
-
+        const sectionId = `temp-${Date.now()}-${tempIdCounter}`;
         const section: Section = {
             ...newSection,
-            section_id: `temp-${Date.now()}-${tempIdCounter}`,
-            section_order: nextOrder,
+            section_id: sectionId,
+            section_order: sectionsOrder.length + 1,
             lessons: [],
         };
 
-        // Update local sectionsOrder immediately
-        setSectionsOrder((prev) => [...prev, section]);
+        // Update local state first
+        setSectionsOrder((prev) => {
+            const newOrder = [...prev, section];
+            return newOrder;
+        });
 
-        onSectionChange(section);
+        // Notify parent about the change
+        await onSectionChange(section);
+
+        setTempIdCounter((prev) => prev + 1);
         closeSectionModal();
     };
 
@@ -129,9 +130,9 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         );
 
         // For draft mode, also update sectionData state
-        setSectionData((prev) =>
-            prev.filter((section) => section.section_id !== section_id),
-        );
+        // setSectionData((prev) =>
+        //     prev.filter((section) => section.section_id !== section_id),
+        // );
     };
 
     const handleEditSectionTitle = async (
@@ -158,11 +159,11 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
             ),
         );
 
-        setSectionData((prev) =>
-            prev.map((section) =>
-                section.section_id === section_id ? sectionToUpdate : section,
-            ),
-        );
+        // setSectionData((prev) =>
+        //     prev.map((section) =>
+        //         section.section_id === section_id ? sectionToUpdate : section,
+        //     ),
+        // );
     };
 
     // Handle add function to add lesson.
@@ -172,7 +173,7 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     ): Promise<void> => {
         try {
             // Update the local section data first for immediate feedback
-            setSectionData((prev) =>
+            setSectionsOrder((prev) =>
                 prev.map((section) => {
                     if (section.section_id === section_id) {
                         const updatedLessons = [
@@ -193,7 +194,8 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
         } catch (error) {
             console.error('Failed to add lesson:', error);
             // Rollback local state on error
-            setSectionData((prev) => [...prev]);
+            // setSectionData((prev) => [...prev]);
+            setSectionsOrder((prev) => [...prev]);
         }
     };
 
@@ -212,13 +214,17 @@ const CourseContentList: React.FC<CourseContentListProps> = ({
     };
 
     return (
-        <div className='w-full bg-white shadow-md flex flex-col'>
+        <div
+            className='w-full bg-white shadow-md flex flex-col'
+            data-testid='course-content-list'
+        >
             <div className='p-6 flex-none'>
                 <div className='flex justify-between items-center'>
                     <h2 className='text-2xl font-bold'>Course Content</h2>
                     {canEditCourse() && (
                         <button
                             type='button'
+                            data-testid='new-section-button'
                             className='bg-primary text-white px-4 py-2 flex items-center space-x-2 hover:bg-secondary-dark transition-colors'
                             onClick={openCreateSectionModal}
                         >
