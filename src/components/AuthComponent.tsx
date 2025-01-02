@@ -224,27 +224,6 @@ const AuthComponent: React.FC = () => {
                                 )}
                             </div>
                         </div>
-
-                        <div className='flex items-center'>
-                            <hr className='flex-grow border-t border-gray-300' />
-                            <span className='px-4 text-gray-500 font-medium font-abhaya'>
-                                or
-                            </span>
-                            <hr className='flex-grow border-t border-gray-300' />
-                        </div>
-
-                        <button
-                            type='button'
-                            className='w-full flex items-center justify-center py-3 border border-gray-300 hover:bg-gray-50 transition-colors'
-                            onClick={() => {
-                                /* Handle Google sign-in */
-                            }}
-                        >
-                            <FaGoogle className='text-xl mr-3' />
-                            <span className='text-lg font-abhaya'>
-                                Continue with Google
-                            </span>
-                        </button>
                     </form>
                 </div>
             </div>

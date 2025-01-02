@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
 
+import DocumentPreview from '../../../components/enrollment/components/DocumentPreview';
+import InstructorRating from '../../../components/enrollment/components/InstructorRating';
+import QuizPanel from '../../../components/enrollment/components/QuizPanel';
+import VideoPreview from '../../../components/enrollment/components/VideoPreview';
 import CourseContentList from '../../../components/enrollment/course_list/CourseContentList';
 import CourseRequirements from '../../../components/enrollment/CourseRequirements';
-import DocumentPreview from '../../../components/enrollment/testingLesson/DocumentPreview';
-import InstructorRating from '../../../components/enrollment/testingLesson/InstructorRating';
-import QuizPanel from '../../../components/enrollment/testingLesson/QuizPanel';
-import VideoPreview from '../../../components/enrollment/testingLesson/VideoPreview';
 import HeaderComponent from '../../../components/HeaderComponent';
 import { useCourses } from '../../../hooks/useCourses';
 import { useSections } from '../../../hooks/useSections';

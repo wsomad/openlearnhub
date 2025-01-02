@@ -5,8 +5,8 @@ import { useCourses } from '../../hooks/useCourses';
 import { useLessons } from '../../hooks/useLessons';
 import { useQuestions } from '../../hooks/useQuestions';
 import { LessonBase } from '../../types/lesson';
-import DocumentPreview from '../enrollment/testingLesson/DocumentPreview';
-import VideoPreview from '../enrollment/testingLesson/VideoPreview';
+import DocumentPreview from '../enrollment/components/DocumentPreview';
+import VideoPreview from '../enrollment/components/VideoPreview';
 
 interface LessonModalProps {
     sectionId: string;

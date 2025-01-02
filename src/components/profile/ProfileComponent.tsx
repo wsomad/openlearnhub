@@ -6,7 +6,7 @@ import { useUser } from '../../hooks/useUser';
 import { Instructor } from '../../types/instructor';
 import { Student, StudentType } from '../../types/student';
 import { User } from '../../types/user';
-import AvatarSelector from '../enrollment/testingLesson/AvatarSelection';
+import AvatarSelector from '../enrollment/components/AvatarSelection';
 
 interface ProfileComponentProps {
     onClose: () => void;

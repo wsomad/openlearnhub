@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 
-import { createNewQuestion } from '../components/enrollment/testingLesson/questionUtils';
+import { createNewQuestion } from '../components/enrollment/components/questionUtils';
 import {
 	clearQuestions,
 	modifyQuestion,
