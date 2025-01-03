@@ -97,11 +97,11 @@ OpenLearnHub is an e-learning platform with features like lessons in documents, 
 **6. Running with Podman**
    - Start by pulling the image:
      ```bash
-     podman pull haikalsamari/openlearnhub
+     podman pull haikalsamari/openlearnhub:latest
      ```
 - Run the container:
      ```bash
-     podman run -d -p 8080:80 haikalsamari/openlearnhub
+     podman run -d -p 8080:80 haikalsamari/openlearnhub:latest
      ```
 - Go to `localhost:8080` to view the app.
 
